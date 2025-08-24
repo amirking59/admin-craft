@@ -2,8 +2,8 @@
 
 import "@admin-panel/configs/i18n";
 import "@admin-panel/configs/dayjs";
-import { queryClient } from "@admin-panel/configs/tanstackQuery";
-import { ThemeProvider } from "@admin-panel/theme/theme-provider";
+import { queryClient } from "@/configs/tanstackQuery";
+import { ThemeProvider } from "@/theme/theme-provider";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { useEffect, useState } from "react";
