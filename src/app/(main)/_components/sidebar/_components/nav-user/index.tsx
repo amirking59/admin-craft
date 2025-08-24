@@ -14,13 +14,13 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/c
 import { useTranslation } from "react-i18next";
 import { ThemeSwitcher } from "@/app/(main)/_components/sidebar/_components/nav-user/theme-switcher";
 import { LocaleSelect } from "@/app/(main)/_components/sidebar/_components/nav-user/locale-select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { logout, useProfile } from "@/app/auth/_services";
+import { LocalStorage } from "@/utils/storage";
 
 export function NavUser() {
   const { t } = useTranslation();
   const { isMobile } = useSidebar();
-
-  const user = { name: "John Doe" }; // Replace with actual user fetching logic
+  const { data: user } = useProfile();
 
   return (
     <SidebarMenu>
@@ -32,11 +32,9 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="grid flex-1 text-start text-sm leading-tight">
-                {!user ? (
-                  <Skeleton className="h-[17.5px] w-36" />
-                ) : (
-                  <span className="truncate font-medium">{user?.name}</span>
-                )}
+                <span className="truncate font-medium">
+                  {user?.firstName} {user?.lastName}
+                </span>
               </div>
 
               <ChevronsUpDown className="ml-auto size-4" />
@@ -55,7 +53,7 @@ export function NavUser() {
             <ThemeSwitcher />
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem onClick={logout} className="cursor-pointer">
               <LogOut />
               {t("logout")}
             </DropdownMenuItem>
