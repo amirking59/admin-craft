@@ -1,12 +1,13 @@
 "use client";
 
 import dayjs from "dayjs";
-import { cn, formatDate } from "@frontend-utils";
+import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Locale } from "react-day-picker";
+import { formatDate } from "@/utils/date";
 
 interface DateTimePickerProps {
   "value": string | null;

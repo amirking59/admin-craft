@@ -1,7 +1,7 @@
 "use client";
 
-import "@admin-panel/configs/i18n";
-import "@admin-panel/configs/dayjs";
+import "@/configs/i18n";
+import "@/configs/dayjs";
 import { queryClient } from "@/configs/tanstackQuery";
 import { ThemeProvider } from "@/theme/theme-provider";
 import { QueryClientProvider } from "@tanstack/react-query";

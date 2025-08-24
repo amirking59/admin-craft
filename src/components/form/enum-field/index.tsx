@@ -1,5 +1,5 @@
 import { SelectField } from "@/components/form/select-field";
-import { getEnumValues } from "@frontend-utils";
+import { getEnumValues } from "@/utils/enum";
 
 interface EnumFieldProps {
   name?: string;

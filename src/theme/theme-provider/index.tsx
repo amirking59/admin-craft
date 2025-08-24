@@ -4,6 +4,7 @@ import { ThemeProvider as NextThemeProvider } from "next-themes";
 import { useLocale } from "@/hooks/use-locale";
 import { useEffect } from "react";
 import { DirectionProvider } from "@radix-ui/react-direction";
+import { LocalStorage } from "@/utils/storage";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [locale] = useLocale();
@@ -16,7 +17,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [locale]);
 
   useEffect(() => {
-    const theme = localStorage.getItem("theme");
+    const theme = LocalStorage.getItem("theme");
     if (theme) {
       document.documentElement.classList.add(theme || "light");
     }

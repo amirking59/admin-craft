@@ -1,9 +1,6 @@
-import localFont from "next/font/local";
+import { Noto_Sans } from "next/font/google";
 
-export const yekanBakh = localFont({
-  src: "../../assets/fonts/YekanBakh-VF.woff",
-  weight: "100 900",
-  style: "normal",
-  display: "swap",
-  variable: "--font-yekan-bakh",
+export const NotoSans = Noto_Sans({
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-noto-sans",
 });
