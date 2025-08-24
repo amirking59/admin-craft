@@ -1,3 +1,9 @@
 {
-  "singleQuote": true
+  "proseWrap": "never",
+  "printWidth": 120,
+  "tabWidth": 2,
+  "useTabs:": false,
+  "semi": true,
+  "quoteProps": "consistent",
+  "endOfLine": "auto"
 }
