@@ -5,4 +5,5 @@ export const auth = {
   password: "كلمة المرور",
   googleAuthCode: "رمز مصدق جوجل",
   login: "تسجيل الدخول",
+  loginSuccess: "لقد قمت بتسجيل الدخول بنجاح",
 };
