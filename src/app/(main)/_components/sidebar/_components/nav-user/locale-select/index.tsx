@@ -37,7 +37,7 @@ export const LocaleSelect = () => {
             }}
           >
             <Languages className="size-[1.2rem]" />
-            {localeItem.label}123
+            {localeItem.label}
             {isSelected && <Check className="size-[1.2rem] ms-auto text-primary" />}
           </DropdownMenuItem>
         );
