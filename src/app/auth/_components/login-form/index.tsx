@@ -7,11 +7,12 @@ import { Form } from "@/components/ui/form";
 import { useTranslation } from "react-i18next";
 import { useLogin } from "@/app/auth/_services";
 import { OTPField } from "@/components/form/otp-field";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
 
 const formSchema = z.object({
   email: z.string().min(1).email(),
   password: z.string().min(1),
-  googleAuthCode: z.string().min(1),
+  googleAuthCode: z.string().length(6),
 });
 
 export function LoginForm() {
@@ -44,7 +45,13 @@ export function LoginForm() {
 
           <TextField type="password" label={t("password")} name="password" />
 
-          <OTPField groupSize={6} maxLength={6} label={t("googleAuthCode")} name="googleAuthCode" />
+          <OTPField
+            pattern={REGEXP_ONLY_DIGITS}
+            groupSize={6}
+            maxLength={6}
+            label={t("googleAuthCode")}
+            name="googleAuthCode"
+          />
 
           <Button loading={loginMutation.isPending} type="submit" className="w-full">
             {t("login")}

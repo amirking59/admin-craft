@@ -30,7 +30,7 @@ export function OTPField({
   showSeparator = true,
   onComplete,
 }: OTPFieldProps) {
-  const { control } = useFormContext();
+  const { control, formState } = useFormContext();
 
   const renderSlots = () => {
     const slots = [];
@@ -47,6 +47,7 @@ export function OTPField({
             key={slotIndex}
             index={slotIndex}
             className={cn("border-input", disabled && "opacity-50 cursor-not-allowed")}
+            aria-invalid={!!formState.errors[name]}
           />,
         );
       }
