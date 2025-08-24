@@ -1,23 +1,47 @@
 import { DropdownMenuGroup, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useLocale } from "@/hooks/use-locale";
-import { Languages } from "lucide-react";
+import { Locale } from "@/hooks/use-locale/_types";
+import { Check, Languages } from "lucide-react";
+
+const locales: {
+  code: Locale;
+  label: string;
+}[] = [
+  {
+    code: "en",
+    label: "English",
+  },
+  {
+    code: "fa",
+    label: "فارسی",
+  },
+  {
+    code: "ar",
+    label: "عربی",
+  },
+];
 
 export const LocaleSelect = () => {
-  const [locale, setLocale] = useLocale();
+  const [currentLocale, setLocale] = useLocale();
 
   return (
     <DropdownMenuGroup>
-      <DropdownMenuItem
-        onClick={() => {
-          setLocale(locale === "fa" ? "en" : "fa");
-        }}
-      >
-        <Languages className="size-[1.2rem]" />
+      {locales.map((localeItem) => {
+        const isSelected = currentLocale === localeItem.code;
 
-        {locale === "en" && <div>فارسی</div>}
-
-        {locale === "fa" && <div>English</div>}
-      </DropdownMenuItem>
+        return (
+          <DropdownMenuItem
+            key={localeItem.code}
+            onClick={() => {
+              setLocale(localeItem.code);
+            }}
+          >
+            <Languages className="size-[1.2rem]" />
+            {localeItem.label}123
+            {isSelected && <Check className="size-[1.2rem] ms-auto text-primary" />}
+          </DropdownMenuItem>
+        );
+      })}
     </DropdownMenuGroup>
   );
 };

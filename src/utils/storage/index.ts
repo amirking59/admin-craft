@@ -3,7 +3,7 @@ export class LocalStorage {
    * Checks if localStorage is available (client-side only)
    */
   private static isAvailable(): boolean {
-    return typeof window !== 'undefined' && typeof localStorage === 'object';
+    return typeof window !== "undefined" && typeof localStorage === "object";
   }
 
   /**
@@ -47,10 +47,7 @@ export class LocalStorage {
    * @param value The value to store
    * @returns Promise resolving when complete
    */
-  public static async setItemAsync(
-    key: string,
-    value: string
-  ): Promise<boolean> {
+  public static async setItemAsync(key: string, value: string): Promise<boolean> {
     return Promise.resolve(this.setItem(key, value));
   }
 

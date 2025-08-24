@@ -10,7 +10,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [isClient, setIsClient] = useState(false);
   const { t } = useTranslation();
 
-  useDocumentTitle(t("balinexAdminPanel"));
+  useDocumentTitle(t("adminCraft"));
 
   useEffect(() => {
     setIsClient(true);

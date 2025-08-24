@@ -14,9 +14,7 @@ export function getEnumKeys<T extends object>(e: T): Array<keyof T> {
  * @param e The enum object
  * @returns Array of enum values
  */
-export function getEnumValues<T extends object, K extends keyof T = keyof T>(
-  e: T
-): Array<T[K]> {
+export function getEnumValues<T extends object, K extends keyof T = keyof T>(e: T): Array<T[K]> {
   const values = Object.values(e) as Array<T[K]>;
 
   return values;

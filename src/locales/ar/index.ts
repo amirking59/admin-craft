@@ -1,5 +1,7 @@
+import { common } from "@/locales/ar/common";
 import { zod } from "@/locales/ar/zod";
 
-export const fa = {
+export const ar = {
   zod,
+  common,
 };

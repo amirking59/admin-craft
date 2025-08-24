@@ -1,4 +1,4 @@
-export const convertToFormData = (obj: Record<string, any>): FormData => {
+export const convertToFormData = (obj: Record<string, string | Blob>): FormData => {
   const formData = new FormData();
 
   Object.entries(obj).forEach(([key, value]) => {

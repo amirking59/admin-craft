@@ -5,16 +5,16 @@ import { useLocale } from "@/hooks/use-locale";
 import { useEffect } from "react";
 import { DirectionProvider } from "@radix-ui/react-direction";
 import { LocalStorage } from "@/utils/storage";
+import { useDirection } from "@/hooks/use-direction";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [locale] = useLocale();
-
-  const direction = locale === "fa" ? "rtl" : "ltr";
+  const direction = useDirection();
 
   useEffect(() => {
     document.documentElement.setAttribute("dir", direction);
     document.documentElement.setAttribute("lang", locale);
-  }, [locale]);
+  }, [locale, direction]);
 
   useEffect(() => {
     const theme = LocalStorage.getItem("theme");

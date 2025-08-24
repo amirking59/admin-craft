@@ -3,19 +3,21 @@ import { initReactI18next } from "react-i18next";
 import { zodI18nMap } from "zod-i18n-map";
 
 import { en } from "@/locales/en";
-import { fa } from "@/locales/ar";
+import { ar } from "@/locales/ar";
+import { fa } from "@/locales/fa";
 import { z } from "zod";
 import { LocalStorage } from "@/utils/storage";
 
 const resources = {
   en,
+  ar,
   fa,
 };
 
 i18n.use(initReactI18next).init({
   resources,
-  ns: ["base", "coins"],
-  defaultNS: "base",
+  ns: ["common"],
+  defaultNS: "common",
   lng: LocalStorage.getItem("locale") || "en",
   interpolation: {
     escapeValue: false,

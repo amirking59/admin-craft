@@ -1,13 +1,13 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const createNumericStringSchema = () => {
   const baseSchema = z
     .string()
-    .refine((val) => !isNaN(Number(val)) && val.trim() !== '', {
-      message: 'Must be a valid number',
+    .refine((val) => !isNaN(Number(val)) && val.trim() !== "", {
+      message: "Must be a valid number",
     })
     .refine((val) => isFinite(Number(val)), {
-      message: 'Must be a finite number',
+      message: "Must be a finite number",
     });
 
   return Object.assign(baseSchema, {
@@ -23,17 +23,17 @@ const createNumericStringSchema = () => {
 
     positive: (message?: string) =>
       createNumericStringSchema().refine((val) => Number(val) > 0, {
-        message: message || 'Must be positive',
+        message: message || "Must be positive",
       }),
 
     nonnegative: (message?: string) =>
       createNumericStringSchema().refine((val) => Number(val) >= 0, {
-        message: message || 'Must be non-negative',
+        message: message || "Must be non-negative",
       }),
 
     int: (message?: string) =>
       createNumericStringSchema().refine((val) => Number.isInteger(Number(val)), {
-        message: message || 'Must be an integer',
+        message: message || "Must be an integer",
       }),
 
     range: (min: number, max: number, message?: string) =>
@@ -54,7 +54,7 @@ export const englishOnlyString = () =>
     .min(1)
     .refine((val) => EN_ONLY_REGEX.test(val), {
       params: {
-        i18n: 'custom.onlyEnglishLetters',
+        i18n: "custom.onlyEnglishLetters",
       },
     });
 
@@ -64,6 +64,6 @@ export const farsiOnlyString = () =>
     .min(1)
     .refine((val) => FA_ONLY_REGEX.test(val), {
       params: {
-        i18n: 'custom.onlyFarsiLetters',
+        i18n: "custom.onlyFarsiLetters",
       },
     });
