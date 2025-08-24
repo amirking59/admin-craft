@@ -22,6 +22,13 @@
     "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.5.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2",
     "@eslint/eslintrc": "^3"
+  },
+  "volta": {
+    "node": "22.18.0",
+    "yarn": "1.22.22"
   }
 }
