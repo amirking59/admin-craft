@@ -3,14 +3,9 @@
 import { AppSidebar } from "@/app/(main)/_components/sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useDocumentTitle } from "usehooks-ts";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isClient, setIsClient] = useState(false);
-  const { t } = useTranslation();
-
-  useDocumentTitle(t("adminCraft"));
 
   useEffect(() => {
     setIsClient(true);

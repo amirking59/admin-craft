@@ -1,5 +1,5 @@
 export const common = {
-  adminCraft: "ادمین کرفت",
+  appName: "ادمین کرفت",
   dark: "تاریک",
   light: "روشن",
   logout: "خروج",

@@ -33,7 +33,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <LayoutDashboard />
             </div>
             <div className="grid flex-1 text-start text-sm leading-tight">
-              <span className="truncate font-medium">{t("adminCraft")}</span>
+              <span className="truncate font-medium">{t("appName")}</span>
             </div>
           </SidebarMenuButton>
         </Link>
