@@ -1,10 +1,11 @@
 "use client";
 
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, LogOut } from "lucide-react";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -54,18 +55,10 @@ export function NavUser() {
             <ThemeSwitcher />
 
             <DropdownMenuSeparator />
-            {/* <DropdownMenuItem
-              disabled={logoutMutation?.isPending}
-              className="cursor-pointer"
-              onClick={() => {
-                logoutMutation.mutate(undefined, {
-                  onSuccess: () => console.log(t("logoutSuccessfully")),
-                });
-              }}
-            >
+            <DropdownMenuItem className="cursor-pointer">
               <LogOut />
               {t("logout")}
-            </DropdownMenuItem> */}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

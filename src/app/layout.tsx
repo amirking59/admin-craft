@@ -1,5 +1,5 @@
 import { NotoSans } from "@/theme/_utils";
-import "./global.css";
+import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Suspense } from "react";
 import { Toaster } from "sonner";

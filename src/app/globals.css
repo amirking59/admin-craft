@@ -1,9 +1,8 @@
 a {
   text-decoration: none;
 }
-
-@import 'tailwindcss';
 @import 'tw-animate-css';
+@import 'tailwindcss';
 
 @custom-variant dark (&:is(.dark *));
 
