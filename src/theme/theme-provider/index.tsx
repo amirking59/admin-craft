@@ -25,7 +25,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <NextThemeProvider defaultTheme="light" enableSystem={false}>
-      <DirectionProvider dir={direction}>{children}</DirectionProvider>
+      <DirectionProvider key={"direction-provider"} dir={direction}>
+        {children}
+      </DirectionProvider>
     </NextThemeProvider>
   );
 }

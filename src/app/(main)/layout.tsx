@@ -3,19 +3,8 @@
 import { AppSidebar } from "@/app/(main)/_components/sidebar";
 import { AuthGuard } from "@/components/auth-guard";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { useEffect, useState } from "react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) {
-    return null;
-  }
-
   return (
     <AuthGuard>
       <SidebarProvider>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronsUpDown, DotIcon, LogOut } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -15,11 +15,11 @@ import { useTranslation } from "react-i18next";
 import { ThemeSwitcher } from "@/app/(main)/_components/sidebar/_components/nav-user/theme-switcher";
 import { LocaleSelect } from "@/app/(main)/_components/sidebar/_components/nav-user/locale-select";
 import { logout, useProfile } from "@/app/auth/_services";
-import { LocalStorage } from "@/utils/storage";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function NavUser() {
   const { t } = useTranslation();
-  const { isMobile } = useSidebar();
+  const { isMobile, state } = useSidebar();
   const { data: user } = useProfile();
 
   return (
@@ -31,6 +31,14 @@ export function NavUser() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
+              {state === "collapsed" && (
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarFallback className="rounded-lg">
+                    <ChevronsUpDown className="size-4" />
+                  </AvatarFallback>
+                </Avatar>
+              )}
+
               <div className="grid flex-1 text-start text-sm leading-tight">
                 <span className="truncate font-medium">
                   {user?.firstName} {user?.lastName}
