@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, FileSearch, LucideProps, CircleDollarSign, Wallet, ChartNoAxesCombined } from "lucide-react";
+import { ChevronRight, LucideProps } from "lucide-react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {

@@ -1,4 +1,4 @@
-import { LoginParams, LoginResponse } from "@/app/auth/_types";
+import { LoginParams, LoginResponse, ProfileResponse, User } from "@/app/auth/_types";
 import { baseApi } from "@/configs/axions";
 import { LocalStorage } from "@/utils/storage";
 import { useMutation } from "@tanstack/react-query";
@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { ProfileResponse, User } from "@/hooks/use-profile/types";
 
 export const useLogin = () => {
   const { t } = useTranslation("auth");
