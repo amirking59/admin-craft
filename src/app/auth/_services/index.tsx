@@ -21,7 +21,7 @@ export const useLogin = () => {
       searchParams.append("client_id", "webapp");
       searchParams.append("grant_type", "password");
 
-      const response = await baseApi.post<LoginResponse>("/api-backoffice/GetAgencyToken", searchParams, {
+      const response = await baseApi.post<LoginResponse>("/api/GetAgencyToken", searchParams, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
@@ -41,7 +41,7 @@ export const useProfile = () => {
   return useQuery({
     queryKey: ["profile"],
     queryFn: async (): Promise<User> => {
-      const response = await baseApi.get<ProfileResponse>("/api-backoffice/CurrentUser");
+      const response = await baseApi.get<ProfileResponse>("/api/CurrentUser");
 
       return response.data.data;
     },
