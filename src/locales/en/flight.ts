@@ -22,7 +22,7 @@ export const flight = {
     [FlightType.RoundTrip]: "Round Trip",
     [FlightType.MultiDestination]: "Multi Destination",
   },
-  aggregatedState: {
+  flightOrderAggregatedState: {
     [FlightOrderAggregatedState.Submit]: "Submitted",
     [FlightOrderAggregatedState.ReserveSucceed]: "Reserve Succeeded",
     [FlightOrderAggregatedState.ReserveInProgress]: "Reserve In Progress",

@@ -5,7 +5,7 @@ import React from "react";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData, TValue> {
-    label: string;
+    label?: string;
     tooltip?: string | ((context: CellContext<TData, TValue>) => React.ReactNode);
     editable?: {
       onSubmit: (value: string | number, context: CellContext<TData, TValue>) => void;

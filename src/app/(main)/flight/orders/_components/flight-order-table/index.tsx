@@ -20,17 +20,11 @@ export const FlightOrderTable = () => {
       header: t("orderId"),
       enableSorting: true,
       size: 100,
-      meta: {
-        label: "Order ID",
-      },
     },
     {
       accessorKey: "requestId",
       header: t("requestId"),
       size: 300,
-      meta: {
-        label: "Request ID",
-      },
     },
     {
       id: "customer",
@@ -44,7 +38,6 @@ export const FlightOrderTable = () => {
         );
       },
       meta: {
-        label: "Customer",
         tooltip: (context) => {
           const customer = context.row.original.customerInfo;
           return `${t("customerInfo")}: ${customer.firstName} ${customer.lastName} - ${t("email")}: ${customer.email} - ${t("phone")}: ${customer.phoneNumber}`;
@@ -66,21 +59,13 @@ export const FlightOrderTable = () => {
           </div>
         );
       },
-      meta: {
-        label: "Route",
-        tooltip: "Flight route showing departure and arrival cities",
-      },
     },
     {
-      accessorKey: "aggregatedState",
+      accessorKey: "flightAggregatedState",
       header: t("status"),
       cell: ({ row }) => {
-        const state = row.original.aggregatedState;
-        return <Badge variant="secondary">{t(`aggregatedState.${state}`)}</Badge>;
-      },
-      meta: {
-        label: "Status",
-        tooltip: "Current order status",
+        const state = row.original.flightAggregatedState;
+        return <Badge variant="secondary">{t(`flightOrderAggregatedState.${state}`)}</Badge>;
       },
     },
     {
@@ -98,10 +83,6 @@ export const FlightOrderTable = () => {
           </div>
         );
       },
-      meta: {
-        label: "Total Price",
-        tooltip: "Total price including base fare and additional charges",
-      },
     },
     {
       accessorKey: "departureDate",
@@ -110,9 +91,6 @@ export const FlightOrderTable = () => {
         return <div>{dayjs(row.original.departureDate).format("YYYY/MM/DD HH:mm")}</div>;
       },
       size: 150,
-      meta: {
-        label: "Departure",
-      },
     },
     {
       accessorKey: "createDate",
@@ -121,9 +99,6 @@ export const FlightOrderTable = () => {
         return <div>{dayjs(row.original.createDate).format("YYYY/MM/DD HH:mm")}</div>;
       },
       size: 150,
-      meta: {
-        label: "Created",
-      },
     },
     {
       id: "airline",
@@ -138,18 +113,11 @@ export const FlightOrderTable = () => {
           </div>
         );
       },
-      meta: {
-        label: "Airline",
-        tooltip: "Airline name and code",
-      },
     },
     {
       accessorKey: "flightTravelersCount",
       header: t("travelers"),
       size: 80,
-      meta: {
-        label: "Travelers",
-      },
     },
   ];
 

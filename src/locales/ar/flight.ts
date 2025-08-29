@@ -33,7 +33,7 @@ export const flight = {
   },
 
   // Flight Order Aggregated State enum translations
-  aggregatedState: {
+  flightOrderAggregatedState: {
     [FlightOrderAggregatedState.Submit]: "مرسل",
     [FlightOrderAggregatedState.ReserveSucceed]: "نجح الحجز",
     [FlightOrderAggregatedState.ReserveInProgress]: "الحجز قيد التنفيذ",

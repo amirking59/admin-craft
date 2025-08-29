@@ -13,7 +13,6 @@ import { Pagination } from "@/components/data-table/_components/pagination";
 import { DataTableViewOptions } from "@/components/data-table/_components/data-table-view-options";
 import { TableView } from "@/components/data-table/_components/table-view";
 import { TableProvider } from "@/components/data-table/_context/table";
-import { SortButton } from "@/components/data-table/_components/sort-button";
 import { TableViewType } from "@/components/data-table/_types";
 import { GridView } from "@/components/data-table/_components/grid-view";
 import { parseAsStringEnum, useQueryState } from "nuqs";
@@ -80,8 +79,6 @@ export function SimpleDataTable<TData, TValue>({
       <div>
         <DataTableActions title={title}>
           {actions}
-
-          <SortButton />
 
           <DataTableViewOptions />
 
