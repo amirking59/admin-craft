@@ -13,6 +13,7 @@ import { TextField } from "@/components/form/text-field";
 import { NumberField } from "@/components/form/number-field";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useTranslation } from "react-i18next";
+import { CurrencyField } from "@/components/form/currency-field";
 
 const formSchema = z.object({
   fromCurrency: z.string().min(1, "From currency is required"),
@@ -86,9 +87,9 @@ export const CurrencyRateForm = ({ prevData, onClose }: CurrencyRateFormProps) =
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-4">
-          <TextField name="fromCurrency" label={t("fromCurrency")} />
+          <CurrencyField name="fromCurrency" label={t("fromCurrency")} />
 
-          <TextField name="toCurrency" label={t("toCurrency")} />
+          <CurrencyField name="toCurrency" label={t("toCurrency")} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
