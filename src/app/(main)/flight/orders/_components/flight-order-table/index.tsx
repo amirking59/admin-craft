@@ -49,12 +49,21 @@ export const FlightOrderTable = () => {
       header: t("route"),
       cell: ({ row }) => {
         return (
-          <div className="text-sm">
-            <div className="font-medium">
-              {row.original.oCityName} → {row.original.dCityName}
+          <div dir="ltr" className="text-sm">
+            <div className="font-medium flex gap-1 items-center">
+              <div>{row.original.oCityName}</div>
+
+              <div>→</div>
+
+              <div> {row.original.dCityName}</div>
             </div>
-            <div className="text-muted-foreground">
-              {row.original.firstOrigin} → {row.original.firstDestination}
+
+            <div className="text-muted-foreground flex gap-1 items-center">
+              <div>{row.original.firstOrigin}</div>
+
+              <div>→</div>
+
+              <div> {row.original.firstDestination}</div>
             </div>
           </div>
         );
