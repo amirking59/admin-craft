@@ -11,7 +11,6 @@ import { Edit, Plus } from "lucide-react";
 import { DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TextField } from "@/components/form/text-field";
 import { NumberField } from "@/components/form/number-field";
-import { CheckboxField } from "@/components/form/checkbox-field";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useTranslation } from "react-i18next";
 
@@ -22,7 +21,6 @@ const formSchema = z.object({
   usdExchangeRate: z.number().positive("USD exchange rate must be positive"),
   productType: z.nativeEnum(ProductType),
   providerId: z.number().nullable(),
-  isActive: z.boolean(),
   providerName: z.string().optional(),
 });
 
@@ -45,7 +43,6 @@ export const CurrencyRateForm = ({ prevData, onClose }: CurrencyRateFormProps) =
       usdExchangeRate: prevData?.usdExchangeRate || 0,
       productType: prevData?.productType || ProductType.InternationalFlight,
       providerId: prevData?.providerId || null,
-      isActive: prevData?.isActive ?? true,
       providerName: prevData?.providerName || "",
     },
   });
@@ -108,8 +105,6 @@ export const CurrencyRateForm = ({ prevData, onClose }: CurrencyRateFormProps) =
         <NumberField name="providerId" label={t("providerId")} />
 
         <TextField name="providerName" label={t("providerName")} />
-
-        <CheckboxField name="isActive" label={t("isActive")} />
 
         <DialogFooter>
           <DialogClose asChild>
