@@ -21,7 +21,6 @@ src/locales/
 │   ├── [module-name].ts      # Module-specific translations
 │   └── zod.ts                # Form validation messages
 ├── ar/                       # Arabic translations (same structure)
-├── fa/                       # Persian translations (same structure)
 ```
 
 #### Module Locale File Template

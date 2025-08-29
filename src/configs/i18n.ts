@@ -4,14 +4,12 @@ import { zodI18nMap } from "zod-i18n-map";
 
 import { en } from "@/locales/en";
 import { ar } from "@/locales/ar";
-import { fa } from "@/locales/fa";
 import { z } from "zod";
 import { LocalStorage } from "@/utils/storage";
 
 const resources = {
   en,
   ar,
-  fa,
 };
 
 i18n.use(initReactI18next).init({

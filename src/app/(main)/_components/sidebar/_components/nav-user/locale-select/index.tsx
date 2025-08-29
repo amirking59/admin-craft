@@ -12,10 +12,6 @@ const locales: {
     label: "English",
   },
   {
-    code: "fa",
-    label: "فارسی",
-  },
-  {
     code: "ar",
     label: "عربی",
   },
