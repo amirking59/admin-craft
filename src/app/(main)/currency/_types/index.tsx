@@ -30,7 +30,7 @@ export interface CurrencyRate {
   toCurrency: string;
   currencyExchangeRate: number;
   usdExchangeRate: number;
-  productType: string;
+  productType: ProductType;
   providerId: number | null;
   currencyRateId: number;
   isActive: boolean;

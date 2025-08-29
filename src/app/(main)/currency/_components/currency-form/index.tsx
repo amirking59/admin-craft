@@ -11,7 +11,6 @@ import { Edit, Plus } from "lucide-react";
 import { DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TextField } from "@/components/form/text-field";
 import { NumberField } from "@/components/form/number-field";
-import { EnumField } from "@/components/form/enum-field";
 import { CheckboxField } from "@/components/form/checkbox-field";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useTranslation } from "react-i18next";
@@ -56,14 +55,7 @@ export const CurrencyForm = ({ prevData, onClose }: CurrencyFormProps) => {
       updateCurrencyRateMutation.mutate(
         {
           currencyRateId: prevData.currencyRateId,
-          fromCurrency: data.fromCurrency,
-          toCurrency: data.toCurrency,
-          currencyExchangeRate: data.currencyExchangeRate,
-          usdExchangeRate: data.usdExchangeRate,
-          productType: data.productType,
-          providerId: data.providerId ?? null,
-          isActive: data.isActive,
-          providerName: data.providerName,
+          ...data,
         },
         {
           onSuccess: () => {
@@ -74,14 +66,7 @@ export const CurrencyForm = ({ prevData, onClose }: CurrencyFormProps) => {
     } else {
       createCurrencyRateMutation.mutate(
         {
-          fromCurrency: data.fromCurrency,
-          toCurrency: data.toCurrency,
-          currencyExchangeRate: data.currencyExchangeRate,
-          usdExchangeRate: data.usdExchangeRate,
-          productType: data.productType,
-          providerId: data.providerId ?? null,
-          isActive: data.isActive,
-          providerName: data.providerName,
+          ...data,
         },
         {
           onSuccess: () => {
@@ -120,14 +105,6 @@ export const CurrencyForm = ({ prevData, onClose }: CurrencyFormProps) => {
             step={0.000001}
           />
         </div>
-
-        <EnumField
-          name="productType"
-          label={t("productType")}
-          placeholder={t("productTypePlaceholder")}
-          enumObject={ProductType}
-          getItemLabel={(value: string | number) => t(`productTypeEnum.${value}`)}
-        />
 
         <NumberField name="providerId" label={t("providerId")} placeholder={t("providerIdPlaceholder")} />
 

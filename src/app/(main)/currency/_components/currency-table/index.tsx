@@ -52,14 +52,6 @@ export const CurrencyTable = () => {
       size: 150,
     },
     {
-      accessorKey: "productType",
-      header: t("productType"),
-      cell: ({ row }) => {
-        return <Badge variant="secondary">{t(`productTypeEnum.${row.original.productType}`)}</Badge>;
-      },
-      size: 180,
-    },
-    {
       id: "provider",
       header: t("provider"),
       cell: ({ row }) => {

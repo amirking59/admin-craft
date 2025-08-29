@@ -47,7 +47,7 @@ export const common = {
   inactive: "غير نشط",
   deleteSuccess: "تم الحذف بنجاح",
   updateSuccess: "تم التحديث بنجاح",
-  createSuccess: "تمت الإضافة بنجاح",
+  addSuccess: "تم الإنشاء بنجاح",
   xMore: "+{{x}} أكثر",
   upload: {
     acceptedImageFormat: "يجب أن يكون تنسيق الملف jpg أو png أو jpeg.",
