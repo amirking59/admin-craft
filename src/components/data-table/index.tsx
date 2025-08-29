@@ -1,50 +1,40 @@
 "use client";
 
-import { ColumnDef, getCoreRowModel, SortingState, useReactTable } from "@tanstack/react-table";
+import { ColumnDef, ColumnFiltersState, getCoreRowModel, SortingState, useReactTable } from "@tanstack/react-table";
 
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { parseAsArrayOf, parseAsJson, parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
+import { useEffect, useState } from "react";
+import { parseAsJson, useQueryState } from "nuqs";
 import { z } from "zod";
-import { FilterDef, FilterOperator, TableViewType } from "@/components/data-table/_types";
+import { FilterDef } from "@/components/data-table/_types";
 import { DataTableActions } from "@/components/data-table/_components/data-table-actions";
 import { Pagination } from "@/components/data-table/_components/pagination";
 import { DataTableViewOptions } from "@/components/data-table/_components/data-table-view-options";
-import { LayoutGrid, RefreshCcw, TableProperties } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { QUERY_KEYS } from "@admin-panel/services/queries/keys";
 import { TableView } from "@/components/data-table/_components/table-view";
 import { TableProvider } from "@/components/data-table/_context/table";
-import { GlobalSearchField } from "@/components/data-table/_components/global-search-field";
 import { FiltersButton } from "@/components/data-table/_components/filters-button";
-import { GridView } from "@/components/data-table/_components/grid-view";
 import { SortButton } from "@/components/data-table/_components/sort-button";
-import { BaseService } from "@frontend-utils";
-import { baseQuery } from "@admin-panel/services/queries/baseQuery";
+import { isFilterValueEmpty } from "@/components/data-table/_utils";
 
 const sortSchema = z.object({
   pageIndex: z.number(),
   pageSize: z.number(),
 });
 
-export const filterSchema = z.object({
-  id: z.string(),
-  value: z.string(),
-});
-
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   filters?: FilterDef[];
-  queryKey: QUERY_KEYS;
-  service: new () => BaseService;
   initialSort?: SortingState[0];
   title?: string;
-  globalSearchFields?: string[];
   actions?: React.ReactNode[];
-  defaultViewType?: TableViewType;
-  queryFnAdditionalData?: object;
+  queryKey: string;
+  queryFn: ({ pageIndex, pageSize }: any) => Promise<{
+    items: TData[];
+    total: number;
+  }>;
   rowHeight?: number;
-  id?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -53,83 +43,58 @@ export function DataTable<TData, TValue>({
   initialSort,
   filters = [],
   title,
-  globalSearchFields = [],
   actions = [],
-  service,
-  defaultViewType = TableViewType.LIST,
-  queryFnAdditionalData = {},
+  queryFn,
   rowHeight = 61,
-  id,
 }: DataTableProps<TData, TValue>) {
-  filters = filters.map((filter) => ({
-    ...filter,
-    name: filter.name.replaceAll(".", "*"),
-  }));
-
-  const [viewType, setViewType] = useQueryState(
-    id ? `${id}-viewType` : "view",
-    parseAsStringEnum(Object.values(TableViewType)).withDefault(defaultViewType),
-  );
   const [pagination, setPagination] = useQueryState(
-    id ? `${id}-pagination` : "pagination",
+    "pagination",
     parseAsJson(sortSchema.parse).withDefault({
       pageIndex: 0,
       pageSize: 10,
     }),
   );
   const [sorting, setSorting] = useState<SortingState>(initialSort ? [initialSort] : []);
-  const [globalSearch, setGlobalSearch] = useQueryState(id ? `${id}-search` : "search", parseAsString.withDefault(""));
-  const [columnFilters, setColumnFilters] = useQueryState(
-    id ? `${id}-filters` : "filters",
-    parseAsArrayOf(parseAsJson(filterSchema.parse)).withDefault(
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
+    filters
+      .filter((filter) => filter.defaultValue !== undefined)
+      .map((filter) => ({
+        id: filter.name,
+        value: filter.defaultValue || "",
+      })),
+  );
+
+  useEffect(() => {
+    setColumnFilters(
       filters
         .filter((filter) => filter.defaultValue !== undefined)
         .map((filter) => ({
           id: filter.name,
-          value: filter.defaultValue ?? "",
+          value: filter.defaultValue || "",
         })),
-    ),
-  );
+    );
+  }, [filters, setColumnFilters]);
 
   const { data, isFetching, refetch } = useQuery({
-    queryKey: [queryKey, pagination, sorting, columnFilters, globalSearch],
+    queryKey: [queryKey, pagination, sorting, columnFilters],
     queryFn: async () => {
-      const queryFn = baseQuery.createService(service)?.[queryKey];
+      const formattedFilters = columnFilters.reduce(
+        (acc, filter) => {
+          const { id, value } = filter;
 
-      const response = await queryFn?.({
-        limit: pagination.pageSize,
-        skip: pagination.pageIndex * pagination.pageSize,
-        sort: sorting.map((sort) => ({
-          field: sort.id,
-          operator: sort.desc ? "des" : "asc",
-        })),
-        query: [
-          ...columnFilters
-            .filter((filter) => filter.value)
-            .map((filter) => {
-              const filterDef = filters.find((f) => f.name === filter.id);
+          if (!isFilterValueEmpty(value)) {
+            acc[id] = value as string | string[];
+          }
 
-              if (!filterDef) {
-                throw new Error(`Filter definition not found for ${filter.id}`);
-              }
+          return acc;
+        },
+        {} as Record<string, string | string[]>,
+      );
 
-              return {
-                value: filterDef.transformValue ? filterDef.transformValue(filter.value) : filter.value,
-                field: filter.id.replaceAll("*", "."),
-                operator: filterDef.operator,
-              };
-            }),
-          ...(globalSearchFields.length > 0 && globalSearch
-            ? [
-                {
-                  field: globalSearchFields,
-                  operator: FilterOperator.Like,
-                  value: globalSearch,
-                },
-              ]
-            : []),
-        ],
-        ...queryFnAdditionalData,
+      const response = await queryFn({
+        ...pagination,
+        sort: sorting[0]?.desc ? `-${sorting[0]?.id}` : sorting[0]?.id,
+        ...formattedFilters,
       });
 
       if (response.items.length === 0 && pagination.pageIndex > 0) {
@@ -161,16 +126,25 @@ export function DataTable<TData, TValue>({
       pagination,
       sorting,
       columnFilters,
-      globalSearch,
       filters,
+    },
+    initialState: {
+      columnVisibility: columns.reduce(
+        (acc, column) => {
+          if (column.meta?.initialHidden && column.id) {
+            acc[column.id] = false;
+          }
+          return acc;
+        },
+        {} as Record<string, boolean>,
+      ),
     },
     onStateChange: (updater) => {
       const newState = typeof updater === "function" ? updater(table.getState()) : updater;
 
       setPagination(newState.pagination);
       setSorting(newState.sorting);
-      setColumnFilters(newState.columnFilters as z.infer<typeof filterSchema>[]);
-      setGlobalSearch(newState.globalSearch || "");
+      setColumnFilters(newState.columnFilters);
     },
     defaultColumn: {
       enableSorting: false,
@@ -179,38 +153,25 @@ export function DataTable<TData, TValue>({
 
   return (
     <TableProvider table={table}>
-      <DataTableActions title={title}>
-        {actions}
+      <div>
+        <DataTableActions title={title}>
+          {actions}
 
-        <GlobalSearchField globalSearchFields={globalSearchFields} />
+          <FiltersButton />
 
-        <FiltersButton />
+          <SortButton />
 
-        {viewType === TableViewType.GRID && <SortButton />}
+          <DataTableViewOptions />
 
-        <DataTableViewOptions />
+          <Button onClick={() => refetch({ cancelRefetch: false })} size={"icon"} variant="outline">
+            <RefreshCcw />
+          </Button>
+        </DataTableActions>
 
-        <Button
-          onClick={() => setViewType((prev) => (prev === TableViewType.GRID ? TableViewType.LIST : TableViewType.GRID))}
-          size={"icon"}
-          variant="outline"
-        >
-          {viewType === TableViewType.GRID && <TableProperties />}
-          {viewType === TableViewType.LIST && <LayoutGrid />}
-        </Button>
-
-        <Button onClick={() => refetch({ cancelRefetch: false })} size={"icon"} variant="outline">
-          <RefreshCcw />
-        </Button>
-      </DataTableActions>
-
-      {viewType === TableViewType.LIST ? (
         <TableView rowHeight={rowHeight} isLoading={isFetching} />
-      ) : (
-        <GridView isLoading={isFetching} />
-      )}
 
-      <Pagination />
+        <Pagination />
+      </div>
     </TableProvider>
   );
 }

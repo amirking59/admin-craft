@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, LucideProps } from "lucide-react";
+import { ChevronRight, LucideProps, Plane } from "lucide-react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -34,7 +34,20 @@ interface NavItem {
   }[];
 }
 
-export const navItems: NavItem[] = [];
+export const navItems: NavItem[] = [
+  {
+    icon: Plane,
+    namespace: "flight",
+    title: "flight",
+    subItems: [
+      {
+        namespace: "orders",
+        title: "orders",
+        route: "/flight/orders",
+      },
+    ],
+  },
+];
 
 export function NavMain() {
   const { t } = useTranslation();

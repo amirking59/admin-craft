@@ -13,6 +13,7 @@ declare module "@tanstack/react-table" {
       input?: React.ReactNode;
       loading?: boolean;
     };
+    initialHidden?: boolean;
   }
 
   interface TableState {

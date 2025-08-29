@@ -60,6 +60,15 @@ export function SimpleDataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     initialState: {
       sorting: initialSort ? [initialSort] : undefined,
+      columnVisibility: columns.reduce(
+        (acc, column) => {
+          if (column.meta?.initialHidden && column.id) {
+            acc[column.id] = false;
+          }
+          return acc;
+        },
+        {} as Record<string, boolean>,
+      ),
     },
     defaultColumn: {
       enableSorting: false,

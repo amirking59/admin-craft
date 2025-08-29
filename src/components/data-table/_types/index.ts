@@ -34,3 +34,8 @@ export type FilterDef = {
   transformValue?: (value: string) => number | boolean | string[] | number[];
   onValueChange?: (form: UseFormReturn<Record<string, string>, any, Record<string, string>>) => void;
 };
+
+export type TableQueryFnResponse<T> = Promise<{
+  items: T[];
+  total: number;
+}>;

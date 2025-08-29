@@ -2,7 +2,125 @@
 
 ## Project Overview
 
-**Admin Craft Frontend** is a Next.js-based admin panel. This is a React application using TypeScript that provides administrative interfaces for managing game content including packages, soldiers, skins, VIP levels, orders, missions, maps, items, rewards, users, admin functions, and servers.
+**Admin Craft Frontend** is a Next.js-based admin panel. This is a React application us### Cross-module Dependencies\*\*: Import types from other modules when needed (e.g., importing Package type in Orders module)
+
+### Internationalization (i18n)
+
+The application supports multi-language functionality using react-i18next. Each module should have its own locale namespace:
+
+#### Locale File Structure
+
+Each module should have its own locale files following this pattern:
+
+```
+src/locales/
+├── en/
+│   ├── index.ts              # Main export file
+│   ├── common.ts             # Shared translations
+│   ├── auth.ts               # Authentication module
+│   ├── [module-name].ts      # Module-specific translations
+│   └── zod.ts                # Form validation messages
+├── ar/                       # Arabic translations (same structure)
+├── fa/                       # Persian translations (same structure)
+```
+
+#### Module Locale File Template
+
+Create a locale file for each module at `src/locales/[language]/[module-name].ts`:
+
+#### Locale Integration Steps
+
+1. **Create Module Locale File**: Add `[module-name].ts` to all language directories
+2. **Update Main Locale Index**: Add module import to `src/locales/[language]/index.ts`
+3. **Register Namespace**: Add namespace to i18n configuration if needed
+4. **Use in Components**: Import and use `useTranslation` hook with namespace
+
+#### Translation Usage Patterns
+
+```typescript
+import { useTranslation } from "react-i18next";
+
+function ModuleComponent() {
+  const { t } = useTranslation("module-name");
+
+  return (
+    <div>
+      <h1>{t("title")}</h1>
+      <span>{t("table.columnName")}</span>
+      <Tooltip content={t("tooltips.columnInfo")}>
+        <Info className="h-4 w-4" />
+      </Tooltip>
+    </div>
+  );
+}
+```
+
+#### Table Column Tooltips
+
+For table columns with additional information, use the built-in `meta.tooltip` property in column definitions:
+
+```typescript
+const columns: ColumnDef<DataType>[] = [
+  {
+    accessorKey: "fieldName",
+    header: () => {
+      const { t } = useTranslation("module-name");
+      return t("table.columnName");
+    },
+    meta: {
+      label: "Column Name", // Used for view options and filters
+      tooltip: "Additional details about this data", // Tooltip for cell content
+    },
+  },
+  // For dynamic tooltips based on cell data
+  {
+    accessorKey: "status",
+    header: () => {
+      const { t } = useTranslation("module-name");
+      return t("table.status");
+    },
+    meta: {
+      label: "Status",
+      tooltip: (context) => {
+        const { t } = useTranslation("module-name");
+        return t("tooltips.statusInfo", { status: context.getValue() });
+      },
+    },
+  },
+];
+```
+
+For header tooltips, wrap the header content with Tooltip component:
+
+```typescript
+import { Info } from "lucide-react";
+
+const columns: ColumnDef<DataType>[] = [
+  {
+    accessorKey: "fieldName",
+    header: () => {
+      const { t } = useTranslation("module-name");
+      return (
+          <span>{t("table.columnName")}</span>
+      );
+    },
+    meta: {
+      label: "Column Name",
+      tooltip: "Cell-level tooltip information", // For cell content
+    },
+  },
+];
+```
+
+#### Locale File Maintenance
+
+- **Complete Coverage**: Ensure all text content is translated, including tooltips
+- **Generic Patterns**: Use generic naming patterns that can be applied across modules
+- **Consistent Structure**: Follow the same structure across all module locale files
+- **Tooltip Integration**: Include tooltip translations for complex data or actions
+- **Cross-Reference**: Maintain consistency in similar terminology across modules
+
+### File Organization TypeScript that provides administrative interfaces for managing game content including packages, soldiers, skins, VIP levels, orders, missions, maps, items, rewards, users, admin functions, and servers.
 
 **Tech Stack**: Next.js 15.3.0, React 19, TypeScript, Tailwind CSS v4, shadcn/ui components **Runtime**: Node.js v22.18.0, Yarn v1.22.22 **Architecture**: App Router with server components, authentication middleware, API integration
 
@@ -98,6 +216,7 @@ hooks/                       # Custom React hooks
 - **Icons**: lucide-react
 - **Notifications**: sonner for toast messages
 - **Authentication**: cookies-next for token management
+- **Internationalization**: react-i18next for multi-language support
 
 ### Authentication Flow
 
@@ -154,6 +273,8 @@ The application provides a comprehensive set of form field components in `compon
 - **Form Layout**:
   - Use Card wrapper for standalone forms (full pages)
   - Do NOT use Card wrapper when forms are inside dialogs
+- **Internationalization**: Use `useTranslation` hook with module-specific namespaces for all text content
+- **Table Column Tooltips**: Use `Tooltip` component with Info icon for columns that need additional explanation
 - **Cross-module Dependencies**: Import types from other modules when needed (e.g., importing Package type in Orders module)
 
 ### File Organization
@@ -194,17 +315,21 @@ feature-name/
 2. **API Services**: Place all API calls and React Query hooks in the module's `_services/index.ts`
 3. **Type Definitions**: Define all interfaces and enums in the module's `_types/index.ts`
 4. **Component Organization**: Keep feature-specific components in the module's `_components/` directory
-5. **Form Field Usage**: Leverage the comprehensive form field components for consistent UI:
+5. **Internationalization**: Create module-specific locale files and use `useTranslation` with namespace
+6. **Form Field Usage**: Leverage the comprehensive form field components for consistent UI:
    - Use `csv-field` for bulk data import features
    - Use `json-field` for configuration file uploads
    - Use `date-time-field` for scheduling and timing features
    - Use `image-field` for asset uploads (icons, avatars, etc.)
    - Use appropriate field types to maintain UI consistency
-6. **Dialog and Form Patterns**:
+7. **Dialog and Form Patterns**:
    - Use `dialog-button` component for create forms and modal actions
    - Do NOT wrap forms with Card components when they are inside dialogs
    - Only use Card wrapper for standalone forms on dedicated pages
-7. **Import Patterns**:
+8. **Table Column Design**:
+   - Use `meta.tooltip` property in column definitions for cell-level tooltips
+   - Use `meta.label` for column identification in view options and filters
+9. **Import Patterns**:
    - Import from local module: `@/app/(panel)/current-module/_services`
    - Import from other modules: `@/app/(panel)/other-module/_types`
    - Import shared utilities: `@/components`, `@/lib`, `@/hooks`
