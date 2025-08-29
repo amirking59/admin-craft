@@ -16,6 +16,7 @@ import { ThemeSwitcher } from "@/app/(main)/_components/sidebar/_components/nav-
 import { LocaleSelect } from "@/app/(main)/_components/sidebar/_components/nav-user/locale-select";
 import { logout, useProfile } from "@/app/auth/_services";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function NavUser() {
   const { t } = useTranslation();
@@ -40,9 +41,13 @@ export function NavUser() {
               )}
 
               <div className="grid flex-1 text-start text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {user?.firstName} {user?.lastName}
-                </span>
+                {!user ? (
+                  <Skeleton className="h-[17.5px] w-36" />
+                ) : (
+                  <span className="truncate font-medium">
+                    {user?.firstName} {user?.lastName}
+                  </span>
+                )}
               </div>
 
               <ChevronsUpDown className="ml-auto size-4" />
