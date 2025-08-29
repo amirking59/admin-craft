@@ -77,4 +77,6 @@ export const flight = {
   pnr: "رقم الحجز",
   airlinePnr: "رقم حجز شركة الطيران",
   providerPnr: "رقم حجز مقدم الخدمة",
+  phone: "الهاتف",
+  email: "البريد الإلكتروني",
 };

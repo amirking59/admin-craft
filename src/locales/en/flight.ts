@@ -1,14 +1,9 @@
 import { FlightType, FlightOrderAggregatedState } from "@/app/(main)/flight/orders/_types";
 
 export const flight = {
-  // Navigation
   flight: "Flight",
   orders: "Orders",
-
-  // Main content
   title: "Flight Orders",
-
-  // Table column headers
   orderId: "Order ID",
   requestId: "Request ID",
   customer: "Customer",
@@ -20,19 +15,13 @@ export const flight = {
   created: "Created",
   airline: "Airline",
   travelers: "Travelers",
-
-  // Customer info tooltips
   customerInfo: "Customer Information",
   noCustomerInfo: "No customer information available",
-
-  // Flight Type enum translations
   flightType: {
     [FlightType.OneWay]: "One Way",
     [FlightType.RoundTrip]: "Round Trip",
     [FlightType.MultiDestination]: "Multi Destination",
   },
-
-  // Flight Order Aggregated State enum translations
   aggregatedState: {
     [FlightOrderAggregatedState.Submit]: "Submitted",
     [FlightOrderAggregatedState.ReserveSucceed]: "Reserve Succeeded",
@@ -58,8 +47,6 @@ export const flight = {
     [FlightOrderAggregatedState.AdminOfflineIssue]: "Admin Offline Issue",
     [FlightOrderAggregatedState.BeforeReservePriceChange]: "Before Reserve Price Change",
   },
-
-  // Additional terms
   priceBreakdown: "Price Breakdown",
   baseFare: "Base Fare",
   taxes: "Taxes",
@@ -77,4 +64,6 @@ export const flight = {
   pnr: "PNR",
   airlinePnr: "Airline PNR",
   providerPnr: "Provider PNR",
+  phone: "Phone",
+  email: "Email",
 };

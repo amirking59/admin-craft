@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { TableView } from "@/components/data-table/_components/table-view";
 import { TableProvider } from "@/components/data-table/_context/table";
 import { FiltersButton } from "@/components/data-table/_components/filters-button";
-import { SortButton } from "@/components/data-table/_components/sort-button";
 import { isFilterValueEmpty } from "@/components/data-table/_utils";
 
 const sortSchema = z.object({
@@ -158,8 +157,6 @@ export function DataTable<TData, TValue>({
           {actions}
 
           <FiltersButton />
-
-          <SortButton />
 
           <DataTableViewOptions />
 

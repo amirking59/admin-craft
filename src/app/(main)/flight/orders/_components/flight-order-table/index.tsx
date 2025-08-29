@@ -27,7 +27,7 @@ export const FlightOrderTable = () => {
     {
       accessorKey: "requestId",
       header: t("requestId"),
-      size: 150,
+      size: 300,
       meta: {
         label: "Request ID",
       },
@@ -40,24 +40,15 @@ export const FlightOrderTable = () => {
         return (
           <div className="flex items-center gap-2">
             <div>{customer ? `${customer.firstName} ${customer.lastName}` : "-"}</div>
-            <Info
-              onClick={() => {
-                if (customer) {
-                  toast(
-                    `${t("customerInfo")}: ${customer.firstName} ${customer.lastName}\nEmail: ${customer.email}\nPhone: ${customer.phoneNumber}`,
-                  );
-                } else {
-                  toast(t("noCustomerInfo"));
-                }
-              }}
-              className="h-4 w-4 text-muted-foreground cursor-pointer"
-            />
           </div>
         );
       },
       meta: {
         label: "Customer",
-        tooltip: "Customer information including name, email and phone number",
+        tooltip: (context) => {
+          const customer = context.row.original.customerInfo;
+          return `${t("customerInfo")}: ${customer.firstName} ${customer.lastName} - ${t("email")}: ${customer.email} - ${t("phone")}: ${customer.phoneNumber}`;
+        },
       },
     },
     {
