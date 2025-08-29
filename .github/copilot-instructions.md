@@ -46,8 +46,8 @@ function ModuleComponent() {
   return (
     <div>
       <h1>{t("title")}</h1>
-      <span>{t("table.columnName")}</span>
-      <Tooltip content={t("tooltips.columnInfo")}>
+      <span>{t("columnName")}</span>
+      <Tooltip content={t("columnInfo")}>
         <Info className="h-4 w-4" />
       </Tooltip>
     </div>
@@ -65,7 +65,7 @@ const columns: ColumnDef<DataType>[] = [
     accessorKey: "fieldName",
     header: () => {
       const { t } = useTranslation("module-name");
-      return t("table.columnName");
+      return t("columnName");
     },
     meta: {
       label: "Column Name", // Used for view options and filters
@@ -77,13 +77,13 @@ const columns: ColumnDef<DataType>[] = [
     accessorKey: "status",
     header: () => {
       const { t } = useTranslation("module-name");
-      return t("table.status");
+      return t("status");
     },
     meta: {
       label: "Status",
       tooltip: (context) => {
         const { t } = useTranslation("module-name");
-        return t("tooltips.statusInfo", { status: context.getValue() });
+        return t("statusInfo", { status: context.getValue() });
       },
     },
   },
@@ -101,7 +101,7 @@ const columns: ColumnDef<DataType>[] = [
     header: () => {
       const { t } = useTranslation("module-name");
       return (
-          <span>{t("table.columnName")}</span>
+          <span>{t("columnName")}</span>
       );
     },
     meta: {
@@ -274,7 +274,6 @@ The application provides a comprehensive set of form field components in `compon
   - Use Card wrapper for standalone forms (full pages)
   - Do NOT use Card wrapper when forms are inside dialogs
 - **Internationalization**: Use `useTranslation` hook with module-specific namespaces for all text content
-- **Table Column Tooltips**: Use `Tooltip` component with Info icon for columns that need additional explanation
 - **Cross-module Dependencies**: Import types from other modules when needed (e.g., importing Package type in Orders module)
 
 ### File Organization
@@ -327,6 +326,7 @@ feature-name/
    - Do NOT wrap forms with Card components when they are inside dialogs
    - Only use Card wrapper for standalone forms on dedicated pages
 8. **Table Column Design**:
+   - Only use `meta.tooltip` not Tooltip Component
    - Use `meta.tooltip` property in column definitions for cell-level tooltips
    - Use `meta.label` for column identification in view options and filters
 9. **Import Patterns**:
