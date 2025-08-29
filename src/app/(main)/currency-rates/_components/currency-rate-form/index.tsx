@@ -80,8 +80,8 @@ export const CurrencyRateForm = ({ prevData, onClose }: CurrencyRateFormProps) =
         <DialogHeader>
           <DialogTitle>
             {!!prevData
-              ? t("updateItem", { item: t("currency"), ns: "common" })
-              : t("addItem", { item: t("currency"), ns: "common" })}
+              ? t("updateItem", { item: t("currencyRate"), ns: "common" })
+              : t("addItem", { item: t("currencyRate"), ns: "common" })}
           </DialogTitle>
         </DialogHeader>
 
