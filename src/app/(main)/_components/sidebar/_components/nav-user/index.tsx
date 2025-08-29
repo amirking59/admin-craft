@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown, DotIcon, LogOut } from "lucide-react";
+import { ChevronsUpDown, EllipsisVertical, LogOut } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -34,7 +34,7 @@ export function NavUser() {
               {state === "collapsed" && (
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarFallback className="rounded-lg">
-                    <ChevronsUpDown className="size-4" />
+                    <EllipsisVertical className="size-4" />
                   </AvatarFallback>
                 </Avatar>
               )}
