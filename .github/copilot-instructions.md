@@ -55,6 +55,72 @@ function ModuleComponent() {
 }
 ```
 
+#### Enum Translations
+
+When a module contains enums that need to be displayed to users, add enum translations to the locale file. Create a nested object with the enum name as the key and map each enum value to its translation:
+
+```typescript
+// In module locale file: src/locales/[language]/[module-name].ts
+export default {
+  title: "Module Title",
+  columnName: "Column Name",
+  
+  // Enum translations
+  bankAccountGroup: {
+    [BankAccountGroup.CARD_TO_CARD_TRANSFER]: 'Card to Card Transfer',
+    [BankAccountGroup.IBAN_TRANSFER]: 'IBAN Transfer',
+    [BankAccountGroup.MANUAL_DEPOSIT]: 'Manual Deposit',
+  },
+  
+  flightType: {
+    [FlightType.OneWay]: 'One Way',
+    [FlightType.RoundTrip]: 'Round Trip',
+    [FlightType.MultiDestination]: 'Multi Destination',
+  },
+  
+  status: {
+    [Status.ACTIVE]: 'Active',
+    [Status.INACTIVE]: 'Inactive',
+    [Status.PENDING]: 'Pending',
+  },
+};
+```
+
+**Usage in components:**
+
+```typescript
+import { useTranslation } from "react-i18next";
+import { BankAccountGroup } from "../_types";
+
+function BankAccountComponent({ group }: { group: BankAccountGroup }) {
+  const { t } = useTranslation("bank-accounts");
+
+  return (
+    <span>{t(`bankAccountGroup.${group}`)}</span>
+  );
+}
+```
+
+**For table columns with enum values:**
+
+```typescript
+{
+  accessorKey: "group",
+  header: () => {
+    const { t } = useTranslation("bank-accounts");
+    return t("group");
+  },
+  cell: ({ getValue }) => {
+    const { t } = useTranslation("bank-accounts");
+    const value = getValue() as BankAccountGroup;
+    return t(`bankAccountGroup.${value}`);
+  },
+  meta: {
+    label: "Group",
+  },
+},
+```
+
 #### Table Column Tooltips
 
 For table columns with additional information, use the built-in `meta.tooltip` property in column definitions:
@@ -114,10 +180,11 @@ const columns: ColumnDef<DataType>[] = [
 
 #### Locale File Maintenance
 
-- **Complete Coverage**: Ensure all text content is translated, including tooltips
+- **Complete Coverage**: Ensure all text content is translated, including tooltips and enum values
 - **Generic Patterns**: Use generic naming patterns that can be applied across modules
 - **Consistent Structure**: Follow the same structure across all module locale files
 - **Tooltip Integration**: Include tooltip translations for complex data or actions
+- **Enum Integration**: Include nested objects for enum translations when modules contain enums
 - **Cross-Reference**: Maintain consistency in similar terminology across modules
 
 ### File Organization TypeScript that provides administrative interfaces for managing game content including packages, soldiers, skins, VIP levels, orders, missions, maps, items, rewards, users, admin functions, and servers.

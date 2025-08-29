@@ -10,6 +10,12 @@ export interface GetFlightOrdersResponse {
   };
 }
 
+export enum FlightType {
+  OneWay = "OneWay",
+  RoundTrip = "RoundTrip",
+  MultiDestination = "MultiDestination",
+}
+
 export interface FlightOrder {
   total: number;
   orderId: number;
@@ -36,8 +42,8 @@ export interface FlightOrder {
   hasReIssuedItem: false;
   hasRefundedItem: false;
   notesCount: number;
-  flightAggregatedState: "Submit";
-  aggregatedState: "Submit";
+  flightAggregatedState: FlightOrderAggregatedState;
+  aggregatedState: FlightOrderAggregatedState;
   productTotalFare: number;
   productTotalBaseFare: number;
   productTotalCommission: number;
@@ -59,7 +65,7 @@ export interface FlightOrder {
   departureDate: string;
   cabinType: string;
   flightType: string;
-  productType: "InternationalFlight";
+  // productType: "InternationalFlight";
   offlinePayMethod: null;
   providerPnr: null;
   airlinePnr: null;
@@ -86,7 +92,7 @@ export interface FlightOrder {
   dCityNameTr: string;
   firstDepartureDate: string;
   firstDepartureArrivalDate: string;
-  firstFlightType: "RoundTrip";
+  firstFlightType: FlightType;
   channel: string;
   priceInfo_TotalDiscountOfCommissionAmount: number;
   priceInfo_TotalBusinessCommissionAmount: number;
@@ -100,4 +106,32 @@ export interface FlightOrder {
     lastName: string;
     email: string;
   };
+}
+
+export enum FlightOrderAggregatedState {
+  Submit = "Submit",
+
+  ReserveSucceed = "ReserveSucceed",
+  ReserveInProgress = "ReserveInProgress",
+  ReserveFail = "ReserveFail",
+  RequestedForOfflinePayment = "RequestedForOfflinePayment",
+  PaymentSucceed = "PaymentSucceed",
+  PaymentInProgress = "PaymentInProgress",
+  PaymentFail = "PaymentFail",
+  PaymentAmountInvalid = "PaymentAmountInvalid",
+  FinalizationSucceeded = "FinalizationSucceeded",
+  IssueSucceed = "IssueSucceed",
+  ManualOrderIssue = "ManualOrderIssue",
+  IssueInProgress = "IssueInProgress",
+  IssueFail = "IssueFail",
+  IssueOfflineRequire = "IssueOfflineRequire",
+
+  RefundSucceed = "RefundSucceed",
+  RefundInProgress = "RefundInProgress",
+  RefundFail = "RefundFail",
+  ReIssueSucceed = "ReIssueSucceed",
+  ReIssueInProgress = "ReIssueInProgress",
+  ReIssueFail = "ReIssueFail",
+  AdminOfflineIssue = "AdminOfflineIssue",
+  BeforeReservePriceChange = "BeforeReservePriceChange",
 }
