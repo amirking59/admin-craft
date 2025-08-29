@@ -1,7 +1,7 @@
 import { auth } from "@/locales/ar/auth";
 import { common } from "@/locales/ar/common";
 import { flight } from "@/locales/ar/flight";
-import { currency } from "@/locales/ar/currency";
+import { currencyRate } from "@/locales/ar/currencyRate";
 import { zod } from "@/locales/ar/zod";
 
 export const ar = {
@@ -9,5 +9,5 @@ export const ar = {
   common,
   auth,
   flight,
-  currency,
+  currencyRate,
 };

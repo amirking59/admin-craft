@@ -2,17 +2,17 @@
 
 import { DataTable } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
-import { getCurrencyRates } from "@/app/(main)/currency/_services";
+import { getCurrencyRates } from "@/app/(main)/currency-rates/_services";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit, Plus } from "lucide-react";
 import { formatNumber } from "@/utils/number";
-import { CurrencyRate } from "@/app/(main)/currency/_types";
+import { CurrencyRate } from "@/app/(main)/currency-rates/_types";
 import { useTranslation } from "react-i18next";
 import { DialogButton } from "@/components/dialog-button";
-import { CurrencyForm } from "@/app/(main)/currency/_components/currency-form";
+import { CurrencyRateForm } from "@/app/(main)/currency-rates/_components/currency-rate-form";
 
-export const CurrencyTable = () => {
-  const { t } = useTranslation("currency");
+export const CurrencyRateTable = () => {
+  const { t } = useTranslation("currencyRate");
 
   const columns: ColumnDef<CurrencyRate>[] = [
     {
@@ -39,7 +39,7 @@ export const CurrencyTable = () => {
       accessorKey: "currencyExchangeRate",
       header: t("currencyExchangeRate"),
       cell: ({ row }) => {
-        return <div className="text-right font-mono">{formatNumber(row.original.currencyExchangeRate, 6)}</div>;
+        return <div>{formatNumber(row.original.currencyExchangeRate, 6)}</div>;
       },
       size: 150,
     },
@@ -47,7 +47,7 @@ export const CurrencyTable = () => {
       accessorKey: "usdExchangeRate",
       header: t("usdExchangeRate"),
       cell: ({ row }) => {
-        return <div className="text-right font-mono">{formatNumber(row.original.usdExchangeRate, 6)}</div>;
+        return <div>{formatNumber(row.original.usdExchangeRate, 6)}</div>;
       },
       size: 150,
     },
@@ -91,7 +91,12 @@ export const CurrencyTable = () => {
 
         return (
           <div className="flex items-center gap-2">
-            <DialogButton size="icon" variant="ghost" icon={Edit} content={<CurrencyForm prevData={currencyRate} />} />
+            <DialogButton
+              size="icon"
+              variant="ghost"
+              icon={Edit}
+              content={<CurrencyRateForm prevData={currencyRate} />}
+            />
           </div>
         );
       },
@@ -105,13 +110,14 @@ export const CurrencyTable = () => {
       queryFn={getCurrencyRates}
       columns={columns}
       filters={[]}
+      title={t("currencyRates")}
       actions={[
         <DialogButton
           key="createCurrencyRate"
           variant="outline"
           icon={Plus}
-          title={t("addItem", { item: t("currency"), ns: "common" })}
-          content={<CurrencyForm />}
+          title={t("addItem", { item: t("currencyRate"), ns: "common" })}
+          content={<CurrencyRateForm />}
         />,
       ]}
       initialSort={{

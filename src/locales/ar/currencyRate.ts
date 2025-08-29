@@ -1,7 +1,6 @@
-export const currency = {
-  currency: "سعر العملة",
-  rates: "الأسعار",
-  title: "أسعار العملات",
+export const currencyRate = {
+  currencyRate: "سعر العملة",
+  currencyRates: "أسعار العملات",
   currencyRateId: "معرف السعر",
   currencyPair: "زوج العملة",
   fromCurrency: "من العملة",

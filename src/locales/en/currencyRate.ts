@@ -1,7 +1,7 @@
-export const currency = {
-  currency: "Currency Rate",
-  rates: "Rates",
-  title: "Currency Rates",
+export const currencyRate = {
+  currencyRate: "Currency Rate",
+  currencyRates: "Currency Rates",
+  title: "Currency",
   currencyRateId: "Rate ID",
   currencyPair: "Currency Pair",
   fromCurrency: "From Currency",

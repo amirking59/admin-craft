@@ -49,9 +49,9 @@ export const navItems: NavItem[] = [
   },
   {
     icon: DollarSign,
-    namespace: "currency",
-    title: "currency",
-    route: "/currency",
+    namespace: "currencyRate",
+    title: "currencyRate",
+    route: "/currency-rates",
   },
 ];
 

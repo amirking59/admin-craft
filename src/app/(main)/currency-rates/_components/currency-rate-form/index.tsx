@@ -5,8 +5,8 @@ import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CurrencyRate, ProductType } from "@/app/(main)/currency/_types";
-import { useCreateCurrencyRate, useUpdateCurrencyRate } from "@/app/(main)/currency/_services";
+import { CurrencyRate, ProductType } from "@/app/(main)/currency-rates/_types";
+import { useCreateCurrencyRate, useUpdateCurrencyRate } from "@/app/(main)/currency-rates/_services";
 import { Edit, Plus } from "lucide-react";
 import { DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TextField } from "@/components/form/text-field";
@@ -26,13 +26,13 @@ const formSchema = z.object({
   providerName: z.string().optional(),
 });
 
-interface CurrencyFormProps {
+interface CurrencyRateFormProps {
   prevData?: CurrencyRate;
   onClose?: () => void;
 }
 
-export const CurrencyForm = ({ prevData, onClose }: CurrencyFormProps) => {
-  const { t } = useTranslation("currency");
+export const CurrencyRateForm = ({ prevData, onClose }: CurrencyRateFormProps) => {
+  const { t } = useTranslation("currencyRate");
   const createCurrencyRateMutation = useCreateCurrencyRate();
   const updateCurrencyRateMutation = useUpdateCurrencyRate();
 
@@ -95,9 +95,14 @@ export const CurrencyForm = ({ prevData, onClose }: CurrencyFormProps) => {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <NumberField name="currencyExchangeRate" label={t("currencyExchangeRate")} step={0.000001} />
+          <NumberField
+            thousandSeparator
+            name="currencyExchangeRate"
+            label={t("currencyExchangeRate")}
+            step={0.000001}
+          />
 
-          <NumberField name="usdExchangeRate" label={t("usdExchangeRate")} step={0.000001} />
+          <NumberField thousandSeparator name="usdExchangeRate" label={t("usdExchangeRate")} step={0.000001} />
         </div>
 
         <NumberField name="providerId" label={t("providerId")} />

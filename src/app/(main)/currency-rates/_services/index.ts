@@ -3,7 +3,7 @@ import {
   GetCurrencyRatesResponse,
   CreateCurrencyRateParams,
   UpdateCurrencyRateParams,
-} from "@/app/(main)/currency/_types";
+} from "@/app/(main)/currency-rates/_types";
 import { TableQueryFnResponse } from "@/components/data-table/_types";
 import { baseApi } from "@/configs/axions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
