@@ -43,7 +43,7 @@ export const CurrencyForm = ({ prevData, onClose }: CurrencyFormProps) => {
       toCurrency: prevData?.toCurrency || "",
       currencyExchangeRate: prevData?.currencyExchangeRate || 0,
       usdExchangeRate: prevData?.usdExchangeRate || 0,
-      productType: ProductType.InternationalFlight,
+      productType: prevData?.productType || ProductType.InternationalFlight,
       providerId: prevData?.providerId || null,
       isActive: prevData?.isActive ?? true,
       providerName: prevData?.providerName || "",
@@ -81,52 +81,46 @@ export const CurrencyForm = ({ prevData, onClose }: CurrencyFormProps) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <DialogHeader>
-          <DialogTitle>{!!prevData ? t("editCurrencyRate") : t("createCurrencyRate")}</DialogTitle>
+          <DialogTitle>
+            {!!prevData
+              ? t("updateItem", { item: t("currency"), ns: "common" })
+              : t("addItem", { item: t("currency"), ns: "common" })}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-4">
-          <TextField name="fromCurrency" label={t("fromCurrency")} placeholder={t("fromCurrencyPlaceholder")} />
+          <TextField name="fromCurrency" label={t("fromCurrency")} />
 
-          <TextField name="toCurrency" label={t("toCurrency")} placeholder={t("toCurrencyPlaceholder")} />
+          <TextField name="toCurrency" label={t("toCurrency")} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <NumberField
-            name="currencyExchangeRate"
-            label={t("currencyExchangeRate")}
-            placeholder={t("currencyExchangeRatePlaceholder")}
-            step={0.000001}
-          />
+          <NumberField name="currencyExchangeRate" label={t("currencyExchangeRate")} step={0.000001} />
 
-          <NumberField
-            name="usdExchangeRate"
-            label={t("usdExchangeRate")}
-            placeholder={t("usdExchangeRatePlaceholder")}
-            step={0.000001}
-          />
+          <NumberField name="usdExchangeRate" label={t("usdExchangeRate")} step={0.000001} />
         </div>
 
-        <NumberField name="providerId" label={t("providerId")} placeholder={t("providerIdPlaceholder")} />
+        <NumberField name="providerId" label={t("providerId")} />
 
-        <TextField name="providerName" label={t("providerName")} placeholder={t("providerNamePlaceholder")} />
+        <TextField name="providerName" label={t("providerName")} />
 
         <CheckboxField name="isActive" label={t("isActive")} />
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">{t("cancel")}</Button>
+            <Button variant="outline">{t("cancel", { ns: "common" })}</Button>
           </DialogClose>
 
           <Button loading={createCurrencyRateMutation.isPending || updateCurrencyRateMutation.isPending} type="submit">
             {prevData ? (
               <>
                 <Edit />
-                {t("editCurrencyRate")}
+                {t("update", { ns: "common" })}
               </>
             ) : (
               <>
                 <Plus />
-                {t("createCurrencyRate")}
+                {t("add", { ns: "common" })}
               </>
             )}
           </Button>

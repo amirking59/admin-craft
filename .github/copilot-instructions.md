@@ -423,11 +423,17 @@ The application provides a comprehensive set of form field components in `compon
   - `image-field` - Image upload with preview
   - `csv-field` - CSV file upload and parsing
   - `json-field` - JSON file upload with validation
-- **Tables**: Use `data-table` component for lists with pagination
-- **Dialogs**: Use `dialog-button` for modal actions and create forms
-- **Form Layout**:
+- **Form and Dialog Patterns**:
+  - Use `dialog-button` for modal actions and create forms
+  - For form titles: Use `t("addItem", { item: t("entityName"), ns: "common" })` for create and `t("updateItem", { item: t("entityName"), ns: "common" })` for edit
+  - For action buttons: Use `t("add", { ns: "common" })` for create and `t("update", { ns: "common" })` for edit
+  - For cancel buttons: Use `t("cancel", { ns: "common" })`
+  - For toast messages: Use `t("createSuccess", { ns: "common" })`, `t("updateSuccess", { ns: "common" })`, `t("deleteSuccess", { ns: "common" })` from common locale
+  - **Always translate toast messages** - never use hardcoded English strings
+  - **Field placeholders**: Form fields can handle empty placeholders automatically, only provide when specifically needed
   - Use Card wrapper for standalone forms (full pages)
   - Do NOT use Card wrapper when forms are inside dialogs
+- **Tables**: Use `data-table` component for lists with pagination
 - **Internationalization**: Use `useTranslation` hook with module-specific namespaces for all text content
 - **Cross-module Dependencies**: Import types from other modules when needed (e.g., importing Package type in Orders module)
 

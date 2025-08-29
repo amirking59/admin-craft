@@ -110,7 +110,7 @@ export const CurrencyTable = () => {
           key="createCurrencyRate"
           variant="outline"
           icon={Plus}
-          title={t("createCurrencyRate")}
+          title={t("addItem", { item: t("currency"), ns: "common" })}
           content={<CurrencyForm />}
         />,
       ]}
