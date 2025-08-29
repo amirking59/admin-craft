@@ -64,24 +64,24 @@ When a module contains enums that need to be displayed to users, add enum transl
 export default {
   title: "Module Title",
   columnName: "Column Name",
-  
+
   // Enum translations
   bankAccountGroup: {
-    [BankAccountGroup.CARD_TO_CARD_TRANSFER]: 'Card to Card Transfer',
-    [BankAccountGroup.IBAN_TRANSFER]: 'IBAN Transfer',
-    [BankAccountGroup.MANUAL_DEPOSIT]: 'Manual Deposit',
+    [BankAccountGroup.CARD_TO_CARD_TRANSFER]: "Card to Card Transfer",
+    [BankAccountGroup.IBAN_TRANSFER]: "IBAN Transfer",
+    [BankAccountGroup.MANUAL_DEPOSIT]: "Manual Deposit",
   },
-  
+
   flightType: {
-    [FlightType.OneWay]: 'One Way',
-    [FlightType.RoundTrip]: 'Round Trip',
-    [FlightType.MultiDestination]: 'Multi Destination',
+    [FlightType.OneWay]: "One Way",
+    [FlightType.RoundTrip]: "Round Trip",
+    [FlightType.MultiDestination]: "Multi Destination",
   },
-  
+
   status: {
-    [Status.ACTIVE]: 'Active',
-    [Status.INACTIVE]: 'Inactive',
-    [Status.PENDING]: 'Pending',
+    [Status.ACTIVE]: "Active",
+    [Status.INACTIVE]: "Inactive",
+    [Status.PENDING]: "Pending",
   },
 };
 ```

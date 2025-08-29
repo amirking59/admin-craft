@@ -7,123 +7,161 @@ import { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { Info } from "lucide-react";
 import { toast } from "sonner";
-import { convertCase } from "@/utils/string";
 import { formatNumber } from "@/utils/number";
 import { FlightOrder } from "@/app/(main)/flight/orders/_types";
-
-const columns: ColumnDef<FlightOrder>[] = [
-  {
-    accessorKey: "orderId",
-    header: "Order ID",
-    enableSorting: true,
-    size: 100,
-  },
-  {
-    accessorKey: "requestId",
-    header: "Request ID",
-    size: 150,
-  },
-  {
-    id: "customer",
-    header: "Customer",
-    cell: ({ row }) => {
-      const customer = row.original.customerInfo;
-      return (
-        <div className="flex items-center gap-2">
-          <div>{customer ? `${customer.firstName} ${customer.lastName}` : "-"}</div>
-          <Info
-            onClick={() => {
-              if (customer) {
-                toast(
-                  `Customer: ${customer.firstName} ${customer.lastName}\nEmail: ${customer.email}\nPhone: ${customer.phoneNumber}`,
-                );
-              } else {
-                toast("No customer information available");
-              }
-            }}
-            className="h-4 w-4 text-muted-foreground cursor-pointer"
-          />
-        </div>
-      );
-    },
-  },
-  {
-    id: "route",
-    header: "Route",
-    cell: ({ row }) => {
-      return (
-        <div className="text-sm">
-          <div className="font-medium">
-            {row.original.oCityName} → {row.original.dCityName}
-          </div>
-          <div className="text-muted-foreground">
-            {row.original.firstOrigin} → {row.original.firstDestination}
-          </div>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "aggregatedState",
-    header: "Status",
-    cell: ({ row }) => {
-      return <Badge variant="secondary">{convertCase(row.original.aggregatedState, "title")}</Badge>;
-    },
-  },
-  {
-    id: "price",
-    header: "Total Price",
-    cell: ({ row }) => {
-      return (
-        <div>
-          <div className="font-medium">
-            {formatNumber(row.original.totalPrice, 2)} {row.original.currencyCode}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Base: {formatNumber(row.original.productTotalBaseFare, 2)}
-          </div>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "departureDate",
-    header: "Departure",
-    cell: ({ row }) => {
-      return <div>{dayjs(row.original.departureDate).format("YYYY/MM/DD HH:mm")}</div>;
-    },
-    size: 150,
-  },
-  {
-    accessorKey: "createDate",
-    header: "Created",
-    cell: ({ row }) => {
-      return <div>{dayjs(row.original.createDate).format("YYYY/MM/DD HH:mm")}</div>;
-    },
-    size: 150,
-  },
-  {
-    id: "airline",
-    header: "Airline",
-    cell: ({ row }) => {
-      return (
-        <div className="flex items-center gap-2">
-          <div>
-            <div className="font-medium">{row.original.airlineName}</div>
-            <div className="text-xs text-muted-foreground">{row.original.airlineCode}</div>
-          </div>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "flightTravelersCount",
-    header: "Travelers",
-    size: 80,
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export const FlightOrderTable = () => {
+  const { t } = useTranslation("flights");
+
+  const columns: ColumnDef<FlightOrder>[] = [
+    {
+      accessorKey: "orderId",
+      header: t("orderId"),
+      enableSorting: true,
+      size: 100,
+      meta: {
+        label: "Order ID",
+      },
+    },
+    {
+      accessorKey: "requestId",
+      header: t("requestId"),
+      size: 150,
+      meta: {
+        label: "Request ID",
+      },
+    },
+    {
+      id: "customer",
+      header: t("customer"),
+      cell: ({ row }) => {
+        const customer = row.original.customerInfo;
+        return (
+          <div className="flex items-center gap-2">
+            <div>{customer ? `${customer.firstName} ${customer.lastName}` : "-"}</div>
+            <Info
+              onClick={() => {
+                if (customer) {
+                  toast(
+                    `${t("customerInfo")}: ${customer.firstName} ${customer.lastName}\nEmail: ${customer.email}\nPhone: ${customer.phoneNumber}`,
+                  );
+                } else {
+                  toast(t("noCustomerInfo"));
+                }
+              }}
+              className="h-4 w-4 text-muted-foreground cursor-pointer"
+            />
+          </div>
+        );
+      },
+      meta: {
+        label: "Customer",
+        tooltip: "Customer information including name, email and phone number",
+      },
+    },
+    {
+      id: "route",
+      header: t("route"),
+      cell: ({ row }) => {
+        return (
+          <div className="text-sm">
+            <div className="font-medium">
+              {row.original.oCityName} → {row.original.dCityName}
+            </div>
+            <div className="text-muted-foreground">
+              {row.original.firstOrigin} → {row.original.firstDestination}
+            </div>
+          </div>
+        );
+      },
+      meta: {
+        label: "Route",
+        tooltip: "Flight route showing departure and arrival cities",
+      },
+    },
+    {
+      accessorKey: "aggregatedState",
+      header: t("status"),
+      cell: ({ row }) => {
+        const state = row.original.aggregatedState;
+        return <Badge variant="secondary">{t(`aggregatedState.${state}`)}</Badge>;
+      },
+      meta: {
+        label: "Status",
+        tooltip: "Current order status",
+      },
+    },
+    {
+      id: "price",
+      header: t("totalPrice"),
+      cell: ({ row }) => {
+        return (
+          <div>
+            <div className="font-medium">
+              {formatNumber(row.original.totalPrice, 2)} {row.original.currencyCode}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {t("basePrice")}: {formatNumber(row.original.productTotalBaseFare, 2)}
+            </div>
+          </div>
+        );
+      },
+      meta: {
+        label: "Total Price",
+        tooltip: "Total price including base fare and additional charges",
+      },
+    },
+    {
+      accessorKey: "departureDate",
+      header: t("departure"),
+      cell: ({ row }) => {
+        return <div>{dayjs(row.original.departureDate).format("YYYY/MM/DD HH:mm")}</div>;
+      },
+      size: 150,
+      meta: {
+        label: "Departure",
+      },
+    },
+    {
+      accessorKey: "createDate",
+      header: t("created"),
+      cell: ({ row }) => {
+        return <div>{dayjs(row.original.createDate).format("YYYY/MM/DD HH:mm")}</div>;
+      },
+      size: 150,
+      meta: {
+        label: "Created",
+      },
+    },
+    {
+      id: "airline",
+      header: t("airline"),
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center gap-2">
+            <div>
+              <div className="font-medium">{row.original.airlineName}</div>
+              <div className="text-xs text-muted-foreground">{row.original.airlineCode}</div>
+            </div>
+          </div>
+        );
+      },
+      meta: {
+        label: "Airline",
+        tooltip: "Airline name and code",
+      },
+    },
+    {
+      accessorKey: "flightTravelersCount",
+      header: t("travelers"),
+      size: 80,
+      meta: {
+        label: "Travelers",
+      },
+    },
+  ];
+
   return (
     <DataTable
       queryKey="orders"
