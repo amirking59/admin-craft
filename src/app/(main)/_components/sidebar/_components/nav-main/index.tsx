@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, LucideProps, Plane } from "lucide-react";
+import { ChevronRight, LucideProps, Plane, DollarSign } from "lucide-react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -46,6 +46,12 @@ export const navItems: NavItem[] = [
         route: "/flight/orders",
       },
     ],
+  },
+  {
+    icon: DollarSign,
+    namespace: "currency",
+    title: "currency",
+    route: "/currency",
   },
 ];
 

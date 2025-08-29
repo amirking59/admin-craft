@@ -4,7 +4,8 @@ import { baseApi } from "@/configs/axions";
 
 export const getFlightOrders = async (params: GetFlightOrdersParams): TableQueryFnResponse<FlightOrder> => {
   const response = await baseApi.post<GetFlightOrdersResponse>("/orders/FlightOrder/GetAll", {
-    params,
+    take: params.take,
+    skip: params.skip,
   });
 
   return {

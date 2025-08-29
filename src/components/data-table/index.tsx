@@ -29,7 +29,7 @@ interface DataTableProps<TData, TValue> {
   title?: string;
   actions?: React.ReactNode[];
   queryKey: string;
-  queryFn: ({ pageIndex, pageSize }: any) => Promise<{
+  queryFn: (params: any) => Promise<{
     items: TData[];
     total: number;
   }>;
@@ -91,7 +91,8 @@ export function DataTable<TData, TValue>({
       );
 
       const response = await queryFn({
-        ...pagination,
+        take: pagination.pageSize,
+        skip: pagination.pageIndex * pagination.pageSize,
         sort: sorting[0]?.desc ? `-${sorting[0]?.id}` : sorting[0]?.id,
         ...formattedFilters,
       });
