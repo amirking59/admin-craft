@@ -9,7 +9,6 @@ import { CurrencyRate, ProductType } from "@/app/(main)/currency-rates/_types";
 import { useCreateCurrencyRate, useUpdateCurrencyRate } from "@/app/(main)/currency-rates/_services";
 import { Edit, Plus } from "lucide-react";
 import { DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { TextField } from "@/components/form/text-field";
 import { NumberField } from "@/components/form/number-field";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useTranslation } from "react-i18next";
@@ -102,10 +101,6 @@ export const CurrencyRateForm = ({ prevData, onClose }: CurrencyRateFormProps) =
 
           <NumberField thousandSeparator name="usdExchangeRate" label={t("usdExchangeRate")} step={0.000001} />
         </div>
-
-        <NumberField name="providerId" label={t("providerId")} />
-
-        <TextField name="providerName" label={t("providerName")} />
 
         <DialogFooter>
           <DialogClose asChild>

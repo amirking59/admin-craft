@@ -10,6 +10,8 @@ import { CurrencyRate } from "@/app/(main)/currency-rates/_types";
 import { useTranslation } from "react-i18next";
 import { DialogButton } from "@/components/dialog-button";
 import { CurrencyRateForm } from "@/app/(main)/currency-rates/_components/currency-rate-form";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const CurrencyRateTable = () => {
   const { t } = useTranslation("currencyRate");
@@ -55,14 +57,11 @@ export const CurrencyRateTable = () => {
       id: "provider",
       header: t("provider"),
       cell: ({ row }) => {
-        const { providerName, providerId } = row.original;
+        const { providerName } = row.original;
         return (
           <div>
             {providerName ? (
-              <div>
-                <div className="font-medium">{providerName}</div>
-                {providerId && <div className="text-xs text-muted-foreground">ID: {providerId}</div>}
-              </div>
+              <div className="font-medium">{providerName}</div>
             ) : (
               <span className="text-muted-foreground">{t("noProvider")}</span>
             )}
@@ -124,7 +123,7 @@ export const CurrencyRateTable = () => {
         desc: true,
         id: "currencyRateId",
       }}
-      rowHeight={65}
+      rowHeight={61}
     />
   );
 };

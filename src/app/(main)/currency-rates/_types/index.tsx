@@ -33,7 +33,7 @@ export interface CurrencyRate {
   productType: ProductType;
   providerId: number | null;
   currencyRateId: number;
-  isActive?: boolean;
+  isActive: boolean;
   providerName: string | null;
 }
 
@@ -43,7 +43,7 @@ export interface CreateCurrencyRateParams {
   currencyExchangeRate: number;
   usdExchangeRate: number;
   productType: ProductType;
-  providerId: number | null;
+  providerId?: number | null;
   isActive?: boolean;
   providerName?: string | null;
 }
