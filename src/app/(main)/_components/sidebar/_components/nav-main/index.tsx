@@ -41,7 +41,7 @@ export const navItems: NavItem[] = [
     title: "flight",
     subItems: [
       {
-        namespace: "orders",
+        namespace: "flight",
         title: "orders",
         route: "/flight/orders",
       },

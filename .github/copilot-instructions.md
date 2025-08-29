@@ -37,11 +37,14 @@ Create a locale file for each module at `src/locales/[language]/[module-name].ts
 
 #### Translation Usage Patterns
 
+**For module components**, use the parent module name as the namespace:
+
 ```typescript
 import { useTranslation } from "react-i18next";
 
-function ModuleComponent() {
-  const { t } = useTranslation("module-name");
+function FlightOrdersComponent() {
+  // Use the parent module name "flight" as namespace, not "flight-orders"
+  const { t } = useTranslation("flight");
 
   return (
     <div>
@@ -53,6 +56,16 @@ function ModuleComponent() {
     </div>
   );
 }
+```
+
+**For navigation items**, use namespace and key pattern:
+
+```typescript
+// In navigation component
+const { t } = useTranslation();
+
+// For main module: t("flight", { ns: "flight" })
+// For sub-module: t("orders", { ns: "flight" })
 ```
 
 #### Enum Translations
@@ -93,7 +106,7 @@ import { useTranslation } from "react-i18next";
 import { BankAccountGroup } from "../_types";
 
 function BankAccountComponent({ group }: { group: BankAccountGroup }) {
-  const { t } = useTranslation("bank-accounts");
+  const { t } = useTranslation("bank-accounts"); // Use module name as namespace
 
   return (
     <span>{t(`bankAccountGroup.${group}`)}</span>
@@ -107,11 +120,11 @@ function BankAccountComponent({ group }: { group: BankAccountGroup }) {
 {
   accessorKey: "group",
   header: () => {
-    const { t } = useTranslation("bank-accounts");
+    const { t } = useTranslation("bank-accounts"); // Use module name as namespace
     return t("group");
   },
   cell: ({ getValue }) => {
-    const { t } = useTranslation("bank-accounts");
+    const { t } = useTranslation("bank-accounts"); // Use module name as namespace
     const value = getValue() as BankAccountGroup;
     return t(`bankAccountGroup.${value}`);
   },
@@ -130,7 +143,7 @@ const columns: ColumnDef<DataType>[] = [
   {
     accessorKey: "fieldName",
     header: () => {
-      const { t } = useTranslation("module-name");
+      const { t } = useTranslation("module-name"); // Use module name as namespace
       return t("columnName");
     },
     meta: {
@@ -142,7 +155,7 @@ const columns: ColumnDef<DataType>[] = [
   {
     accessorKey: "status",
     header: () => {
-      const { t } = useTranslation("module-name");
+      const { t } = useTranslation("module-name"); // Use module name as namespace
       return t("status");
     },
     meta: {
@@ -165,7 +178,7 @@ const columns: ColumnDef<DataType>[] = [
   {
     accessorKey: "fieldName",
     header: () => {
-      const { t } = useTranslation("module-name");
+      const { t } = useTranslation("module-name"); // Use module name as namespace
       return (
           <span>{t("columnName")}</span>
       );
@@ -186,6 +199,90 @@ const columns: ColumnDef<DataType>[] = [
 - **Tooltip Integration**: Include tooltip translations for complex data or actions
 - **Enum Integration**: Include nested objects for enum translations when modules contain enums
 - **Cross-Reference**: Maintain consistency in similar terminology across modules
+
+#### Navigation Structure
+
+The main navigation uses a hierarchical structure with modules and sub-pages. Navigation items are configured in the `nav-main` component:
+
+**Navigation Configuration Pattern:**
+
+```typescript
+// In src/app/(main)/_components/sidebar/_components/nav-main/index.tsx
+interface NavItem {
+  title: string; // Translation key for the module title
+  namespace: string; // Translation namespace (same as module name)
+  icon: Icon; // Lucide icon component
+  route?: string; // Direct route for single-page modules
+  subItems?: {
+    // Sub-pages within the module
+    namespace: string; // Translation namespace for sub-page
+    icon?: Icon; // Optional icon for sub-page
+    title: string; // Translation key for sub-page title
+    route: string; // Route path for sub-page
+  }[];
+}
+
+export const navItems: NavItem[] = [
+  {
+    icon: Plane,
+    namespace: "flight", // Uses "flight" namespace for translations
+    title: "flight", // Translation key: t("flight", { ns: "flight" })
+    subItems: [
+      {
+        namespace: "flight", // Sub-pages use parent module namespace
+        title: "orders", // Translation key: t("orders", { ns: "flight" })
+        route: "/flight/orders",
+      },
+      {
+        namespace: "flight",
+        title: "bookings",
+        route: "/flight/bookings",
+      },
+    ],
+  },
+  {
+    icon: Package,
+    namespace: "packages",
+    title: "packages",
+    route: "/packages", // Single route for simple modules
+  },
+];
+```
+
+**Adding New Navigation Items:**
+
+1. **For new modules with sub-pages:**
+
+   ```typescript
+   {
+     icon: YourIcon,
+     namespace: "module-name",
+     title: "module-name",
+     subItems: [
+       {
+         namespace: "module-name", // Use parent module namespace
+         title: "sub-page-key",
+         route: "/module-name/sub-page",
+       },
+     ],
+   }
+   ```
+
+2. **For simple single-page modules:**
+   ```typescript
+   {
+     icon: YourIcon,
+     namespace: "module-name",
+     title: "module-name",
+     route: "/module-name",
+   }
+   ```
+
+**Translation Integration:**
+
+- Main module titles use: `t("module-name", { ns: "module-name" })`
+- Sub-page titles use: `t("sub-page-key", { ns: "module-name" })`
+- Ensure corresponding translations exist in locale files for each language
 
 ### File Organization TypeScript that provides administrative interfaces for managing game content including packages, soldiers, skins, VIP levels, orders, missions, maps, items, rewards, users, admin functions, and servers.
 
@@ -226,20 +323,12 @@ yarn start
 ### Directory Structure
 
 ```
-app/                          # Next.js App Router
-├── (panel)/                  # Protected admin panel routes
-│   ├── _components/app-sidebar/ # Main navigation sidebar
-│   ├── packages/             # Package management module
-│   │   ├── page.tsx          # Main packages page
-│   │   ├── _components/      # Package-specific components
-│   │   ├── _services/        # Package API hooks and functions
-│   │   ├── _types/           # Package TypeScript interfaces
-│   │   ├── create/           # Create package page if needed
-│   │   └── edit/[id]/        # Edit package page if needed
-├── auth/                     # Authentication pages
-├── _components/providers/    # App-wide providers (theme, query client)
-├── globals.css              # Tailwind CSS + custom variables
-├── layout.tsx               # Root layout with Inter font
+
+```
+
+app/ # Next.js App Router ├── (main)/ # Protected admin panel routes │ ├── \_components/sidebar/ # Main navigation sidebar │ ├── flight/ # Flight management module │ │ ├── orders/ # Flight orders sub-module │ │ │ ├── page.tsx # Main flight orders page │ │ │ ├── \_components/ # Flight orders specific components │ │ │ ├── \_services/ # Flight orders API hooks and functions │ │ │ └── \_types/ # Flight orders TypeScript interfaces │ │ └── page.tsx # Main flight module page (if needed) │ ├── packages/ # Package management module │ │ ├── page.tsx # Main packages page │ │ ├── \_components/ # Package-specific components │ │ ├── \_services/ # Package API hooks and functions │ │ ├── \_types/ # Package TypeScript interfaces │ │ ├── create/ # Create package page if needed │ │ └── edit/[id]/ # Edit package page if needed ├── auth/ # Authentication pages ├── \_components/providers/ # App-wide providers (theme, query client) ├── globals.css # Tailwind CSS + custom variables ├── layout.tsx # Root layout with Inter font
+
+```
 
 components/                   # Reusable UI components
 ├── ui/                      # shadcn/ui components
@@ -345,14 +434,14 @@ The application provides a comprehensive set of form field components in `compon
 
 ### File Organization
 
-- **Modular Feature Organization**: Each feature has its own folder under `app/(panel)/[feature]/` with:
+- **Modular Feature Organization**: Each feature has its own folder under `app/(main)/[feature]/` with:
   - `_services/index.ts` - API functions and React Query hooks specific to this feature
   - `_types/index.ts` - TypeScript interfaces and enums specific to this feature
   - `_components/` - Components specific to this feature
   - `page.tsx` - Main feature page
   - `create/` and `edit/[id]/` subdirectories for CRUD operations (when applicable)
 - **Shared Components**: Reusable components in `components/`
-- **Cross-module Imports**: Modules can import types from other modules using relative paths like `@/app/(panel)/[other-module]/_types`
+- **Cross-module Imports**: Modules can import types from other modules using relative paths like `@/app/(main)/[other-module]/_types`
 
 ### Module Architecture Standards
 
@@ -397,8 +486,8 @@ feature-name/
    - Use `meta.tooltip` property in column definitions for cell-level tooltips
    - Use `meta.label` for column identification in view options and filters
 9. **Import Patterns**:
-   - Import from local module: `@/app/(panel)/current-module/_services`
-   - Import from other modules: `@/app/(panel)/other-module/_types`
+   - Import from local module: `@/app/(main)/current-module/_services`
+   - Import from other modules: `@/app/(main)/other-module/_types`
    - Import shared utilities: `@/components`, `@/lib`, `@/hooks`
 
 **IMPORTANT**: Trust these instructions. Only search the codebase if the information here is incomplete or appears incorrect. The build process, dependency management, and architectural patterns described here have been validated and should be followed as documented.

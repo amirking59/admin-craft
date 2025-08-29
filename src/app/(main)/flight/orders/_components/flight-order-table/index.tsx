@@ -12,7 +12,7 @@ import { FlightOrder } from "@/app/(main)/flight/orders/_types";
 import { useTranslation } from "react-i18next";
 
 export const FlightOrderTable = () => {
-  const { t } = useTranslation("flights");
+  const { t } = useTranslation("flight");
 
   const columns: ColumnDef<FlightOrder>[] = [
     {

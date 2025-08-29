@@ -1,6 +1,11 @@
 import { FlightType, FlightOrderAggregatedState } from "@/app/(main)/flight/orders/_types";
 
-export const flights = {
+export const flight = {
+  // Navigation
+  flight: "الطيران",
+  orders: "الطلبات",
+
+  // Main content
   title: "طلبات الطيران",
 
   // Table column headers
