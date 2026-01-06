@@ -1,10 +1,8 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import { zodI18nMap } from "zod-i18n-map";
 
 import { en } from "@/locales/en";
 import { ar } from "@/locales/ar";
-import { z } from "zod";
 import { LocalStorage } from "@/utils/storage";
 
 const resources = {
@@ -25,5 +23,3 @@ i18n.use(initReactI18next).init({
 i18n.services.formatter?.add("lowercase", (value) => {
   return value.toLowerCase();
 });
-
-z.setErrorMap(zodI18nMap);

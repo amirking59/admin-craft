@@ -29,7 +29,7 @@ interface DataTableProps<TData, TValue> {
   title?: string;
   actions?: React.ReactNode[];
   queryKey: string;
-  queryFn: (params: any) => Promise<{
+  queryFn: (params: unknown) => Promise<{
     items: TData[];
     total: number;
   }>;
