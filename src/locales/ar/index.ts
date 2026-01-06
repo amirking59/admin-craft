@@ -1,12 +1,10 @@
 import { auth } from "@/locales/ar/auth";
-import { common } from "@/locales/ar/common";
+import { base } from "@/locales/ar/base";
 import { flight } from "@/locales/ar/flight";
 import { currencyRate } from "@/locales/ar/currencyRate";
-import { zod } from "@/locales/ar/zod";
 
 export const ar = {
-  zod,
-  common,
+  base,
   auth,
   flight,
   currencyRate,

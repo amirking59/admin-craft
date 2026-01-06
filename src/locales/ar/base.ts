@@ -1,4 +1,4 @@
-export const common = {
+export const base = {
   appName: "ادمین کرفت",
   dark: "مظلم",
   light: "فاتح",

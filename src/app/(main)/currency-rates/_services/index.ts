@@ -5,7 +5,7 @@ import {
   UpdateCurrencyRateParams,
 } from "@/app/(main)/currency-rates/_types";
 import { TableQueryFnResponse } from "@/components/data-table/_types";
-import { baseApi } from "@/configs/axions";
+import { baseApi } from "@/configs/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";

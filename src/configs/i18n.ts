@@ -12,8 +12,8 @@ const resources = {
 
 i18n.use(initReactI18next).init({
   resources,
-  ns: ["common"],
-  defaultNS: "common",
+  ns: ["base"],
+  defaultNS: "base",
   lng: LocalStorage.getItem("locale") || "en",
   interpolation: {
     escapeValue: false,
