@@ -2,8 +2,7 @@ import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/form/text-field";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { Form } from "@/components/ui/form";
+import { FormProvider, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useLogin } from "@/app/auth/_services";
 
@@ -30,7 +29,7 @@ export function LoginForm() {
   }
 
   return (
-    <Form {...form}>
+    <FormProvider {...form}>
       <form className="flex flex-col gap-6" onSubmit={form.handleSubmit(onSubmit, (errors) => console.error(errors))}>
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="text-2xl font-bold">{t("loginTitle")}</h1>
@@ -46,6 +45,6 @@ export function LoginForm() {
           </Button>
         </div>
       </form>
-    </Form>
+    </FormProvider>
   );
 }

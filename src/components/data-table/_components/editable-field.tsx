@@ -1,7 +1,6 @@
-import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cloneElement, RefObject, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useOnClickOutside } from "usehooks-ts";
 import { TextField } from "@/components/form/text-field";
@@ -66,7 +65,7 @@ export function EditableField<TData, TValue>({ children, cell }: editableFieldPr
   }
 
   return (
-    <Form {...form}>
+    <FormProvider {...form}>
       <form
         className="flex gap-2 items-center w-fit"
         ref={formRef}
@@ -84,6 +83,6 @@ export function EditableField<TData, TValue>({ children, cell }: editableFieldPr
           },
         )}
       </form>
-    </Form>
+    </FormProvider>
   );
 }

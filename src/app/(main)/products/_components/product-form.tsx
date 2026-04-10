@@ -1,9 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Product, ProductCategory } from "@/app/(main)/products/_types";
 import { useCreateProduct, useUpdateProduct } from "@/app/(main)/products/_services";
@@ -55,7 +54,7 @@ export const ProductForm = ({ prevData, onClose }: ProductFormProps) => {
   };
 
   return (
-    <Form {...form}>
+    <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <DialogHeader>
           <DialogTitle>
@@ -102,6 +101,6 @@ export const ProductForm = ({ prevData, onClose }: ProductFormProps) => {
           </Button>
         </DialogFooter>
       </form>
-    </Form>
+    </FormProvider>
   );
 };

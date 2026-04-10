@@ -1,9 +1,8 @@
 import { useTableContext } from "@/components/data-table/_context/table";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
 import React, { cloneElement } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { FormProvider, useForm, UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 interface FiltersFormProps {
@@ -54,7 +53,7 @@ export function FiltersForm({ onClose }: FiltersFormProps) {
   }
 
   return (
-    <Form {...form}>
+    <FormProvider {...form}>
       <form className="flex flex-col gap-4" onSubmit={form.handleSubmit(onSubmit)}>
         <DialogHeader>
           <DialogTitle>{t("table.filters")}</DialogTitle>
@@ -99,6 +98,6 @@ export function FiltersForm({ onClose }: FiltersFormProps) {
           <Button type="submit">{t("submit")}</Button>
         </DialogFooter>
       </form>
-    </Form>
+    </FormProvider>
   );
 }
