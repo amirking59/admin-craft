@@ -2,7 +2,7 @@ import { useTableContext } from "@/components/data-table/_context/table";
 import { TextField } from "@/components/form/text-field";
 import { Form } from "@/components/ui/form";
 import { useIsMobile } from "@/hooks/use-is-mobile";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";

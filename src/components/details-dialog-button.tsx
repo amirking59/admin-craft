@@ -1,7 +1,6 @@
 import { DialogButton, DialogButtonProps } from "@/components/dialog-button";
-import { DialogHeader } from "@/components/ui/dialog";
+import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DialogTitle } from "@radix-ui/react-dialog";
 
 interface DetailsDialogButtonProps {
   items: (

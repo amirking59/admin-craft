@@ -2,7 +2,7 @@ import React, { ReactElement, ReactNode, useState } from "react";
 import { ButtonProps, Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { LucideIcon } from "lucide-react";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/utils";
 
 export interface DialogButtonProps extends Omit<ButtonProps, "onClick" | "content"> {
   title?: string;

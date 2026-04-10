@@ -3,7 +3,7 @@
 import { ThemeProvider as NextThemeProvider } from "next-themes";
 import { useLocale } from "@/hooks/use-locale";
 import { useEffect } from "react";
-import { DirectionProvider } from "@radix-ui/react-direction";
+import { DirectionProvider } from "@base-ui/react";
 import { LocalStorage } from "@/utils/storage";
 import { useDirection } from "@/hooks/use-direction";
 
@@ -25,7 +25,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <NextThemeProvider defaultTheme="light" enableSystem={false}>
-      <DirectionProvider key={"direction-provider"} dir={direction}>
+      <DirectionProvider key={"direction-provider"} direction={direction}>
         {children}
       </DirectionProvider>
     </NextThemeProvider>

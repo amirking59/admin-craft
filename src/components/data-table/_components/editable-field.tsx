@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useOnClickOutside } from "usehooks-ts";
 import { TextField } from "@/components/form/text-field";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/utils";
 import { Cell } from "@tanstack/react-table";
 
 const formSchema = z.object({

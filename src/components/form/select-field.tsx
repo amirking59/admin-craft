@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronsUpDown, X } from "lucide-react";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ControllerRenderProps, FieldValues, useFormContext } from "react-hook-form";

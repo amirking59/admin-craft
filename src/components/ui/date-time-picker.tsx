@@ -1,7 +1,7 @@
 "use client";
 
 import dayjs from "dayjs";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -31,21 +31,23 @@ function DateTimePicker({ onChange, value, disabled, placeholder, locale, ...pro
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          aria-invalid={props["aria-invalid"]}
-          disabled={disabled}
-          variant={"outline"}
-          className={cn(
-            "w-full h-auto justify-between bg-transparent dark:bg-input/30",
-            "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-            "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-            "h-9 px-3 text-sm",
-            !value && "hover:text-muted-foreground text-muted-foreground",
-          )}
-        >
-          {value ? formatDate(value) : placeholder}
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            aria-invalid={props["aria-invalid"]}
+            disabled={disabled}
+            variant={"outline"}
+            className={cn(
+              "w-full h-auto justify-between bg-transparent dark:bg-input/30",
+              "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+              "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+              "h-9 px-3 text-sm",
+              !value && "hover:text-muted-foreground text-muted-foreground",
+            )}
+          />
+        }
+      >
+        {value ? formatDate(value) : placeholder}
       </PopoverTrigger>
 
       <PopoverContent className="w-auto p-0">

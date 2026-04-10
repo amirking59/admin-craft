@@ -1,8 +1,7 @@
 import { useTableContext } from "@/components/data-table/_context/table";
 import { Button } from "@/components/ui/button";
-import { DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { DialogClose } from "@radix-ui/react-dialog";
 import React, { cloneElement } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -95,9 +94,7 @@ export function FiltersForm({ onClose }: FiltersFormProps) {
             </Button>
           )}
 
-          <DialogClose asChild>
-            <Button variant="outline">{t("cancel")}</Button>
-          </DialogClose>
+          <DialogClose render={<Button variant="outline" />}>{t("cancel")}</DialogClose>
 
           <Button type="submit">{t("submit")}</Button>
         </DialogFooter>

@@ -5,7 +5,7 @@ import { Check, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/utils";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/hooks/use-is-mobile";

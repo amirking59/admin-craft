@@ -17,7 +17,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { ForwardRefExoticComponent, RefAttributes } from "react";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/utils";
 
 type Icon = ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
 

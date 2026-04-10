@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Maximize2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
-import { DialogTitle } from "@radix-ui/react-dialog";
 
 interface FullScreenImageProps {
   src: string;
@@ -24,13 +23,15 @@ export const FullScreenImage = ({
       <img src={src} alt={alt} className={`w-full h-full object-contain ${imageClassName}`} />
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild>
-          <div
-            className="absolute cursor-pointer bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
-            aria-label="View fullscreen"
-          >
-            <Maximize2 size={16} />
-          </div>
+        <DialogTrigger
+          render={
+            <div
+              className="absolute cursor-pointer bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+              aria-label="View fullscreen"
+            />
+          }
+        >
+          <Maximize2 size={16} />
         </DialogTrigger>
 
         <VisuallyHidden>

@@ -8,8 +8,7 @@ import { z } from "zod";
 import { Product, ProductCategory } from "@/app/(main)/products/_types";
 import { useCreateProduct, useUpdateProduct } from "@/app/(main)/products/_services";
 import { Edit, Plus } from "lucide-react";
-import { DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DialogClose } from "@radix-ui/react-dialog";
+import { DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
 import { TextField } from "@/components/form/text-field";
 import { NumberField } from "@/components/form/number-field";
@@ -87,9 +86,7 @@ export const ProductForm = ({ prevData, onClose }: ProductFormProps) => {
         </div>
 
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">{t("cancel", { ns: "base" })}</Button>
-          </DialogClose>
+          <DialogClose render={<Button variant="outline" />}>{t("cancel", { ns: "base" })}</DialogClose>
           <Button loading={createMutation.isPending || updateMutation.isPending} type="submit">
             {prevData ? (
               <>

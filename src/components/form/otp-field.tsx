@@ -1,7 +1,7 @@
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
 import { useFormContext } from "react-hook-form";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/utils";
 
 interface OTPFieldProps {
   name?: string;
