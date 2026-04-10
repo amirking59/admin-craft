@@ -23,8 +23,6 @@ export const EnumField: React.FC<EnumFieldProps> = ({
   placeholder,
   enumObject,
   getItemLabel,
-  multiple,
-  multipleMaxDisplay,
 }) => {
   return (
     <SelectField
@@ -40,8 +38,6 @@ export const EnumField: React.FC<EnumFieldProps> = ({
       disabled={disabled}
       disableItems={disableItems}
       clearable={clearable}
-      multiple={multiple}
-      multipleMaxDisplay={multipleMaxDisplay}
     />
   );
 };

@@ -1,7 +1,6 @@
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Controller, useFormContext } from "react-hook-form";
+import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
-import { useFormContext } from "react-hook-form";
-import { cn } from "@/lib/utils";
 
 interface OTPFieldProps {
   name?: string;
@@ -9,8 +8,6 @@ interface OTPFieldProps {
   description?: string;
   disabled?: boolean;
   maxLength?: number;
-  containerClassName?: string;
-  otpClassName?: string;
   pattern?: string;
   groupSize?: number;
   showSeparator?: boolean;
@@ -23,55 +20,46 @@ export function OTPField({
   description,
   disabled = false,
   maxLength = 6,
-  containerClassName,
-  otpClassName,
   pattern,
   groupSize = 3,
   showSeparator = true,
   onComplete,
 }: OTPFieldProps) {
-  const { control, formState } = useFormContext();
-
-  const renderSlots = () => {
-    const slots = [];
-    const totalGroups = Math.ceil(maxLength / groupSize);
-
-    for (let groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
-      const groupSlots = [];
-      const startIndex = groupIndex * groupSize;
-      const endIndex = Math.min(startIndex + groupSize, maxLength);
-
-      for (let slotIndex = startIndex; slotIndex < endIndex; slotIndex++) {
-        groupSlots.push(
-          <InputOTPSlot
-            key={slotIndex}
-            index={slotIndex}
-            className={cn("border-input", disabled && "opacity-50 cursor-not-allowed")}
-            aria-invalid={!!formState.errors[name]}
-          />,
-        );
-      }
-
-      slots.push(<InputOTPGroup key={groupIndex}>{groupSlots}</InputOTPGroup>);
-
-      // Add separator between groups (except for the last group)
-      if (showSeparator && groupIndex < totalGroups - 1) {
-        slots.push(<InputOTPSeparator key={`separator-${groupIndex}`} />);
-      }
-    }
-
-    return slots;
-  };
+  const { control } = useFormContext();
 
   return (
-    <FormField
+    <Controller
       control={control}
       name={name}
-      render={({ field }) => (
-        <FormItem className={containerClassName}>
-          {label && <FormLabel>{label}</FormLabel>}
-          <FormControl>
+      render={({ field, fieldState }) => {
+        const renderSlots = () => {
+          const slots = [];
+          const totalGroups = Math.ceil(maxLength / groupSize);
+
+          for (let groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
+            const groupSlots = [];
+            const startIndex = groupIndex * groupSize;
+            const endIndex = Math.min(startIndex + groupSize, maxLength);
+
+            for (let slotIndex = startIndex; slotIndex < endIndex; slotIndex++) {
+              groupSlots.push(<InputOTPSlot key={slotIndex} index={slotIndex} aria-invalid={fieldState.invalid} />);
+            }
+
+            slots.push(<InputOTPGroup key={groupIndex}>{groupSlots}</InputOTPGroup>);
+
+            if (showSeparator && groupIndex < totalGroups - 1) {
+              slots.push(<InputOTPSeparator key={`separator-${groupIndex}`} />);
+            }
+          }
+
+          return slots;
+        };
+
+        return (
+          <Field data-invalid={fieldState.invalid}>
+            {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
             <InputOTP
+              id={field.name}
               maxLength={maxLength}
               pattern={pattern}
               disabled={disabled}
@@ -82,15 +70,15 @@ export function OTPField({
                   onComplete(value);
                 }
               }}
-              className={cn(otpClassName)}
+              onBlur={field.onBlur}
             >
               {renderSlots()}
             </InputOTP>
-          </FormControl>
-          {description && <FormDescription>{description}</FormDescription>}
-          <FormMessage />
-        </FormItem>
-      )}
+            {description && <FieldDescription>{description}</FieldDescription>}
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        );
+      }}
     />
   );
 }

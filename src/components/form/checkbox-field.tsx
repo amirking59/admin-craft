@@ -1,6 +1,6 @@
+import { Controller, useFormContext } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useFormContext } from "react-hook-form";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 
 interface CheckboxFieldProps {
   name?: string;
@@ -8,27 +8,28 @@ interface CheckboxFieldProps {
   disabled?: boolean;
 }
 
-export function CheckboxField({ label, name, disabled }: CheckboxFieldProps) {
+export function CheckboxField({ label, name = "", disabled }: CheckboxFieldProps) {
   const { control } = useFormContext();
 
   return (
-    <FormField
+    <Controller
       control={control}
-      name={name || ""}
-      render={({ field }) => (
-        <div className="h-9">
-          <FormItem>
-            <div className="flex gap-3 items-center">
-              <FormControl>
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={disabled} {...field} />
-              </FormControl>
-
-              {label && <FormLabel>{label}</FormLabel>}
-            </div>
-
-            <FormMessage />
-          </FormItem>
-        </div>
+      name={name}
+      render={({ field, fieldState }) => (
+        <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+          <Checkbox
+            id={field.name}
+            name={field.name}
+            ref={field.ref}
+            aria-invalid={fieldState.invalid}
+            checked={field.value}
+            onCheckedChange={field.onChange}
+            onBlur={field.onBlur}
+            disabled={disabled}
+          />
+          {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
+          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+        </Field>
       )}
     />
   );

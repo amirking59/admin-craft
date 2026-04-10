@@ -1,17 +1,15 @@
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { X } from "lucide-react";
-import { useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
+import { InputGroup, InputGroupInput, InputGroupAddon, InputGroupButton } from "@/components/ui/input-group";
 import { NumericFormat, NumericFormatProps } from "react-number-format";
 
 interface NumberFieldProps {
   name?: string;
-  placeholder?: string;
   label?: string;
   clearable?: boolean;
-  disabled?: boolean;
-  decimalScale?: number;
   asString?: boolean;
 }
 
@@ -27,15 +25,15 @@ export function NumberField({
   const { control, setValue } = useFormContext();
 
   return (
-    <FormField
+    <Controller
       control={control}
       name={name}
-      render={({ field }) => (
-        <FormItem>
-          {label && <FormLabel>{label}</FormLabel>}
+      render={({ field, fieldState }) => (
+        <Field data-invalid={fieldState.invalid}>
+          {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
 
-          <div className="relative">
-            <FormControl>
+          {clearable ? (
+            <InputGroup>
               <NumericFormat
                 valueIsNumericString={true}
                 value={field.value?.toString() || ""}
@@ -47,28 +45,40 @@ export function NumberField({
                 getInputRef={field.ref}
                 allowNegative={allowNegative}
                 {...props}
-                customInput={Input}
-                placeholder={
-                  props.placeholder ||
-                  t("enterX", {
-                    x: label,
-                  })
-                }
+                customInput={InputGroupInput}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                placeholder={props.placeholder || t("enterX", { x: label })}
               />
-            </FormControl>
+              {field.value && (
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton type="button" size="icon-xs" onClick={() => setValue(name, "")} aria-label="Clear">
+                    <X />
+                  </InputGroupButton>
+                </InputGroupAddon>
+              )}
+            </InputGroup>
+          ) : (
+            <NumericFormat
+              valueIsNumericString={true}
+              value={field.value?.toString() || ""}
+              onValueChange={(values) => {
+                field.onChange(asString ? values.value : values.floatValue);
+              }}
+              onBlur={field.onBlur}
+              name={field.name}
+              getInputRef={field.ref}
+              allowNegative={allowNegative}
+              {...props}
+              customInput={Input}
+              id={field.name}
+              aria-invalid={fieldState.invalid}
+              placeholder={props.placeholder || t("enterX", { x: label })}
+            />
+          )}
 
-            {clearable && field.value && (
-              <button
-                type="button"
-                onClick={() => setValue(name, "")}
-                className="absolute end-2 top-1/2 -translate-y-1/2 p-1 hover:opacity-70"
-              >
-                <X size={16} />
-              </button>
-            )}
-          </div>
-          <FormMessage />
-        </FormItem>
+          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+        </Field>
       )}
     />
   );
