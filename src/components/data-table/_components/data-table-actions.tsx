@@ -19,10 +19,8 @@ export const DataTableActions = ({ children, title }: DataTableActionsProps) => 
         <div className="flex-1" />
 
         <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size={"icon"} className="p-1">
-              <EllipsisVertical />
-            </Button>
+          <PopoverTrigger render={<Button variant="ghost" size={"icon"} className="p-1" />}>
+            <EllipsisVertical />
           </PopoverTrigger>
           <PopoverContent className="w-56">
             <div className="flex flex-col gap-4">{children}</div>

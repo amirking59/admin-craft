@@ -1,5 +1,5 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { DebouncedInput, Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -37,52 +37,28 @@ export function NumberField({
           {label && <FormLabel>{label}</FormLabel>}
 
           <div className="relative">
-            {debounceMs ? (
-              <FormControl>
-                <NumericFormat
-                  debounceMs={debounceMs}
-                  valueIsNumericString={true}
-                  value={field.value?.toString() || ""}
-                  onValueChange={(values) => {
-                    field.onChange(asString ? values.value : values.floatValue);
-                  }}
-                  onBlur={field.onBlur}
-                  name={field.name}
-                  getInputRef={field.ref}
-                  allowNegative={allowNegative}
-                  {...props}
-                  customInput={DebouncedInput}
-                  placeholder={
-                    props.placeholder ||
-                    t("enterX", {
-                      x: label,
-                    })
-                  }
-                />
-              </FormControl>
-            ) : (
-              <FormControl>
-                <NumericFormat
-                  valueIsNumericString={true}
-                  value={field.value?.toString() || ""}
-                  onValueChange={(values) => {
-                    field.onChange(asString ? values.value : values.floatValue);
-                  }}
-                  onBlur={field.onBlur}
-                  name={field.name}
-                  getInputRef={field.ref}
-                  allowNegative={allowNegative}
-                  {...props}
-                  customInput={Input}
-                  placeholder={
-                    props.placeholder ||
-                    t("enterX", {
-                      x: label,
-                    })
-                  }
-                />
-              </FormControl>
-            )}
+            <FormControl>
+              <NumericFormat
+                valueIsNumericString={true}
+                value={field.value?.toString() || ""}
+                onValueChange={(values) => {
+                  field.onChange(asString ? values.value : values.floatValue);
+                }}
+                onBlur={field.onBlur}
+                name={field.name}
+                getInputRef={field.ref}
+                allowNegative={allowNegative}
+                {...props}
+                customInput={Input}
+                placeholder={
+                  props.placeholder ||
+                  t("enterX", {
+                    x: label,
+                  })
+                }
+              />
+            </FormControl>
+
             {clearable && field.value && (
               <button
                 type="button"

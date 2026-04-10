@@ -27,31 +27,33 @@ export function NavUser() {
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              {state === "collapsed" && (
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="rounded-lg">
-                    <EllipsisVertical className="size-4" />
-                  </AvatarFallback>
-                </Avatar>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              />
+            }
+          >
+            {state === "collapsed" && (
+              <Avatar className="h-8 w-8 rounded-lg">
+                <AvatarFallback className="rounded-lg">
+                  <EllipsisVertical className="size-4" />
+                </AvatarFallback>
+              </Avatar>
+            )}
+
+            <div className="grid flex-1 text-start text-sm leading-tight">
+              {!user ? (
+                <Skeleton className="h-[17.5px] w-36" />
+              ) : (
+                <span className="truncate font-medium">
+                  {user?.firstName} {user?.lastName}
+                </span>
               )}
+            </div>
 
-              <div className="grid flex-1 text-start text-sm leading-tight">
-                {!user ? (
-                  <Skeleton className="h-[17.5px] w-36" />
-                ) : (
-                  <span className="truncate font-medium">
-                    {user?.firstName} {user?.lastName}
-                  </span>
-                )}
-              </div>
-
-              <ChevronsUpDown className="ml-auto size-4" />
-            </SidebarMenuButton>
+            <ChevronsUpDown className="ml-auto size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"

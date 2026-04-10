@@ -13,9 +13,7 @@ export function CellTooltip<TData, TValue>({ children, cell }: CellTooltipProps<
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <div className="w-fit">{children}</div>
-      </TooltipTrigger>
+      <TooltipTrigger render={<div className="w-fit" />}>{children}</TooltipTrigger>
       <TooltipContent>{typeof tooltipMeta === "string" ? tooltipMeta : tooltipMeta(cell.getContext())}</TooltipContent>
     </Tooltip>
   );

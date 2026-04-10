@@ -23,11 +23,9 @@ export function DataTableViewOptions() {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline">
-          <Settings2 />
-          {t("table.view")}
-        </Button>
+      <PopoverTrigger render={<Button variant="outline" />}>
+        <Settings2 />
+        {t("table.view")}
       </PopoverTrigger>
       <PopoverContent align={isMobile ? "center" : "end"} className="w-44 p-0">
         <Command>

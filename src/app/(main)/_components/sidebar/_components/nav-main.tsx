@@ -62,38 +62,36 @@ export function NavMain() {
             return (
               <Collapsible
                 key={t(item.title, { ns: item.namespace })}
-                asChild
+                render={<SidebarMenuItem />}
                 defaultOpen={item.subItems?.some((subItem) => pathname?.startsWith(subItem.route))}
                 className="group/collapsible"
               >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip={t(item.title, { ns: item.namespace })}>
-                      {item.icon && (
-                        <item.icon
-                          className={cn("transition-all", {
-                            "size-5!": state === "expanded" || isMobile,
-                          })}
-                        />
-                      )}
-                      <span>{t(item.title, { ns: item.namespace })}</span>
-                      <ChevronRight className="ms-auto rtl:rotate-180 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {item.subItems?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton isActive={pathname?.startsWith(subItem.route)} asChild>
-                            <Link onClick={() => setOpenMobile(false)} href={subItem.route}>
-                              <span>{t(subItem.title, { ns: subItem.namespace })}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
+                <CollapsibleTrigger render={<SidebarMenuButton tooltip={t(item.title, { ns: item.namespace })} />}>
+                  {item.icon && (
+                    <item.icon
+                      className={cn("transition-all", {
+                        "size-5!": state === "expanded" || isMobile,
+                      })}
+                    />
+                  )}
+                  <span>{t(item.title, { ns: item.namespace })}</span>
+                  <ChevronRight className="ms-auto rtl:rotate-180 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {item.subItems?.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubButton
+                          isActive={pathname?.startsWith(subItem.route)}
+                          render={<Link onClick={() => setOpenMobile(false)} href={subItem.route} />}
+                        >
+                          <span>{t(subItem.title, { ns: subItem.namespace })}</span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+                =
               </Collapsible>
             );
           }

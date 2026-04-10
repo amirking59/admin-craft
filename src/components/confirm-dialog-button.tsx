@@ -8,16 +8,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button, ButtonProps } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { LucideIcon } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-interface ConfirmDialogButtonProps extends Omit<ButtonProps, "onClick" | "form"> {
+interface ConfirmDialogButtonProps extends Omit<React.ComponentProps<typeof Button>, "onClick" | "form"> {
   title?: string;
   icon?: LucideIcon;
-
-  customTrigger?: ReactNode;
   onOk: (onClose: () => void) => void;
   okTitle?: string;
   cancelTitle?: string;
@@ -27,7 +25,6 @@ interface ConfirmDialogButtonProps extends Omit<ButtonProps, "onClick" | "form">
 
 export const ConfirmDialogButton = ({
   onOk,
-  customTrigger,
   okTitle,
   cancelTitle,
   title,
@@ -60,13 +57,11 @@ export const ConfirmDialogButton = ({
 
   return (
     <AlertDialog onOpenChange={setIsOpen} open={isOpen}>
-      <AlertDialogTrigger asChild>
-        {customTrigger || (
-          <Button variant={variant} size={size} className={className} disabled={disabled} {...rest}>
-            {Icon && <Icon className="size-4" />}
-            {title}
-          </Button>
-        )}
+      <AlertDialogTrigger
+        render={<Button variant={variant} size={size} className={className} disabled={disabled} {...rest} />}
+      >
+        {Icon && <Icon className="size-4" />}
+        {title}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -74,9 +69,7 @@ export const ConfirmDialogButton = ({
           <AlertDialogDescription>{descriptionDialog || t("thisActionCanNotUnDone")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading || loading} className="h-10">
-            {cancelTitle || t("cancel")}
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading || loading}>{cancelTitle || t("cancel")}</AlertDialogCancel>
           <Button
             autoFocus
             onClick={handleConfirm}

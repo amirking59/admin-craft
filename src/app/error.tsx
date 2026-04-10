@@ -53,11 +53,9 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           <RefreshCwIcon className="mr-2 h-4 w-4" />
           {t("tryAgain")}
         </Button>
-        <Button variant="outline" asChild>
-          <Link href="/">
-            {t("backToDashboard")}
-            <ArrowLeftIcon className="mr-2 h-4 w-4" />
-          </Link>
+        <Button variant="outline" render={<Link href="/" />}>
+          {t("backToDashboard")}
+          <ArrowLeftIcon className="mr-2 h-4 w-4" />
         </Button>
       </div>
     </div>

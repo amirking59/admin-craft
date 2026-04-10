@@ -1,5 +1,5 @@
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { DebouncedInput, Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
 import { X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,9 +40,7 @@ export function TextField({
           {label && <FormLabel>{label}</FormLabel>}
           <div className="relative">
             <FormControl>
-              {debounceMs ? (
-                <DebouncedInput disabled={disabled} debounceMs={debounceMs} {...field} {...props} />
-              ) : textarea ? (
+              {textarea ? (
                 <Textarea
                   disabled={disabled}
                   {...field}

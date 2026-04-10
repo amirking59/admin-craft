@@ -11,7 +11,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DebouncedInput, Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -139,64 +139,62 @@ export function SelectField({
               }}
             >
               <div className="relative">
-                <DropdownMenuTrigger disabled={disabled} asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full h-auto justify-between bg-transparent dark:bg-input/30",
-                        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-                        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-                        "min-h-9 px-3 text-sm",
-                      )}
-                    >
-                      <div className={cn(isEmpty && "hover:text-muted-foreground text-muted-foreground")}>
-                        {selectedItems.length > 0 ? (
-                          multiple ? (
-                            <div className="flex items-center flex-wrap gap-1">
-                              {selectedItems.slice(0, multipleMaxDisplay).map((item) => (
-                                <Badge
-                                  variant={"outline"}
-                                  key={item.value}
-                                  className="px-1 py-px rounded flex items-center cursor-pointer group"
-                                  // Stop Radix from opening the dropdown on pointer down
-                                  onPointerDownCapture={(e) => {
-                                    if (disabled) return;
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                  }}
-                                  onClick={(e) => {
-                                    if (disabled) return;
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleChange({ field, item });
-                                  }}
-                                  title={t("remove", { ns: "base" })}
-                                >
-                                  {render?.(item.value) || item.label}
-                                  <X className="ml-1 h-3 w-3 opacity-60 group-hover:opacity-100" />
-                                </Badge>
-                              ))}
-                              {selectedItems.length > multipleMaxDisplay && (
-                                <span className="text-xs">
-                                  {t("xMore", {
-                                    x: selectedItems.length - multipleMaxDisplay,
-                                  })}
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            render?.(selectedItems[0].value) || selectedItems[0]?.label
-                          )
+                <DropdownMenuTrigger render={<FormControl />} disabled={disabled}>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full h-auto justify-between bg-transparent dark:bg-input/30",
+                      "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+                      "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+                      "min-h-9 px-3 text-sm",
+                    )}
+                  >
+                    <div className={cn(isEmpty && "hover:text-muted-foreground text-muted-foreground")}>
+                      {selectedItems.length > 0 ? (
+                        multiple ? (
+                          <div className="flex items-center flex-wrap gap-1">
+                            {selectedItems.slice(0, multipleMaxDisplay).map((item) => (
+                              <Badge
+                                variant={"outline"}
+                                key={item.value}
+                                className="px-1 py-px rounded flex items-center cursor-pointer group"
+                                // Stop Radix from opening the dropdown on pointer down
+                                onPointerDownCapture={(e) => {
+                                  if (disabled) return;
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }}
+                                onClick={(e) => {
+                                  if (disabled) return;
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleChange({ field, item });
+                                }}
+                                title={t("remove", { ns: "base" })}
+                              >
+                                {render?.(item.value) || item.label}
+                                <X className="ml-1 h-3 w-3 opacity-60 group-hover:opacity-100" />
+                              </Badge>
+                            ))}
+                            {selectedItems.length > multipleMaxDisplay && (
+                              <span className="text-xs">
+                                {t("xMore", {
+                                  x: selectedItems.length - multipleMaxDisplay,
+                                })}
+                              </span>
+                            )}
+                          </div>
                         ) : (
-                          placeholder ||
-                          t("selectX", {
-                            x: label,
-                          })
-                        )}
-                      </div>
-                    </Button>
-                  </FormControl>
+                          render?.(selectedItems[0].value) || selectedItems[0]?.label
+                        )
+                      ) : (
+                        placeholder ||
+                        t("selectX", {
+                          x: label,
+                        })
+                      )}
+                    </div>
+                  </Button>
                 </DropdownMenuTrigger>
 
                 {!disabled && (
@@ -221,22 +219,12 @@ export function SelectField({
               <DropdownMenuContent className="min-w-[var(--radix-dropdown-menu-trigger-width)] p-0">
                 <DropdownMenuGroup>
                   <div className="p-2">
-                    {serverSearch ? (
-                      <DebouncedInput
-                        debounceMs={500}
-                        autoFocus
-                        placeholder={t("search")}
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                      />
-                    ) : (
-                      <Input
-                        autoFocus
-                        placeholder={t("search")}
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                      />
-                    )}
+                    <Input
+                      autoFocus
+                      placeholder={t("search")}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
                   </div>
 
                   {loading ? (
