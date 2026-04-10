@@ -16,7 +16,7 @@ export default function NotFound() {
           <div className="text-6xl font-bold">404</div>
         </div>
         <h1 className="text-2xl font-bold tracking-tight">{t("pageNotFound")}</h1>
-        <p className="max-w-[500px] text-muted-foreground">{t("weCouldNotFindPage")}</p>
+        <p className="h-125 text-muted-foreground">{t("weCouldNotFindPage")}</p>
       </div>
       <Button className="" render={<Link href="/" />}>
         {t("backToDashboard")}

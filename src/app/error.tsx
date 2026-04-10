@@ -23,19 +23,19 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           <div className="text-6xl font-bold text-destructive">{t("error")}</div>
         </div>
         <h1 className="text-2xl font-bold tracking-tight">{t("somethingWentWrong")}</h1>
-        <p className="max-w-[500px] text-muted-foreground">{t("unexpectedError")}</p>
+        <p className="h-125 text-muted-foreground">{t("unexpectedError")}</p>
 
-        <Alert variant="destructive" className="w-[500px] text-left">
+        <Alert variant="destructive" className="h-125 text-left">
           <ExclamationTriangleIcon className="h-4 w-4" />
           <AlertTitle>{t("errorDetails")}</AlertTitle>
           <AlertDescription className="mt-2">
-            <div className="font-mono w-full break-all text-sm overflow-auto max-h-[200px] p-2 bg-destructive/5 rounded-md">
+            <div className="font-mono w-full break-all text-sm overflow-auto max-h-50 p-2 bg-destructive/5 rounded-md">
               {error.message || "Unknown error occurred"}
             </div>
             {error.stack && (
               <details className="mt-2">
                 <summary className="cursor-pointer text-xs">{t("stackTrace")}</summary>
-                <pre className="mt-2 text-xs break-all overflow-auto max-h-[200px] p-2 bg-destructive/5 rounded-md whitespace-pre-wrap">
+                <pre className="mt-2 text-xs break-all overflow-auto max-h-50 p-2 bg-destructive/5 rounded-md whitespace-pre-wrap">
                   {error.stack}
                 </pre>
               </details>

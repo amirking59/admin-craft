@@ -43,7 +43,7 @@ export const DialogButton = ({
         {title}
       </DialogTrigger>
 
-      <DialogContent className={cn("sm:max-w-[512px]", dialogClassName)}>
+      <DialogContent className={cn("sm:max-w-lg", dialogClassName)}>
         {React.cloneElement(content, { onClose: () => setOpen(false) })}
       </DialogContent>
     </Dialog>

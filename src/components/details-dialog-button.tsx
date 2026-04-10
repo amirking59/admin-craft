@@ -28,7 +28,7 @@ const Content = ({ items, title }: DetailsDialogButtonProps) => {
         <DialogTitle>{title}</DialogTitle>
       </DialogHeader>
 
-      <ScrollArea className="h-[500px] pr-4">
+      <ScrollArea className="h-125 pr-4">
         {items.map((item, index) => {
           if (typeof item === "object") return renderDetail(item.label, item.value, index);
           return null;

@@ -40,7 +40,7 @@ export const FullScreenImage = ({
           </DialogHeader>
         </VisuallyHidden>
 
-        <DialogContent className="max-w-screen-lg w-[90vw] max-h-[90vh] overflow-hidden p-0 flex items-center justify-center bg-black/90">
+        <DialogContent className="max-w-5xl w-[90vw] max-h-[90vh] overflow-hidden p-0 flex items-center justify-center bg-black/90">
           <img src={src} alt={alt} className="max-w-full max-h-[calc(90vh-2rem)] w-full h-full object-contain" />
         </DialogContent>
       </Dialog>
