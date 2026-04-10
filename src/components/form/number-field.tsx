@@ -11,7 +11,6 @@ interface NumberFieldProps {
   label?: string;
   clearable?: boolean;
   disabled?: boolean;
-  debounceMs?: number;
   decimalScale?: number;
   asString?: boolean;
 }
@@ -19,7 +18,6 @@ interface NumberFieldProps {
 export function NumberField({
   label,
   name = "",
-  debounceMs,
   clearable,
   allowNegative = false,
   asString = false,

@@ -10,7 +10,6 @@ interface TextFieldProps {
   placeholder?: string;
   label?: string;
   clearable?: boolean;
-  debounceMs?: number;
   disabled?: boolean;
   textarea?: boolean;
   description?: string;
@@ -21,7 +20,6 @@ export function TextField({
   label,
   name = "",
   clearable = false,
-  debounceMs,
   disabled = false,
   textarea,
   description,
