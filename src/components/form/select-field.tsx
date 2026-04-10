@@ -4,7 +4,6 @@ import { Controller, useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 
 type SelectItemValue = string | number;
 type SelectItem = {
@@ -20,9 +19,6 @@ interface SelectFieldProps {
   items?: SelectItem[];
   disabled?: boolean;
   disableItems?: SelectItemValue[];
-  clearable?: boolean;
-  loading?: boolean;
-  onValueChange?: (value: SelectItemValue | "") => void;
 }
 
 export function SelectField({
@@ -32,9 +28,6 @@ export function SelectField({
   items = [],
   disabled = false,
   disableItems = [],
-  clearable = false,
-  loading = false,
-  onValueChange,
 }: SelectFieldProps) {
   const { t } = useTranslation();
   const { control } = useFormContext();
@@ -55,7 +48,6 @@ export function SelectField({
               const original = items.find((item) => String(item.value) === value);
               const resolved: SelectItemValue = original ? original.value : value;
               field.onChange(resolved);
-              onValueChange?.(resolved);
             }}
             disabled={disabled}
           >
@@ -65,32 +57,15 @@ export function SelectField({
 
             <SelectContent>
               <SelectGroup>
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="mx-1.5 my-1 h-7" />)
-                ) : (
-                  <>
-                    {clearable && field.value != null && field.value !== "" && (
-                      <SelectItem
-                        value="__clear__"
-                        onPointerDown={() => {
-                          field.onChange("");
-                          onValueChange?.("");
-                        }}
-                      >
-                        <span className="text-muted-foreground">{t("clear", { ns: "base" })}</span>
-                      </SelectItem>
-                    )}
-                    {items.map((item) => (
-                      <SelectItem
-                        key={item.value}
-                        value={String(item.value)}
-                        disabled={item.disabled || disableItems.includes(item.value)}
-                      >
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </>
-                )}
+                {items.map((item) => (
+                  <SelectItem
+                    key={item.value}
+                    value={String(item.value)}
+                    disabled={item.disabled || disableItems.includes(item.value)}
+                  >
+                    {item.label}
+                  </SelectItem>
+                ))}
               </SelectGroup>
             </SelectContent>
           </Select>

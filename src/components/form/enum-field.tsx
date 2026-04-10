@@ -9,13 +9,11 @@ interface EnumFieldProps {
   disabled?: boolean;
   disableItems?: string[];
   getItemLabel: (value: string | number) => string;
-  clearable?: boolean;
   multiple?: boolean;
   multipleMaxDisplay?: number;
 }
 
 export const EnumField: React.FC<EnumFieldProps> = ({
-  clearable,
   disableItems,
   disabled,
   label,
@@ -37,7 +35,6 @@ export const EnumField: React.FC<EnumFieldProps> = ({
       })}
       disabled={disabled}
       disableItems={disableItems}
-      clearable={clearable}
     />
   );
 };
