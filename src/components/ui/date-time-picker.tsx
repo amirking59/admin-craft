@@ -36,22 +36,15 @@ function DateTimePicker({ onChange, value, disabled, placeholder, locale, ...pro
         render={
           <Button
             aria-invalid={props["aria-invalid"]}
+            data-empty={!value}
             disabled={disabled}
             variant="outline"
-            className={cn(
-              "flex w-full items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none",
-              "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-              "disabled:cursor-not-allowed disabled:opacity-50",
-              "aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
-              "dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
-              "h-8 data-[size=sm]:h-7",
-              !value && "text-muted-foreground",
-            )}
+            className={cn("w-full justify-between text-left font-normal data-[empty=true]:text-muted-foreground")}
           />
         }
       >
-        {value ? formatDate(value) : placeholder}
-        <CalendarIcon className="pointer-events-none size-4 text-muted-foreground" />
+        {value ? formatDate(value) : <span>{placeholder}</span>}
+        <CalendarIcon />
       </PopoverTrigger>
 
       <PopoverContent className="w-auto p-0">
@@ -62,7 +55,7 @@ function DateTimePicker({ onChange, value, disabled, placeholder, locale, ...pro
             selected={value ? dayjs(value).toDate() : undefined}
             defaultMonth={value ? dayjs(value).toDate() : undefined}
             onSelect={(date) => onChange(date ? dayjs(date).toISOString() : null)}
-            initialFocus
+            autoFocus
           />
           <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
             <ScrollArea className="w-64 sm:w-auto">
