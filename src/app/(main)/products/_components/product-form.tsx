@@ -13,6 +13,8 @@ import { TextField } from "@/components/form/text-field";
 import { NumberField } from "@/components/form/number-field";
 import { EnumField } from "@/components/form/enum-field";
 import { CheckboxField } from "@/components/form/checkbox-field";
+import { DatePicker } from "@/components/ui/date-picker";
+import { DateField } from "@/components/form/date-field";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -78,6 +80,8 @@ export const ProductForm = ({ prevData, onClose }: ProductFormProps) => {
             getItemLabel={(v) => t(`productCategory.${v}`)}
           />
           <NumberField thousandSeparator name="price" label={t("price")} step={0.01} />
+
+          <DateField clearable name="price" label={t("price")} step={0.01} />
           <NumberField name="stock" label={t("stock")} step={1} />
           <div className="flex items-end pb-2">
             <CheckboxField name="isActive" label={t("isActive")} />
