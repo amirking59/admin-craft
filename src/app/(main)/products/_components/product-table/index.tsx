@@ -108,7 +108,7 @@ export const ProductTable = () => {
         />,
       ]}
       initialSort={{ desc: true, id: "productId" }}
-      rowHeight={56}
+      rowHeight={61}
     />
   );
 };
