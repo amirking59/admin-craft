@@ -1,5 +1,4 @@
-import { LoginParams, LoginResponse, ProfileResponse, User } from "@/app/auth/_types";
-import { baseApi } from "@/configs/axios";
+import { LoginParams, LoginResponse, User } from "@/app/auth/_types";
 import { LocalStorage } from "@/utils/storage";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";

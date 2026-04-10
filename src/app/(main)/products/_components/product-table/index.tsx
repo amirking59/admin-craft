@@ -43,9 +43,7 @@ export const ProductTable = () => {
       accessorKey: "category",
       header: t("category"),
       cell: ({ row }) => (
-        <Badge variant={categoryVariant[row.original.category]}>
-          {t(`productCategory.${row.original.category}`)}
-        </Badge>
+        <Badge variant={categoryVariant[row.original.category]}>{t(`productCategory.${row.original.category}`)}</Badge>
       ),
       size: 130,
     },
@@ -81,17 +79,12 @@ export const ProductTable = () => {
       size: 100,
       cell: ({ row }) => (
         <div className="flex items-center gap-1">
-          <DialogButton
-            size="icon"
-            variant="ghost"
-            icon={Edit}
-            content={<ProductForm prevData={row.original} />}
-          />
+          <DialogButton size="icon" variant="ghost" icon={Edit} content={<ProductForm prevData={row.original} />} />
           <ConfirmDialogButton
             size="icon"
             variant="ghost"
             icon={Trash2}
-            onConfirm={() => deleteMutation.mutate(row.original.productId)}
+            onOk={() => deleteMutation.mutate(row.original.productId)}
           />
         </div>
       ),
@@ -101,7 +94,7 @@ export const ProductTable = () => {
   return (
     <DataTable
       queryKey="products"
-      queryFn={getProducts}
+      queryFn={(params) => getProducts(params as any)}
       columns={columns}
       filters={[]}
       title={t("products")}

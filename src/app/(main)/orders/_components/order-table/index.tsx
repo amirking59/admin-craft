@@ -61,9 +61,7 @@ export const OrderTable = () => {
       accessorKey: "status",
       header: t("status"),
       cell: ({ row }) => (
-        <Badge variant={statusVariant[row.original.status]}>
-          {t(`orderStatus.${row.original.status}`)}
-        </Badge>
+        <Badge variant={statusVariant[row.original.status]}>{t(`orderStatus.${row.original.status}`)}</Badge>
       ),
       size: 120,
     },
@@ -78,7 +76,7 @@ export const OrderTable = () => {
   return (
     <DataTable
       queryKey="orders"
-      queryFn={getOrders}
+      queryFn={(params) => getOrders(params as any)}
       columns={columns}
       filters={[]}
       title={t("orders")}

@@ -10,7 +10,6 @@ import { useLogin } from "@/app/auth/_services";
 const formSchema = z.object({
   email: z.string().min(1),
   password: z.string().min(1),
-  googleAuthCode: z.string().default(""),
 });
 
 export function LoginForm() {
@@ -23,7 +22,6 @@ export function LoginForm() {
     defaultValues: {
       email: "",
       password: "",
-      googleAuthCode: "",
     },
   });
 
