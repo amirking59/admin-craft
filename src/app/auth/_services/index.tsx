@@ -12,22 +12,15 @@ export const useLogin = () => {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: async (params: LoginParams) => {
-      const searchParams = new URLSearchParams();
-
-      searchParams.append("userName", params.email);
-      searchParams.append("password", params.password);
-      searchParams.append("googleAuthCode", params.googleAuthCode);
-      searchParams.append("client_id", "webapp");
-      searchParams.append("grant_type", "password");
-
-      const response = await baseApi.post<LoginResponse>("/api/GetAgencyToken", searchParams, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      });
-
-      return response.data;
+    mutationFn: async (_params: LoginParams): Promise<LoginResponse> => {
+      return {
+        access_token: "demo-access-token",
+        expires_in: 3600,
+        token_type: "Bearer",
+        refresh_token: "demo-refresh-token",
+        scope: "*",
+        resellerId: "1",
+      };
     },
     onSuccess: (res) => {
       LocalStorage.setItem("accessToken", res.access_token);
@@ -41,9 +34,26 @@ export const useProfile = () => {
   return useQuery({
     queryKey: ["profile"],
     queryFn: async (): Promise<User> => {
-      const response = await baseApi.get<ProfileResponse>("/api/CurrentUser");
-
-      return response.data.data;
+      return {
+        firstName: "Demo",
+        lastName: "User",
+        phone: "1234567890",
+        dialingCode: "+1",
+        email: "demo@example.com",
+        id: 1,
+        pictureFileName: null,
+        nationalCode: null,
+        shebaNumber: "",
+        cardNumber: null,
+        accountNumber: null,
+        resellerId: 1,
+        permissions: ["*"],
+        roles: ["admin"],
+        createDate: new Date().toISOString(),
+        hasPassword: true,
+        dialingCountryIso: "US",
+        secretKey: "",
+      };
     },
     staleTime: Infinity,
     gcTime: Infinity,

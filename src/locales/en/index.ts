@@ -1,11 +1,11 @@
 import { auth } from "@/locales/en/auth";
 import { base } from "@/locales/en/base";
-import { flight } from "@/locales/en/flight";
-import { currencyRate } from "@/locales/en/currencyRate";
+import { products } from "@/locales/en/products";
+import { orders } from "@/locales/en/orders";
 
 export const en = {
   base,
   auth,
-  flight,
-  currencyRate,
+  products,
+  orders,
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, LucideProps, Plane, DollarSign } from "lucide-react";
+import { ChevronRight, LucideProps, ShoppingCart, Package } from "lucide-react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -36,22 +36,16 @@ interface NavItem {
 
 export const navItems: NavItem[] = [
   {
-    icon: Plane,
-    namespace: "flight",
-    title: "flight",
-    subItems: [
-      {
-        namespace: "flight",
-        title: "orders",
-        route: "/flight/orders",
-      },
-    ],
+    icon: Package,
+    namespace: "products",
+    title: "products",
+    route: "/products",
   },
   {
-    icon: DollarSign,
-    namespace: "currencyRate",
-    title: "currencyRate",
-    route: "/currency-rates",
+    icon: ShoppingCart,
+    namespace: "orders",
+    title: "orders",
+    route: "/orders",
   },
 ];
 
