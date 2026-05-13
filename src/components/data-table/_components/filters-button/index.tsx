@@ -13,25 +13,17 @@ export const FiltersButton = () => {
 
   return (
     table?.getState().filters?.length > 0 && (
-      <DialogButton
-        customTrigger={
-          <Button className="relative" variant="outline">
-            <Filter />
-            {t("table.filters")}
-
-            {table.getState().columnFilters.length > 0 && (
-              <Badge
-                className={cn(
-                  "absolute top-0 start-0 text-background rounded-full leading-1 ltr:-translate-x-1/2 rtl:translate-x-1/2 size-5 -translate-y-1/2 pt-1.5",
-                )}
-              >
-                {table.getState().columnFilters.length > 10 ? "10+" : table.getState().columnFilters.length}
-              </Badge>
+      <DialogButton content={<FiltersForm />} icon={Filter} title={t("table.filters")}>
+        {table.getState().columnFilters.length > 0 && (
+          <Badge
+            className={cn(
+              "absolute top-0 start-0 text-background rounded-full leading-1 ltr:-translate-x-1/2 rtl:translate-x-1/2 size-5 -translate-y-1/2 pt-1.5",
             )}
-          </Button>
-        }
-        content={<FiltersForm />}
-      />
+          >
+            {table.getState().columnFilters.length > 10 ? "10+" : table.getState().columnFilters.length}
+          </Badge>
+        )}
+      </DialogButton>
     )
   );
 };
