@@ -53,7 +53,7 @@ export function NavUser() {
               )}
             </div>
 
-            <ChevronsUpDown className="ml-auto size-4" />
+            <ChevronsUpDown className="ms-auto size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"

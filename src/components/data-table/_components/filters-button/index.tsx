@@ -22,7 +22,7 @@ export const FiltersButton = () => {
             {table.getState().columnFilters.length > 0 && (
               <Badge
                 className={cn(
-                  "absolute top-0 left-0 text-background rounded-full leading-1 -translate-x-1/2 size-5 -translate-y-1/2 pt-1.5",
+                  "absolute top-0 start-0 text-background rounded-full leading-1 ltr:-translate-x-1/2 rtl:translate-x-1/2 size-5 -translate-y-1/2 pt-1.5",
                 )}
               >
                 {table.getState().columnFilters.length > 10 ? "10+" : table.getState().columnFilters.length}

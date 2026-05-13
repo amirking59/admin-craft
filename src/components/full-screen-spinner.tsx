@@ -8,7 +8,7 @@ interface FullScreenSpinnerProps {
 export const FullScreenSpinner = ({ className }: FullScreenSpinnerProps) => {
   return (
     <div className={cn("flex h-full w-full items-center justify-center", className)}>
-      <Loader2 className="mr-2 h-10 w-10 animate-spin" />
+      <Loader2 className="me-2 h-10 w-10 animate-spin" />
     </div>
   );
 };
