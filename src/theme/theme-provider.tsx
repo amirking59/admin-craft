@@ -4,7 +4,7 @@ import { ThemeProvider as NextThemeProvider } from "next-themes";
 import { useLocale } from "@/hooks/use-locale";
 import { useEffect } from "react";
 import { DirectionProvider } from "@base-ui/react";
-import { LocalStorage } from "@/utils/storage";
+import { LocalStorage } from "@/lib/storage";
 import { useDirection } from "@/hooks/use-direction";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {

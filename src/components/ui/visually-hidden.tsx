@@ -1,9 +1,9 @@
 import * as React from "react";
-
-import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 
-const visuallyHiddenStyle: React.CSSProperties = {
+interface VisuallyHiddenProps extends useRender.ComponentProps<"div"> {}
+
+const HIDDEN_STYLE: React.CSSProperties = {
   border: 0,
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
@@ -16,13 +16,15 @@ const visuallyHiddenStyle: React.CSSProperties = {
   width: "1px",
 };
 
-function VisuallyHidden({ render, style, ...props }: useRender.ComponentProps<"span">) {
+function VisuallyHidden({ render, style, ...props }: VisuallyHiddenProps) {
   return useRender({
-    defaultTagName: "span",
-    props: mergeProps<"span">({ style: { ...visuallyHiddenStyle, ...style } }, props),
-    render,
-    state: {},
+    render: render ?? <div />,
+    props: {
+      ...props,
+      style: { ...HIDDEN_STYLE, ...style },
+    },
   });
 }
 
 export { VisuallyHidden };
+export type { VisuallyHiddenProps };

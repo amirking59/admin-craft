@@ -3,7 +3,7 @@ import { initReactI18next } from "react-i18next";
 
 import { en } from "@/locales/en";
 import { ar } from "@/locales/ar";
-import { LocalStorage } from "@/utils/storage";
+import { LocalStorage } from "@/lib/storage";
 
 const resources = {
   en,

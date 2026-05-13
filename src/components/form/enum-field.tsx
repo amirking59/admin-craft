@@ -1,5 +1,6 @@
 import { SelectField } from "@/components/form/select-field";
-import { getEnumValues } from "@/utils/enum";
+import { getEnumValues } from "@/lib/utils";
+import { convertCase } from "@/lib/utils";
 
 interface EnumFieldProps {
   name?: string;
@@ -8,19 +9,24 @@ interface EnumFieldProps {
   enumObject: Record<string, string>;
   disabled?: boolean;
   disableItems?: string[];
-  getItemLabel: (value: string | number) => string;
+  getItemLabel?: (value: string | number) => string;
+  clearable?: boolean;
   multiple?: boolean;
   multipleMaxDisplay?: number;
+  render?: (value: string | number) => string;
 }
 
 export const EnumField: React.FC<EnumFieldProps> = ({
+  clearable,
   disableItems,
   disabled,
   label,
   name,
   placeholder,
   enumObject,
-  getItemLabel,
+  multiple,
+  multipleMaxDisplay,
+  render,
 }) => {
   return (
     <SelectField
@@ -29,12 +35,15 @@ export const EnumField: React.FC<EnumFieldProps> = ({
       placeholder={placeholder}
       items={getEnumValues(enumObject).map((value) => {
         return {
-          label: getItemLabel(value),
+          label: render ? render(value) : convertCase(value, "title"),
           value,
         };
       })}
       disabled={disabled}
       disableItems={disableItems}
+      clearable={clearable}
+      multiple={multiple}
+      multipleMaxDisplay={multipleMaxDisplay}
     />
   );
 };

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { getOrders } from "@/app/(main)/orders/_services";
 import { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
-import { formatNumber } from "@/utils/number";
+import { formatNumber } from "@/lib/utils";
 import { Order, OrderStatus } from "@/app/(main)/orders/_types";
 import { useTranslation } from "react-i18next";
 

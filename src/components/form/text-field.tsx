@@ -1,24 +1,28 @@
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { DebouncedInput, Input } from "@/components/ui/input";
 import { Controller, useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
-import { Input } from "@/components/ui/input";
-import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
+import { X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface TextFieldProps {
   name?: string;
   placeholder?: string;
   label?: string;
+  clearable?: boolean;
+  debounceMs?: number;
   disabled?: boolean;
-  description?: string;
+  textarea?: boolean;
 }
 
 export function TextField({
   label,
   name = "",
+  clearable = false,
+  debounceMs,
   disabled = false,
-  description,
+  textarea,
   ...props
-}: TextFieldProps & React.ComponentProps<"input">) {
-  const { t } = useTranslation();
+}: (TextFieldProps & React.ComponentProps<"input">) & React.ComponentProps<"textarea">) {
   const { control } = useFormContext();
 
   return (
@@ -29,16 +33,36 @@ export function TextField({
         <Field data-invalid={fieldState.invalid}>
           {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
 
-          <Input
-            {...field}
-            {...props}
-            id={field.name}
-            aria-invalid={fieldState.invalid}
-            disabled={disabled}
-            placeholder={props.placeholder || t("enterX", { x: label })}
-          />
+          <div className="relative">
+            {debounceMs ? (
+              <DebouncedInput
+                disabled={disabled}
+                debounceMs={debounceMs}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                {...field}
+                {...props}
+              />
+            ) : textarea ? (
+              <Textarea
+                disabled={disabled}
+                placeholder={props.placeholder}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                {...field}
+                {...props}
+              />
+            ) : (
+              <Input disabled={disabled} id={field.name} aria-invalid={fieldState.invalid} {...field} {...props} />
+            )}
 
-          {description && <FieldDescription>{description}</FieldDescription>}
+            {clearable && !disabled && field.value && (
+              <div className="absolute end-2 top-1/2 -translate-y-1/2 cursor-pointer p-1">
+                <X onClick={() => field.onChange("")} size={16} />
+              </div>
+            )}
+          </div>
+
           {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
         </Field>
       )}

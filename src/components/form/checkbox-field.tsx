@@ -1,14 +1,14 @@
-import { Controller, useFormContext } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldLabel, FieldError } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Controller, useFormContext } from "react-hook-form";
 
 interface CheckboxFieldProps {
-  name?: string;
+  name: string;
   label?: string;
   disabled?: boolean;
 }
 
-export function CheckboxField({ label, name = "", disabled }: CheckboxFieldProps) {
+export function CheckboxField({ label, name, disabled }: CheckboxFieldProps) {
   const { control } = useFormContext();
 
   return (
@@ -19,15 +19,14 @@ export function CheckboxField({ label, name = "", disabled }: CheckboxFieldProps
         <Field orientation="horizontal" data-invalid={fieldState.invalid}>
           <Checkbox
             id={field.name}
-            name={field.name}
-            ref={field.ref}
-            aria-invalid={fieldState.invalid}
             checked={field.value}
             onCheckedChange={field.onChange}
-            onBlur={field.onBlur}
             disabled={disabled}
+            aria-invalid={fieldState.invalid}
           />
+
           {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
+
           {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
         </Field>
       )}

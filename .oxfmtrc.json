@@ -1,16 +1,14 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "sortTailwindcss": {
+    "stylesheet": "./app/globals.css",
+    "functions": ["clsx", "cn"]
+  },
   "proseWrap": "never",
   "printWidth": 120,
   "tabWidth": 2,
   "useTabs:": false,
   "semi": true,
   "quoteProps": "consistent",
-  "sortPackageJson": false,
-  "ignorePatterns": [
-    "/dist",
-    "/coverage",
-    "/.nx/cache",
-    "/.nx/workspace-data"
-  ]
+  "ignorePatterns": [".next/**", "out/**", "build/**", "next-env.d.ts", "node_modules/**", "**.md"]
 }

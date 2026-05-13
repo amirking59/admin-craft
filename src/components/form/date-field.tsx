@@ -1,21 +1,26 @@
-import { Controller, useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Field, FieldLabel, FieldError } from "@/components/ui/field";
-import { useLocale } from "@/hooks/use-locale";
-import { faIR, enUS } from "react-day-picker/persian";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { CalendarIcon, X } from "lucide-react";
+import { Controller, useFormContext } from "react-hook-form";
 
 interface DateFieldProps {
   name?: string;
   placeholder?: string;
   label?: string;
+  clearable?: boolean;
   disabled?: boolean;
+  mode?: "single" | "range";
 }
 
-export function DateField({ label, name = "", disabled = false, placeholder }: DateFieldProps) {
-  const { t } = useTranslation();
+export function DateField({
+  label,
+  name = "",
+  clearable = false,
+  disabled = false,
+  placeholder,
+  mode = "single",
+}: DateFieldProps) {
   const { control } = useFormContext();
-  const [locale] = useLocale();
 
   return (
     <Controller
@@ -25,14 +30,35 @@ export function DateField({ label, name = "", disabled = false, placeholder }: D
         <Field data-invalid={fieldState.invalid}>
           {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
 
-          <DatePicker
-            locale={locale === "fa" ? faIR : enUS}
-            placeholder={placeholder || t("selectX", { x: label })}
-            disabled={disabled}
-            value={field.value || null}
-            onChange={(value) => field.onChange(value)}
-            aria-invalid={fieldState.invalid}
-          />
+          <div className="relative">
+            {mode === "range" ? (
+              <DatePicker
+                mode="range"
+                placeholder={placeholder}
+                disabled={disabled}
+                value={field.value || null}
+                onChange={(value) => field.onChange(value)}
+              />
+            ) : (
+              <DatePicker
+                mode="single"
+                placeholder={placeholder}
+                disabled={disabled}
+                value={field.value || null}
+                onChange={(value) => field.onChange(value)}
+              />
+            )}
+
+            {!disabled && (
+              <div className="absolute end-2 top-1/2 -translate-y-1/2 cursor-pointer p-1">
+                {clearable && field.value ? (
+                  <X size={16} onClick={() => field.onChange("")} />
+                ) : (
+                  <CalendarIcon className="pointer-events-none" size={16} />
+                )}
+              </div>
+            )}
+          </div>
 
           {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
         </Field>

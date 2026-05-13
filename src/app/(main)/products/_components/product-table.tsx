@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { getProducts, useDeleteProduct } from "@/app/(main)/products/_services";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit, Plus, Trash2 } from "lucide-react";
-import { formatNumber } from "@/utils/number";
+import { formatNumber } from "@/lib/utils";
 import { Product, ProductCategory } from "@/app/(main)/products/_types";
 import { useTranslation } from "react-i18next";
 import { DialogButton } from "@/components/dialog-button";

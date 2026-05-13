@@ -1,38 +1,50 @@
 "use client";
 
-import "@/configs/i18n";
-import "@/configs/dayjs";
-import { queryClient } from "@/configs/tanstackQuery";
-import { ThemeProvider } from "@/theme/theme-provider";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { useEffect, useState } from "react";
-import { Toaster } from "@/components/ui/sonner";
+import "@/lib/date";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface ProvidersProps {
   children: React.ReactNode;
 }
 
-export const Providers = ({ children }: ProvidersProps) => {
-  const [isFirstRender, setIsFirstRender] = useState(true);
+export function Providers({ children }: ProvidersProps) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            refetchOnMount: false,
+            refetchOnReconnect: false,
+            refetchOnWindowFocus: false,
+            retry: 0,
+          },
+        },
+      }),
+  );
 
   useEffect(() => {
-    if (isFirstRender) {
-      setIsFirstRender(false);
+    const theme = localStorage.getItem("theme");
+    if (theme) {
+      document.documentElement.classList.add(theme || "light");
     }
   }, []);
 
-  if (isFirstRender) return null;
-
   return (
-    <NuqsAdapter>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          {children}
+    <>
+      <NuqsAdapter>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider defaultTheme="light" enableSystem={false}>
+            <TooltipProvider>{children}</TooltipProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </NuqsAdapter>
 
-          <Toaster />
-        </ThemeProvider>
-      </QueryClientProvider>
-    </NuqsAdapter>
+      <Toaster />
+    </>
   );
-};
+}

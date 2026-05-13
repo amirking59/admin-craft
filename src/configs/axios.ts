@@ -1,4 +1,4 @@
-import { LocalStorage } from "@/utils/storage";
+import { LocalStorage } from "@/lib/storage";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "sonner";
 import i18n from "i18next";
