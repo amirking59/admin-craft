@@ -20,7 +20,7 @@ export default function NotFound() {
       </div>
       <Button className="" render={<Link href="/" />}>
         {t("backToDashboard")}
-        <ArrowLeftIcon className="mr-2 h-4 w-4" />
+        <ArrowLeftIcon className="me-2 h-4 w-4" />
       </Button>
     </div>
   );

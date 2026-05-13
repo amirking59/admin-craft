@@ -45,7 +45,7 @@ export function Pagination() {
             total: table.getPageCount(),
           })}
         </div>
-        <div className="ml-auto flex items-center gap-2 lg:ml-0">
+        <div className="ms-auto flex items-center gap-2 lg:ms-0">
           <Button
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"

@@ -45,7 +45,7 @@ export function DataTableViewOptions() {
                         (typeof column.columnDef.header === "string" && column.columnDef.header?.toString())}
                     </span>
                     <Check
-                      className={cn("ml-auto size-4 shrink-0", column.getIsVisible() ? "opacity-100" : "opacity-0")}
+                      className={cn("ms-auto size-4 shrink-0", column.getIsVisible() ? "opacity-100" : "opacity-0")}
                     />
                   </CommandItem>
                 );

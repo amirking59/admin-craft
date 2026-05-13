@@ -26,7 +26,7 @@ export const FullScreenImage = ({
         <DialogTrigger
           render={
             <div
-              className="absolute cursor-pointer bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+              className="absolute cursor-pointer bottom-2 end-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
               aria-label="View fullscreen"
             />
           }

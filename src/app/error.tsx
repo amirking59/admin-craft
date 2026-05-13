@@ -25,7 +25,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
         <h1 className="text-2xl font-bold tracking-tight">{t("somethingWentWrong")}</h1>
         <p className="h-125 text-muted-foreground">{t("unexpectedError")}</p>
 
-        <Alert variant="destructive" className="h-125 text-left">
+        <Alert variant="destructive" className="h-125 text-start">
           <ExclamationTriangleIcon className="h-4 w-4" />
           <AlertTitle>{t("errorDetails")}</AlertTitle>
           <AlertDescription className="mt-2">
@@ -50,12 +50,12 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
       </div>
       <div className="flex flex-col gap-2 sm:flex-row mt-4">
         <Button onClick={() => reset()}>
-          <RefreshCwIcon className="mr-2 h-4 w-4" />
+          <RefreshCwIcon className="me-2 h-4 w-4" />
           {t("tryAgain")}
         </Button>
         <Button variant="outline" render={<Link href="/" />}>
           {t("backToDashboard")}
-          <ArrowLeftIcon className="mr-2 h-4 w-4" />
+          <ArrowLeftIcon className="me-2 h-4 w-4" />
         </Button>
       </div>
     </div>
