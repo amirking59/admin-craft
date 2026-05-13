@@ -52,7 +52,7 @@ export const navItems: NavItem[] = [
 export function NavMain() {
   const { t } = useTranslation();
   const pathname = usePathname();
-  const { setOpenMobile, state, isMobile } = useSidebar();
+  const { setOpenMobile } = useSidebar();
 
   return (
     <SidebarGroup>
@@ -67,13 +67,7 @@ export function NavMain() {
                 className="group/collapsible"
               >
                 <CollapsibleTrigger render={<SidebarMenuButton tooltip={t(item.title, { ns: item.namespace })} />}>
-                  {item.icon && (
-                    <item.icon
-                      className={cn("transition-all", {
-                        "size-5!": state === "expanded" || isMobile,
-                      })}
-                    />
-                  )}
+                  {item.icon && <item.icon />}
                   <span>{t(item.title, { ns: item.namespace })}</span>
                   <ChevronRight className="ms-auto rtl:rotate-180 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                 </CollapsibleTrigger>
@@ -103,13 +97,7 @@ export function NavMain() {
                   isActive={pathname?.startsWith(item.route)}
                   tooltip={t(item.title, { ns: item.namespace })}
                 >
-                  {item.icon && (
-                    <item.icon
-                      className={cn("transition-all", {
-                        "size-5!": state === "expanded" || isMobile,
-                      })}
-                    />
-                  )}
+                  {item.icon && <item.icon />}
                   <span>{t(item.title, { ns: item.namespace })}</span>
                 </SidebarMenuButton>
               </Link>
