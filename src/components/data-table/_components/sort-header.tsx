@@ -23,7 +23,7 @@ export const DataTableSortHeader = <TData, TValue>({ column, children }: DataTab
   return (
     <div onClick={column.getToggleSortingHandler()} className="flex gap-2 items-center cursor-pointer">
       <div>{children}</div>
-      <Button variant="ghost" size="icon" className="h-8">
+      <Button variant="ghost" size="icon-xs">
         {renderSortIcon()}
       </Button>
     </div>

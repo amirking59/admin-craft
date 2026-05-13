@@ -6,6 +6,7 @@ import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { useEffect, useState } from "react";
 import "@/lib/date";
+import "@/configs/i18n";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface ProvidersProps {
