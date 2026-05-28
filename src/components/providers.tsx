@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import "@/lib/date";
 import "@/configs/i18n";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -40,7 +40,9 @@ export function Providers({ children }: ProvidersProps) {
       <NuqsAdapter>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider defaultTheme="light" enableSystem={false}>
-            <TooltipProvider>{children}</TooltipProvider>
+            <TooltipProvider>
+              <Suspense>{children}</Suspense>
+            </TooltipProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </NuqsAdapter>

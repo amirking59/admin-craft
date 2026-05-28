@@ -1,18 +1,5 @@
-import { createSerializer, parseAsArrayOf, parseAsJson } from "nuqs";
-import { z } from "zod";
-
-const serialize = createSerializer({
-  filters: parseAsArrayOf(
-    parseAsJson(
-      z.object({
-        id: z.string(),
-        value: z.string(),
-      }).parse,
-    ),
-  ),
-});
-
-export const serializeDataTableFilters = serialize;
+import { ColumnFiltersState } from "@tanstack/react-table";
+import { DataTableFilters } from "@/components/data-table/_types";
 
 export const isFilterValueEmpty = (value: unknown) => {
   if (value == null) return true;
@@ -27,3 +14,16 @@ export const isFilterValueEmpty = (value: unknown) => {
 
   return false;
 };
+
+export const filtersArrayToObject = (columnFilters: ColumnFiltersState): DataTableFilters =>
+  columnFilters.reduce((acc, { id, value }) => {
+    if (!isFilterValueEmpty(value)) {
+      acc[id] = value as string | string[];
+    }
+    return acc;
+  }, {} as DataTableFilters);
+
+export const filtersObjectToArray = (filters: DataTableFilters): ColumnFiltersState =>
+  Object.entries(filters)
+    .filter(([, value]) => !isFilterValueEmpty(value))
+    .map(([id, value]) => ({ id, value }));

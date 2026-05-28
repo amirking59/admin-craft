@@ -3,10 +3,8 @@
 import { ColumnDef, ColumnFiltersState, getCoreRowModel, SortingState, useReactTable } from "@tanstack/react-table";
 
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { parseAsJson, useQueryState } from "nuqs";
-import { z } from "zod";
-import { FilterDef } from "@/components/data-table/_types";
+import { useMemo, useState } from "react";
+import { DataTableQueryParams, FilterDef } from "@/components/data-table/_types";
 import { DataTableActions } from "@/components/data-table/_components/data-table-actions";
 import { Pagination } from "@/components/data-table/_components/pagination";
 import { DataTableViewOptions } from "@/components/data-table/_components/data-table-view-options";
@@ -15,12 +13,8 @@ import { Button } from "@/components/ui/button";
 import { TableView } from "@/components/data-table/_components/table-view";
 import { TableProvider } from "@/components/data-table/_context/table";
 import { FiltersButton } from "@/components/data-table/_components/filters-button";
-import { isFilterValueEmpty } from "@/components/data-table/_utils";
-
-const sortSchema = z.object({
-  pageIndex: z.number(),
-  pageSize: z.number(),
-});
+import { filtersArrayToObject, filtersObjectToArray } from "@/components/data-table/_utils";
+import { useDataTableQueryState } from "@/components/data-table/_hooks/use-data-table-query-state";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -29,7 +23,7 @@ interface DataTableProps<TData, TValue> {
   title?: string;
   actions?: React.ReactNode[];
   queryKey: string;
-  queryFn: (params: unknown) => Promise<{
+  queryFn: (params: DataTableQueryParams) => Promise<{
     items: TData[];
     total: number;
   }>;
@@ -46,62 +40,28 @@ export function DataTable<TData, TValue>({
   queryFn,
   rowHeight = 61,
 }: DataTableProps<TData, TValue>) {
-  const [pagination, setPagination] = useQueryState(
-    "pagination",
-    parseAsJson(sortSchema.parse).withDefault({
-      pageIndex: 0,
-      pageSize: 10,
-    }),
-  );
+  const { page, filters: urlFilters, setPage, setFilters } = useDataTableQueryState({ defaultPageSize: 10 });
+
   const [sorting, setSorting] = useState<SortingState>(initialSort ? [initialSort] : []);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
-    filters
-      .filter((filter) => filter.defaultValue !== undefined)
-      .map((filter) => ({
-        id: filter.name,
-        value: filter.defaultValue || "",
-      })),
+
+  const pagination = useMemo(
+    () => ({ pageIndex: page.index - 1, pageSize: page.size }),
+    [page.index, page.size],
   );
 
-  useEffect(() => {
-    setColumnFilters(
-      filters
-        .filter((filter) => filter.defaultValue !== undefined)
-        .map((filter) => ({
-          id: filter.name,
-          value: filter.defaultValue || "",
-        })),
-    );
-  }, [filters, setColumnFilters]);
+  const columnFilters = useMemo<ColumnFiltersState>(() => filtersObjectToArray(urlFilters), [urlFilters]);
 
   const { data, isFetching, refetch } = useQuery({
-    queryKey: [queryKey, pagination, sorting, columnFilters],
+    queryKey: [queryKey, page, sorting, columnFilters],
     queryFn: async () => {
-      const formattedFilters = columnFilters.reduce(
-        (acc, filter) => {
-          const { id, value } = filter;
-
-          if (!isFilterValueEmpty(value)) {
-            acc[id] = value as string | string[];
-          }
-
-          return acc;
-        },
-        {} as Record<string, string | string[]>,
-      );
-
       const response = await queryFn({
-        take: pagination.pageSize,
-        skip: pagination.pageIndex * pagination.pageSize,
-        sort: sorting[0]?.desc ? `-${sorting[0]?.id}` : sorting[0]?.id,
-        ...formattedFilters,
+        page: { index: page.index, size: page.size },
+        sort: sorting[0] ? (sorting[0].desc ? `-${sorting[0].id}` : sorting[0].id) : undefined,
+        filters: filtersArrayToObject(columnFilters),
       });
 
-      if (response.items.length === 0 && pagination.pageIndex > 0) {
-        setPagination((prev) => ({
-          ...prev,
-          pageIndex: 0,
-        }));
+      if (response.items.length === 0 && page.index > 1) {
+        setPage({ index: 1 });
       }
 
       return response;
@@ -139,12 +99,14 @@ export function DataTable<TData, TValue>({
         {} as Record<string, boolean>,
       ),
     },
-    onStateChange: (updater) => {
-      const newState = typeof updater === "function" ? updater(table.getState()) : updater;
-
-      setPagination(newState.pagination);
-      setSorting(newState.sorting);
-      setColumnFilters(newState.columnFilters);
+    onPaginationChange: (updater) => {
+      const next = typeof updater === "function" ? updater(pagination) : updater;
+      setPage({ index: next.pageIndex + 1, size: next.pageSize });
+    },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: (updater) => {
+      const next = typeof updater === "function" ? updater(columnFilters) : updater;
+      setFilters(filtersArrayToObject(next));
     },
     defaultColumn: {
       enableSorting: false,

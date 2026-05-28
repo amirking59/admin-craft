@@ -8,6 +8,9 @@ import dayjs from "dayjs";
 import { formatNumber } from "@/lib/utils";
 import { Order, OrderStatus } from "@/app/(main)/orders/_types";
 import { useTranslation } from "react-i18next";
+import { FilterDef, FilterOperator } from "@/components/data-table/_types";
+import { EnumField } from "@/components/form/enum-field";
+import { DateField } from "@/components/form/date-field";
 
 const statusVariant: Record<OrderStatus, "default" | "secondary" | "outline" | "destructive"> = {
   [OrderStatus.Pending]: "secondary",
@@ -73,12 +76,25 @@ export const OrderTable = () => {
     },
   ];
 
+  const filters: FilterDef[] = [
+    {
+      name: "status",
+      operator: FilterOperator.Equal,
+      input: () => <EnumField enumObject={OrderStatus} multiple clearable placeholder={t("status")} />,
+    },
+    {
+      name: "created_at_from",
+      operator: FilterOperator.BetweenDate,
+      input: () => <DateField mode="single" clearable placeholder={t("createdAt")} />,
+    },
+  ];
+
   return (
     <DataTable
       queryKey="orders"
-      queryFn={(params) => getOrders(params as any)}
+      queryFn={getOrders}
       columns={columns}
-      filters={[]}
+      filters={filters}
       title={t("orders")}
       initialSort={{ desc: true, id: "orderId" }}
       rowHeight={61}

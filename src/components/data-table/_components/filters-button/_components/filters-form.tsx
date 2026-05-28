@@ -4,6 +4,7 @@ import { DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/componen
 import React, { cloneElement } from "react";
 import { FormProvider, useForm, UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { isFilterValueEmpty } from "@/components/data-table/_utils";
 
 interface FiltersFormProps {
   onClose?: () => void;
@@ -15,25 +16,25 @@ export function FiltersForm({ onClose }: FiltersFormProps) {
 
   const filters = table.getState().filters;
 
-  const form = useForm<Record<string, string>>({
+  const form = useForm<Record<string, any>>({
     defaultValues: filters.reduce(
       (acc, filter) => {
         const initialValue = table.getState().columnFilters.find((columnFilter) => columnFilter.id === filter.name)
-          ?.value as string | undefined;
+          ?.value as string | string[] | undefined;
 
         acc[filter.name] = initialValue ?? "";
         return acc;
       },
-      {} as Record<string, string>,
+      {} as Record<string, any>,
     ),
   });
 
-  function onSubmit(values: Record<string, string>) {
+  function onSubmit(values: Record<string, any>) {
     onClose?.();
 
     table.setColumnFilters(
       Object.entries(values)
-        .filter(([, value]) => value !== "" && value !== null && value !== undefined)
+        .filter(([, value]) => !isFilterValueEmpty(value))
         .map(([key, value]) => ({ id: key, value })),
     );
   }

@@ -1,5 +1,6 @@
 import { Order, OrderStatus } from "@/app/(main)/orders/_types";
-import { TableQueryFnResponse } from "@/components/data-table/_types";
+import { DataTableQueryParams, TableQueryFnResponse } from "@/components/data-table/_types";
+import dayjs from "dayjs";
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -256,10 +257,23 @@ const mockOrders: Order[] = [
   },
 ];
 
-export const getOrders = async (params: { take: number; skip: number }): TableQueryFnResponse<Order> => {
+export const getOrders = async ({ page, filters }: DataTableQueryParams): TableQueryFnResponse<Order> => {
   await delay(200);
+
+  const statusFilter = filters?.status;
+  const statuses = Array.isArray(statusFilter) ? statusFilter : statusFilter ? [statusFilter] : [];
+  const createdAtFrom = typeof filters?.created_at_from === "string" ? filters.created_at_from : undefined;
+
+  const filtered = mockOrders.filter((order) => {
+    if (statuses.length > 0 && !statuses.includes(order.status)) return false;
+    if (createdAtFrom && dayjs(order.createdAt).isBefore(dayjs(createdAtFrom))) return false;
+    return true;
+  });
+
+  const skip = (page.index - 1) * page.size;
+
   return {
-    items: mockOrders.slice(params.skip, params.skip + params.take),
-    total: mockOrders.length,
+    items: filtered.slice(skip, skip + page.size),
+    total: filtered.length,
   };
 };

@@ -2,11 +2,14 @@ import { LocalStorage } from "@/lib/storage";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "sonner";
 import i18n from "i18next";
+import qs from "qs";
 import { logout } from "@/app/auth/_services";
 
 export const baseApi = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   timeout: 30000,
+  paramsSerializer: (params) =>
+    qs.stringify(params, { arrayFormat: "brackets", encodeValuesOnly: true, skipNulls: true }),
 });
 
 baseApi.interceptors.request.use(

@@ -94,7 +94,7 @@ export const ProductTable = () => {
   return (
     <DataTable
       queryKey="products"
-      queryFn={(params) => getProducts(params as any)}
+      queryFn={getProducts}
       columns={columns}
       filters={[]}
       title={t("products")}

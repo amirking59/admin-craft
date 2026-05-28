@@ -39,3 +39,11 @@ export type TableQueryFnResponse<T> = Promise<{
   items: T[];
   total: number;
 }>;
+
+export type DataTableFilters = Record<string, string | string[]>;
+
+export type DataTableQueryParams = {
+  page: { index: number; size: number };
+  sort?: string;
+  filters?: DataTableFilters;
+};

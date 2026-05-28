@@ -1,5 +1,5 @@
 import { Product, ProductCategory, CreateProductParams, UpdateProductParams } from "@/app/(main)/products/_types";
-import { TableQueryFnResponse } from "@/components/data-table/_types";
+import { DataTableQueryParams, TableQueryFnResponse } from "@/components/data-table/_types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -236,10 +236,11 @@ let mockProducts: Product[] = [
 
 let nextId = 26;
 
-export const getProducts = async (params: { take: number; skip: number }): TableQueryFnResponse<Product> => {
+export const getProducts = async ({ page }: DataTableQueryParams): TableQueryFnResponse<Product> => {
   await delay(200);
+  const skip = (page.index - 1) * page.size;
   return {
-    items: mockProducts.slice(params.skip, params.skip + params.take),
+    items: mockProducts.slice(skip, skip + page.size),
     total: mockProducts.length,
   };
 };
