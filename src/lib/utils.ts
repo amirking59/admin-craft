@@ -1,10 +1,5 @@
-import { clsx, type ClassValue } from "clsx";
 import dayjs, { Dayjs } from "dayjs";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+export { cn } from "cn";
 
 export const convertCase = (
   str = "",

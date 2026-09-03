@@ -1965,8 +1965,8 @@ __metadata:
     "@types/react-dom": "npm:19.2.3"
     axios: "npm:^1.16.0"
     class-variance-authority: "npm:^0.7.1"
-    clsx: "npm:^2.1.1"
     cmdk: "npm:^1.1.1"
+    cn: "npm:^0.2.4"
     dayjs: "npm:^1.11.19"
     i18next: "npm:^26.1.0"
     input-otp: "npm:^1.4.2"
@@ -1987,7 +1987,6 @@ __metadata:
     react-number-format: "npm:^5.4.4"
     shadcn: "npm:^4.7.0"
     sonner: "npm:^2.0.7"
-    tailwind-merge: "npm:^3.6.0"
     tailwindcss: "npm:^4.3.0"
     tw-animate-css: "npm:^1.4.0"
     typescript: "npm:^6.0.3"
@@ -2287,6 +2286,15 @@ __metadata:
     react: ^18 || ^19 || ^19.0.0-rc
     react-dom: ^18 || ^19 || ^19.0.0-rc
   checksum: 10c0/5605ac4396ec9bc65c82f954da19dd89a0636a54026df72780e2470da1381f9d57434a80a53f2d57eaa4e759660a3ebba9232b74258dc09970576591eae03116
+  languageName: node
+  linkType: hard
+
+"cn@npm:^0.2.4":
+  version: 0.2.4
+  resolution: "cn@npm:0.2.4"
+  bin:
+    cn: bin/cn.mjs
+  checksum: 10c0/8de1dc645247e83825ae96f4f333bc2cb8e1c5b5c4ab29f54e68fabdc02813ef478f7ef6f0710005071ce7a27b414f493aa07e683a40dfe2f727f90cf74509c0
   languageName: node
   linkType: hard
 
@@ -5113,7 +5121,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tailwind-merge@npm:^3.0.1, tailwind-merge@npm:^3.6.0":
+"tailwind-merge@npm:^3.0.1":
   version: 3.6.0
   resolution: "tailwind-merge@npm:3.6.0"
   checksum: 10c0/a728d929f4786bcb48641db4228cc8c006a7545491783a658fb4d24d177dab960620991d17805a047309228de50ab949ca8d9e112c30183da0432367796ae186
