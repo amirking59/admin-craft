@@ -1,5 +1,7 @@
 export const base = {
   appName: "Admin Craft",
+  adminPanel: "Admin panel",
+  navigation: "Navigation",
   dark: "Dark",
   light: "Light",
   logout: "Logout",

@@ -5,7 +5,9 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
   SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
@@ -22,19 +24,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar side={direction === "rtl" ? "right" : "left"} collapsible="icon" {...props}>
       <SidebarHeader>
-        <Link onClick={() => setOpenMobile(false)} to="/">
-          <SidebarMenuButton
-            size="lg"
-            className="gap-3 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-          >
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-              <LayoutDashboard />
-            </div>
-            <div className="grid flex-1 text-start text-sm leading-tight">
-              <span className="truncate font-medium">{t("appName")}</span>
-            </div>
-          </SidebarMenuButton>
-        </Link>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" render={<Link onClick={() => setOpenMobile(false)} to="/" />}>
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <LayoutDashboard className="size-4" />
+              </div>
+              <div className="grid flex-1 text-start text-sm leading-tight">
+                <span className="truncate font-semibold">{t("appName")}</span>
+                <span className="truncate text-xs text-muted-foreground">{t("adminPanel")}</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain />

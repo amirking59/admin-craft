@@ -1,4 +1,6 @@
 export const base = {
+  adminPanel: "لوحة الإدارة",
+  navigation: "التنقل",
   appName: "ادمین کرفت",
   dark: "مظلم",
   light: "فاتح",

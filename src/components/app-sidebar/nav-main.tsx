@@ -3,6 +3,7 @@ import { ChevronRight, LucideProps, ShoppingCart, Package } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -14,7 +15,6 @@ import {
 import { Link, useLocation } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { ForwardRefExoticComponent, RefAttributes } from "react";
-import { cn } from "@/lib/utils";
 import type { FileRouteTypes } from "@/routeTree.gen";
 
 type Icon = ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
@@ -53,30 +53,35 @@ export function NavMain() {
   const pathname = useLocation({ select: (location) => location.pathname });
   const { setOpenMobile } = useSidebar();
 
+  const closeMobile = () => setOpenMobile(false);
+
   return (
     <SidebarGroup>
+      <SidebarGroupLabel>{t("navigation")}</SidebarGroupLabel>
       <SidebarMenu>
         {navItems.map((item) => {
-          if (item.subItems && item.subItems.length !== 0) {
+          const label = t(item.title, { ns: item.namespace });
+
+          if (item.subItems?.length) {
             return (
               <Collapsible
-                key={t(item.title, { ns: item.namespace })}
+                key={item.title}
                 render={<SidebarMenuItem />}
-                defaultOpen={item.subItems?.some((subItem) => pathname?.startsWith(subItem.route))}
+                defaultOpen={item.subItems.some((subItem) => pathname.startsWith(subItem.route))}
                 className="group/collapsible"
               >
-                <CollapsibleTrigger render={<SidebarMenuButton tooltip={t(item.title, { ns: item.namespace })} />}>
-                  {item.icon && <item.icon />}
-                  <span>{t(item.title, { ns: item.namespace })}</span>
-                  <ChevronRight className="ms-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 rtl:rotate-180" />
+                <CollapsibleTrigger render={<SidebarMenuButton tooltip={label} />}>
+                  <item.icon />
+                  <span>{label}</span>
+                  <ChevronRight className="ms-auto transition-transform duration-200 group-data-[open]/collapsible:rotate-90 rtl:rotate-180 rtl:group-data-[open]/collapsible:rotate-90" />
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {item.subItems?.map((subItem) => (
+                    {item.subItems.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
                         <SidebarMenuSubButton
-                          isActive={pathname?.startsWith(subItem.route)}
-                          render={<Link onClick={() => setOpenMobile(false)} to={subItem.route} />}
+                          isActive={pathname.startsWith(subItem.route)}
+                          render={<Link onClick={closeMobile} to={subItem.route} />}
                         >
                           <span>{t(subItem.title, { ns: subItem.namespace })}</span>
                         </SidebarMenuSubButton>
@@ -84,26 +89,24 @@ export function NavMain() {
                     ))}
                   </SidebarMenuSub>
                 </CollapsibleContent>
-                =
               </Collapsible>
             );
           }
 
-          if (item.route) {
-            return (
-              <Link onClick={() => setOpenMobile(false)} key={item.route} to={item.route}>
-                <SidebarMenuButton
-                  isActive={pathname?.startsWith(item.route)}
-                  tooltip={t(item.title, { ns: item.namespace })}
-                >
-                  {item.icon && <item.icon />}
-                  <span>{t(item.title, { ns: item.namespace })}</span>
-                </SidebarMenuButton>
-              </Link>
-            );
-          }
+          if (!item.route) return null;
 
-          return null;
+          return (
+            <SidebarMenuItem key={item.route}>
+              <SidebarMenuButton
+                isActive={pathname.startsWith(item.route)}
+                tooltip={label}
+                render={<Link onClick={closeMobile} to={item.route} />}
+              >
+                <item.icon />
+                <span>{label}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          );
         })}
       </SidebarMenu>
     </SidebarGroup>
