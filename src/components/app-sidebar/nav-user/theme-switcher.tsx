@@ -5,16 +5,17 @@ import { useTranslation } from "react-i18next";
 
 export const ThemeSwitcher = () => {
   const { t } = useTranslation();
-  const { setTheme, theme } = useTheme();
+  // resolvedTheme, not theme: with defaultTheme="system", theme is "system" until the user picks one.
+  const { setTheme, resolvedTheme } = useTheme();
 
   return (
     <DropdownMenuGroup>
       <DropdownMenuItem
         onClick={() => {
-          setTheme(theme === "dark" ? "light" : "dark");
+          setTheme(resolvedTheme === "dark" ? "light" : "dark");
         }}
       >
-        {theme === "dark" ? (
+        {resolvedTheme === "dark" ? (
           <>
             <Sun className="size-[1.2rem]" />
 

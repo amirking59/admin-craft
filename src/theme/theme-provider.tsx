@@ -1,31 +1,15 @@
 import { ThemeProvider as NextThemeProvider } from "next-themes";
-import { useLocale } from "@/hooks/use-locale";
-import { useEffect } from "react";
 import { DirectionProvider } from "@base-ui/react";
-import { LocalStorage } from "@/lib/storage";
 import { useDirection } from "@/hooks/use-direction";
 
+// next-themes persists the choice under localStorage "theme" and toggles the `dark`/`light` class on <html>.
+// `dir`/`lang` on <html> are set in src/routes/__root.tsx.
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [locale] = useLocale();
   const direction = useDirection();
-
-  useEffect(() => {
-    document.documentElement.setAttribute("dir", direction);
-    document.documentElement.setAttribute("lang", locale);
-  }, [locale, direction]);
-
-  useEffect(() => {
-    const theme = LocalStorage.getItem("theme");
-    if (theme) {
-      document.documentElement.classList.add(theme || "light");
-    }
-  }, []);
 
   return (
     <NextThemeProvider defaultTheme="system" attribute="class" disableTransitionOnChange>
-      <DirectionProvider key={"direction-provider"} direction={direction}>
-        {children}
-      </DirectionProvider>
+      <DirectionProvider direction={direction}>{children}</DirectionProvider>
     </NextThemeProvider>
   );
 }
