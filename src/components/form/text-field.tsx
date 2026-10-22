@@ -1,11 +1,10 @@
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { DebouncedInput, Input } from "@/components/ui/input";
-import { Controller, useFormContext } from "react-hook-form";
+import { useFieldContext } from "@/components/form/form-context";
 import { X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
 interface TextFieldProps {
-  name?: string;
   placeholder?: string;
   label?: string;
   clearable?: boolean;
@@ -16,56 +15,56 @@ interface TextFieldProps {
 
 export function TextField({
   label,
-  name = "",
   clearable = false,
   debounceMs,
   disabled = false,
   textarea,
   ...props
 }: (TextFieldProps & React.ComponentProps<"input">) & React.ComponentProps<"textarea">) {
-  const { control } = useFormContext();
+  const field = useFieldContext<string | number>();
+  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+
+  const fieldProps = {
+    "id": field.name,
+    "name": field.name,
+    "value": field.state.value ?? "",
+    "onBlur": field.handleBlur,
+    "aria-invalid": isInvalid,
+  };
 
   return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid}>
-          {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
+    <Field data-invalid={isInvalid}>
+      {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
 
-          <div className="relative">
-            {debounceMs ? (
-              <DebouncedInput
-                disabled={disabled}
-                debounceMs={debounceMs}
-                id={field.name}
-                aria-invalid={fieldState.invalid}
-                {...field}
-                {...props}
-              />
-            ) : textarea ? (
-              <Textarea
-                disabled={disabled}
-                placeholder={props.placeholder}
-                id={field.name}
-                aria-invalid={fieldState.invalid}
-                {...field}
-                {...props}
-              />
-            ) : (
-              <Input disabled={disabled} id={field.name} aria-invalid={fieldState.invalid} {...field} {...props} />
-            )}
+      <div className="relative">
+        {debounceMs ? (
+          <DebouncedInput
+            disabled={disabled}
+            debounceMs={debounceMs}
+            {...fieldProps}
+            onChange={(e) => field.handleChange(e.target.value)}
+            {...props}
+          />
+        ) : textarea ? (
+          <Textarea
+            disabled={disabled}
+            placeholder={props.placeholder}
+            {...fieldProps}
+            onChange={(e) => field.handleChange(e.target.value)}
+            {...props}
+          />
+        ) : (
+          <Input disabled={disabled} {...fieldProps} onChange={(e) => field.handleChange(e.target.value)} {...props} />
+        )}
 
-            {clearable && !disabled && field.value && (
-              <div className="absolute end-2 top-1/2 -translate-y-1/2 cursor-pointer p-1">
-                <X onClick={() => field.onChange("")} size={16} />
-              </div>
-            )}
+        {clearable && !disabled && field.state.value && (
+          <div className="absolute end-2 top-1/2 -translate-y-1/2 cursor-pointer p-1">
+            <X onClick={() => field.handleChange("")} size={16} />
           </div>
+        )}
+      </div>
 
-          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-        </Field>
-      )}
-    />
+      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+    </Field>
   );
 }

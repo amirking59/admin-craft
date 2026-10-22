@@ -1,15 +1,6 @@
-"use client";
-
 import { useCallback, useMemo } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import qs from "qs";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { DataTableFilters } from "@/components/data-table/_types";
-
-const STRINGIFY_OPTIONS: qs.IStringifyOptions = {
-  arrayFormat: "brackets",
-  encodeValuesOnly: true,
-  skipNulls: true,
-};
 
 interface DataTablePageState {
   index: number;
@@ -27,14 +18,9 @@ interface UseDataTableQueryStateOptions {
 }
 
 export function useDataTableQueryState({ defaultPageSize = 10 }: UseDataTableQueryStateOptions = {}) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const parsed = useMemo(
-    () => qs.parse(searchParams.toString(), { ignoreQueryPrefix: true }) as DataTableQuery,
-    [searchParams],
-  );
+  const navigate = useNavigate();
+  // The router parses search with qs (see src/router.tsx).
+  const parsed = useSearch({ strict: false }) as DataTableQuery;
 
   const page = useMemo<DataTablePageState>(() => {
     const index = Number(parsed.page?.index);
@@ -52,10 +38,9 @@ export function useDataTableQueryState({ defaultPageSize = 10 }: UseDataTableQue
 
   const pushQuery = useCallback(
     (next: DataTableQuery) => {
-      const query = qs.stringify(next, STRINGIFY_OPTIONS);
-      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+      navigate({ to: ".", search: next as never, replace: true, resetScroll: false });
     },
-    [pathname, router],
+    [navigate],
   );
 
   const setPage = useCallback(

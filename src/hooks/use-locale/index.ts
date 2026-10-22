@@ -1,5 +1,3 @@
-"use client";
-
 import { LocalStorage } from "@/lib/storage";
 import { Locale } from "./_types";
 import { useTranslation } from "react-i18next";

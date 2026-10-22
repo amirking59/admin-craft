@@ -1,10 +1,9 @@
 import { useTableContext } from "@/components/data-table/_context/table";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import React, { cloneElement } from "react";
-import { FormProvider, useForm, UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { isFilterValueEmpty } from "@/components/data-table/_utils";
+import { useAppForm } from "@/components/form/use-app-form";
 
 interface FiltersFormProps {
   onClose?: () => void;
@@ -16,7 +15,7 @@ export function FiltersForm({ onClose }: FiltersFormProps) {
 
   const filters = table.getState().filters;
 
-  const form = useForm<Record<string, any>>({
+  const form = useAppForm({
     defaultValues: filters.reduce(
       (acc, filter) => {
         const initialValue = table.getState().columnFilters.find((columnFilter) => columnFilter.id === filter.name)
@@ -27,17 +26,16 @@ export function FiltersForm({ onClose }: FiltersFormProps) {
       },
       {} as Record<string, any>,
     ),
+    onSubmit: ({ value }) => {
+      onClose?.();
+
+      table.setColumnFilters(
+        Object.entries(value)
+          .filter(([, value]) => !isFilterValueEmpty(value))
+          .map(([key, value]) => ({ id: key, value })),
+      );
+    },
   });
-
-  function onSubmit(values: Record<string, any>) {
-    onClose?.();
-
-    table.setColumnFilters(
-      Object.entries(values)
-        .filter(([, value]) => !isFilterValueEmpty(value))
-        .map(([key, value]) => ({ id: key, value })),
-    );
-  }
 
   function resetFilters() {
     table.resetColumnFilters(true);
@@ -48,57 +46,51 @@ export function FiltersForm({ onClose }: FiltersFormProps) {
           acc[filter.name] = "";
           return acc;
         },
-        {} as Record<string, string>,
+        {} as Record<string, any>,
       ),
     );
   }
 
   return (
-    <FormProvider {...form}>
-      <form className="flex flex-col gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-        <DialogHeader>
-          <DialogTitle>{t("table.filters")}</DialogTitle>
-        </DialogHeader>
+    <form
+      className="flex flex-col gap-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        form.handleSubmit();
+      }}
+    >
+      <DialogHeader>
+        <DialogTitle>{t("table.filters")}</DialogTitle>
+      </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filters?.map((filter) => {
-            if (!filter.input) return null;
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {filters?.map((filter) => {
+          if (!filter.input) return null;
 
-            const props: {
-              name: string;
-              onValueChange?: (form: UseFormReturn<Record<string, string>, any, Record<string, string>>) => void;
-              key: string;
-            } = {
-              name: filter.name,
-              key: filter.name,
-            };
+          return (
+            <form.AppField
+              key={filter.name}
+              name={filter.name}
+              listeners={{ onChange: () => filter.onValueChange?.(form) }}
+            >
+              {/* The filter input reads its name/value from the field context. */}
+              {() => filter.input?.()}
+            </form.AppField>
+          );
+        })}
+      </div>
 
-            if (filter.onValueChange) {
-              props.onValueChange = () => filter.onValueChange?.(form);
-            }
+      <DialogFooter>
+        {table.getState().columnFilters.length > 0 && (
+          <Button onClick={resetFilters} type="button" variant={"outline"}>
+            {t("table.resetFilters")}
+          </Button>
+        )}
 
-            return cloneElement(
-              filter.input() as React.ReactElement<{
-                name: string;
-                onChange: (form: UseFormReturn<Record<string, string>, any, Record<string, string>>) => void;
-              }>,
-              props,
-            );
-          })}
-        </div>
+        <DialogClose render={<Button variant="outline" />}>{t("cancel")}</DialogClose>
 
-        <DialogFooter>
-          {table.getState().columnFilters.length > 0 && (
-            <Button onClick={resetFilters} type="button" variant={"outline"}>
-              {t("table.resetFilters")}
-            </Button>
-          )}
-
-          <DialogClose render={<Button variant="outline" />}>{t("cancel")}</DialogClose>
-
-          <Button type="submit">{t("submit")}</Button>
-        </DialogFooter>
-      </form>
-    </FormProvider>
+        <Button type="submit">{t("submit")}</Button>
+      </DialogFooter>
+    </form>
   );
 }

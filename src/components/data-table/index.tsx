@@ -1,5 +1,3 @@
-"use client";
-
 import { ColumnDef, ColumnFiltersState, getCoreRowModel, SortingState, useReactTable } from "@tanstack/react-table";
 
 import { useQuery } from "@tanstack/react-query";
@@ -44,10 +42,7 @@ export function DataTable<TData, TValue>({
 
   const [sorting, setSorting] = useState<SortingState>(initialSort ? [initialSort] : []);
 
-  const pagination = useMemo(
-    () => ({ pageIndex: page.index - 1, pageSize: page.size }),
-    [page.index, page.size],
-  );
+  const pagination = useMemo(() => ({ pageIndex: page.index - 1, pageSize: page.size }), [page.index, page.size]);
 
   const columnFilters = useMemo<ColumnFiltersState>(() => filtersObjectToArray(urlFilters), [urlFilters]);
 

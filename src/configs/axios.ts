@@ -3,10 +3,10 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "sonner";
 import i18n from "i18next";
 import qs from "qs";
-import { logout } from "@/app/auth/_services";
+import { logout } from "@/features/auth/services";
 
 export const baseApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: import.meta.env.VITE_API_URL,
   timeout: 30000,
   paramsSerializer: (params) =>
     qs.stringify(params, { arrayFormat: "brackets", encodeValuesOnly: true, skipNulls: true }),

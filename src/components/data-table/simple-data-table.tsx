@@ -1,5 +1,3 @@
-"use client";
-
 import {
   ColumnDef,
   getCoreRowModel,
@@ -15,7 +13,7 @@ import { TableView } from "@/components/data-table/_components/table-view";
 import { TableProvider } from "@/components/data-table/_context/table";
 import { TableViewType } from "@/components/data-table/_types";
 import { GridView } from "@/components/data-table/_components/grid-view";
-import { parseAsStringEnum, useQueryState } from "nuqs";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, TableProperties } from "lucide-react";
 
@@ -44,10 +42,17 @@ export function SimpleDataTable<TData, TValue>({
   id,
   isLoading = false,
 }: DataTableProps<TData, TValue>) {
-  const [viewType, setViewType] = useQueryState(
-    id ? `${id}-viewType` : "view",
-    parseAsStringEnum(Object.values(TableViewType)).withDefault(defaultViewType),
-  );
+  const viewTypeKey = id ? `${id}-viewType` : "view";
+  const navigate = useNavigate();
+  const searchViewType = useSearch({
+    strict: false,
+    select: (search) => (search as Record<string, unknown>)[viewTypeKey],
+  });
+  const viewType = Object.values(TableViewType).includes(searchViewType as TableViewType)
+    ? (searchViewType as TableViewType)
+    : defaultViewType;
+  const setViewType = (next: TableViewType) =>
+    navigate({ to: ".", search: ((prev: object) => ({ ...prev, [viewTypeKey]: next })) as never, replace: true });
 
   const table = useReactTable({
     data,
@@ -83,9 +88,7 @@ export function SimpleDataTable<TData, TValue>({
           <DataTableViewOptions />
 
           <Button
-            onClick={() =>
-              setViewType((prev) => (prev === TableViewType.GRID ? TableViewType.LIST : TableViewType.GRID))
-            }
+            onClick={() => setViewType(viewType === TableViewType.GRID ? TableViewType.LIST : TableViewType.GRID)}
             size={"icon"}
             variant="outline"
           >

@@ -1,5 +1,3 @@
-"use client";
-
 import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -50,7 +48,7 @@ function DateTimePicker({ onChange, value, disabled, placeholder, ...props }: Da
             selected={value ? dayjs(value).toDate() : undefined}
             defaultMonth={value ? dayjs(value).toDate() : undefined}
             onSelect={(date) => onChange(date ? dayjs(date).toISOString() : null)}
-            initialFocus
+            autoFocus
           />
           <div className="flex flex-col divide-y sm:h-[300px] sm:flex-row sm:divide-x sm:divide-y-0">
             <ScrollArea className="w-64 sm:w-auto">

@@ -1,35 +1,29 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Controller, useFormContext } from "react-hook-form";
+import { useFieldContext } from "@/components/form/form-context";
 
 interface CheckboxFieldProps {
-  name: string;
   label?: string;
   disabled?: boolean;
 }
 
-export function CheckboxField({ label, name, disabled }: CheckboxFieldProps) {
-  const { control } = useFormContext();
+export function CheckboxField({ label, disabled }: CheckboxFieldProps) {
+  const field = useFieldContext<boolean>();
+  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
   return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field, fieldState }) => (
-        <Field orientation="horizontal" data-invalid={fieldState.invalid}>
-          <Checkbox
-            id={field.name}
-            checked={field.value}
-            onCheckedChange={field.onChange}
-            disabled={disabled}
-            aria-invalid={fieldState.invalid}
-          />
+    <Field orientation="horizontal" data-invalid={isInvalid}>
+      <Checkbox
+        id={field.name}
+        checked={field.state.value}
+        onCheckedChange={field.handleChange}
+        disabled={disabled}
+        aria-invalid={isInvalid}
+      />
 
-          {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
+      {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
 
-          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-        </Field>
-      )}
-    />
+      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+    </Field>
   );
 }

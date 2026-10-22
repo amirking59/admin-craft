@@ -1,4 +1,4 @@
-import { OrderStatus } from "@/app/(main)/orders/_types";
+import { OrderStatus } from "@/features/orders/types";
 
 export const orders = {
   orders: "الطلبات",

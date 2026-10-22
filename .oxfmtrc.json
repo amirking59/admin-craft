@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "sortTailwindcss": {
-    "stylesheet": "./app/globals.css",
+    "stylesheet": "./src/styles.css",
     "functions": ["clsx", "cn"]
   },
   "proseWrap": "never",
@@ -10,5 +10,5 @@
   "useTabs:": false,
   "semi": true,
   "quoteProps": "consistent",
-  "ignorePatterns": [".next/**", "out/**", "build/**", "next-env.d.ts", "node_modules/**", "**.md"]
+  "ignorePatterns": ["dist/**", ".output/**", "src/routeTree.gen.ts", "node_modules/**", "**.md"]
 }

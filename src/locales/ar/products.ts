@@ -1,4 +1,4 @@
-import { ProductCategory } from "@/app/(main)/products/_types";
+import { ProductCategory } from "@/features/products/types";
 
 export const products = {
   products: "المنتجات",

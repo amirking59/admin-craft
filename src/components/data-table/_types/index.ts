@@ -1,4 +1,4 @@
-import { UseFormReturn } from "react-hook-form";
+import type { AnyFormApi } from "@tanstack/react-form";
 
 export interface PaginatedQueryFnParams {
   limit: number;
@@ -32,7 +32,7 @@ export type FilterDef = {
   operator: FilterOperator;
   defaultValue?: string;
   transformValue?: (value: string) => number | boolean | string[] | number[];
-  onValueChange?: (form: UseFormReturn<Record<string, string>, any, Record<string, string>>) => void;
+  onValueChange?: (form: AnyFormApi) => void;
 };
 
 export type TableQueryFnResponse<T> = Promise<{

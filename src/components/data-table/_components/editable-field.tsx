@@ -1,9 +1,9 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { cloneElement, RefObject, useRef, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
+import { revalidateLogic } from "@tanstack/react-form";
 import { useOnClickOutside } from "usehooks-ts";
 import { TextField } from "@/components/form/text-field";
+import { useAppForm } from "@/components/form/use-app-form";
 import { cn } from "@/lib/utils";
 import { Cell } from "@tanstack/react-table";
 
@@ -24,30 +24,31 @@ export function EditableField<TData, TValue>({ children, cell }: editableFieldPr
 
   const defaultValue = editableMeta?.getDefaultValue?.(cell.getContext()) || "";
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
+  const form = useAppForm({
     defaultValues: {
       value: defaultValue,
     },
+    validationLogic: revalidateLogic(),
+    validators: { onDynamic: formSchema },
+    onSubmit: ({ value: { value } }) => {
+      if (value !== defaultValue) {
+        editableMeta?.onSubmit?.(value, cell.getContext());
+      }
+
+      setEditing(false);
+    },
   });
 
-  const onCancel = () => {
-    form.handleSubmit(submitHandler)();
+  const onCancel = async () => {
+    // handleSubmit reads values after async validation, so reset only once it settles.
+    await form.handleSubmit();
 
-    form.setValue("value", defaultValue);
+    form.reset();
     setEditing(false);
   };
 
   const onEdit = () => {
     setEditing(true);
-  };
-
-  const submitHandler = ({ value }: z.infer<typeof formSchema>) => {
-    if (value !== defaultValue) {
-      editableMeta?.onSubmit?.(value, cell.getContext());
-    }
-
-    setEditing(false);
   };
 
   useOnClickOutside(formRef as unknown as RefObject<HTMLElement>, onCancel);
@@ -65,24 +66,21 @@ export function EditableField<TData, TValue>({ children, cell }: editableFieldPr
   }
 
   return (
-    <FormProvider {...form}>
-      <form
-        className="flex gap-2 items-center w-fit"
-        ref={formRef}
-        onSubmit={form.handleSubmit(submitHandler, (errors) => console.error(errors))}
-      >
-        {cloneElement(
-          (editableMeta.input || <TextField />) as React.ReactElement<{
-            name: string;
-            autoFocus: boolean;
-            disabled: boolean;
-          }>,
-          {
-            name: "value",
+    <form
+      className="flex w-fit items-center gap-2"
+      ref={formRef}
+      onSubmit={(e) => {
+        e.preventDefault();
+        form.handleSubmit();
+      }}
+    >
+      <form.AppField name="value">
+        {() =>
+          cloneElement((editableMeta.input || <TextField />) as React.ReactElement<{ autoFocus: boolean }>, {
             autoFocus: true,
-          },
-        )}
-      </form>
-    </FormProvider>
+          })
+        }
+      </form.AppField>
+    </form>
   );
 }

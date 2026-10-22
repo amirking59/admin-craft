@@ -1,9 +1,6 @@
-"use client";
-
 import { Toaster } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Suspense, useEffect, useState } from "react";
 import "@/lib/date";
 import "@/configs/i18n";
@@ -37,15 +34,13 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <>
-      <NuqsAdapter>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider defaultTheme="light" enableSystem={false}>
-            <TooltipProvider>
-              <Suspense>{children}</Suspense>
-            </TooltipProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
-      </NuqsAdapter>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="light" enableSystem={false}>
+          <TooltipProvider>
+            <Suspense>{children}</Suspense>
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
 
       <Toaster />
     </>

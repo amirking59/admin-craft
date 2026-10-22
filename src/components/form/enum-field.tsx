@@ -3,7 +3,6 @@ import { getEnumValues } from "@/lib/utils";
 import { convertCase } from "@/lib/utils";
 
 interface EnumFieldProps {
-  name?: string;
   placeholder?: string;
   label?: string;
   enumObject: Record<string, string>;
@@ -21,7 +20,6 @@ export const EnumField: React.FC<EnumFieldProps> = ({
   disableItems,
   disabled,
   label,
-  name,
   placeholder,
   enumObject,
   multiple,
@@ -30,7 +28,6 @@ export const EnumField: React.FC<EnumFieldProps> = ({
 }) => {
   return (
     <SelectField
-      name={name}
       label={label}
       placeholder={placeholder}
       items={getEnumValues(enumObject).map((value) => {

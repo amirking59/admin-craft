@@ -1,5 +1,3 @@
-"use client";
-
 import { Check, Settings2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -40,7 +38,7 @@ export function DataTableViewOptions() {
                     key={column.id}
                     onSelect={() => column.toggleVisibility(!column.getIsVisible())}
                   >
-                    <span className="truncate grow">
+                    <span className="grow truncate">
                       {column.columnDef.meta?.label ??
                         (typeof column.columnDef.header === "string" && column.columnDef.header?.toString())}
                     </span>

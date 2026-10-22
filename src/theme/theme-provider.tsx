@@ -1,5 +1,3 @@
-"use client";
-
 import { ThemeProvider as NextThemeProvider } from "next-themes";
 import { useLocale } from "@/hooks/use-locale";
 import { useEffect } from "react";
