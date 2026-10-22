@@ -36,7 +36,8 @@ export function DateTimeField({ label, clearable = false, disabled = false, plac
             variant="ghost"
             size="icon-xs"
             aria-label={t("clear")}
-            className="absolute end-1.5 top-1/2 -translate-y-1/2"
+            // Centered with margins, not a transform: Button's press effect (active:translate-y-px) would replace it.
+            className="absolute inset-y-0 end-1.5 my-auto"
             onClick={() => field.handleChange(null)}
           >
             <X />
