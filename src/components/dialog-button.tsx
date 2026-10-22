@@ -1,13 +1,15 @@
-import React, { ReactElement, useMemo, useState } from "react";
+import { ReactNode, useState } from "react";
 import { ButtonProps, Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface DialogButtonProps extends Omit<ButtonProps, "onClick" | "content"> {
+  /** Visible trigger label. An icon-only trigger (no title/children) needs an `aria-label`. */
   title?: string;
   icon?: LucideIcon;
-  content: ReactElement & { props: { onClose?: (value: boolean) => void } };
+  /** Dialog body; call `close` to close the dialog, e.g. after a successful submit. */
+  content: (close: () => void) => ReactNode;
   onOpenChange?: (open: boolean) => void;
   dialogClassName?: string;
 }
@@ -16,15 +18,10 @@ export const DialogButton = ({
   title,
   icon: Icon,
   content,
-  variant = "default",
-  size = "default",
-  className,
-  disabled,
-  loading,
   onOpenChange,
   children,
   dialogClassName,
-  ...rest
+  ...buttonProps
 }: DialogButtonProps) => {
   const [open, setOpen] = useState(false);
 
@@ -33,24 +30,17 @@ export const DialogButton = ({
     onOpenChange?.(newOpen);
   };
 
-  const clonedContent = useMemo(
-    () => React.cloneElement(content, { onClose: () => handleOpenChange?.(false) }),
-    [content, handleOpenChange],
-  );
-
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger
-        render={
-          <Button variant={variant} size={size} className={className} disabled={disabled} loading={loading} {...rest} />
-        }
-      >
+      <DialogTrigger render={<Button {...buttonProps} />}>
         {Icon && <Icon />}
         {title}
         {children}
       </DialogTrigger>
 
-      <DialogContent className={cn("sm:max-w-fit sm:min-w-[512px]", dialogClassName)}>{clonedContent}</DialogContent>
+      <DialogContent className={cn("sm:max-w-fit sm:min-w-[512px]", dialogClassName)}>
+        {content(() => handleOpenChange(false))}
+      </DialogContent>
     </Dialog>
   );
 };

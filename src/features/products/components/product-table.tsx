@@ -78,11 +78,18 @@ export const ProductTable = () => {
       size: 100,
       cell: ({ row }) => (
         <div className="flex items-center gap-1">
-          <DialogButton size="icon" variant="ghost" icon={Edit} content={<ProductForm prevData={row.original} />} />
+          <DialogButton
+            size="icon"
+            variant="ghost"
+            icon={Edit}
+            aria-label={t("updateItem", { item: t("product"), ns: "base" })}
+            content={(close) => <ProductForm prevData={row.original} onClose={close} />}
+          />
           <ConfirmDialogButton
             size="icon"
             variant="ghost"
             icon={Trash2}
+            aria-label={t("deleteItem", { item: t("product"), ns: "base" })}
             onOk={() => deleteMutation.mutate(row.original.productId)}
           />
         </div>
@@ -103,7 +110,7 @@ export const ProductTable = () => {
           variant="outline"
           icon={Plus}
           title={t("addItem", { item: t("product"), ns: "base" })}
-          content={<ProductForm />}
+          content={(close) => <ProductForm onClose={close} />}
         />,
       ]}
       initialSort={{ desc: true, id: "productId" }}
