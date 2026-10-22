@@ -22,7 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <NextThemeProvider defaultTheme="light" enableSystem={false}>
+    <NextThemeProvider defaultTheme="system" attribute="class" disableTransitionOnChange>
       <DirectionProvider key={"direction-provider"} direction={direction}>
         {children}
       </DirectionProvider>
