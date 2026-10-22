@@ -1,8 +1,8 @@
-import { ColumnDef, ColumnFiltersState, getCoreRowModel, SortingState, useReactTable } from "@tanstack/react-table";
+import { ColumnDef, ColumnFiltersState, RowData, SortingState, useTable } from "@tanstack/react-table";
 
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { DataTableQueryParams, FilterDef } from "@/components/data-table/_types";
+import { DataTableFeatures, dataTableFeatures, DataTableQueryParams, FilterDef } from "@/components/data-table/_types";
 import { DataTableActions } from "@/components/data-table/_components/data-table-actions";
 import { Pagination } from "@/components/data-table/_components/pagination";
 import { DataTableViewOptions } from "@/components/data-table/_components/data-table-view-options";
@@ -14,8 +14,8 @@ import { FiltersButton } from "@/components/data-table/_components/filters-butto
 import { filtersArrayToObject, filtersObjectToArray } from "@/components/data-table/_utils";
 import { useDataTableQueryState } from "@/components/data-table/_hooks/use-data-table-query-state";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
+interface DataTableProps<TData extends RowData> {
+  columns: ColumnDef<DataTableFeatures, TData>[];
   filters?: FilterDef[];
   initialSort?: SortingState[0];
   title?: string;
@@ -28,7 +28,7 @@ interface DataTableProps<TData, TValue> {
   rowHeight?: number;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends RowData>({
   columns,
   queryKey,
   initialSort,
@@ -37,7 +37,7 @@ export function DataTable<TData, TValue>({
   actions = [],
   queryFn,
   rowHeight = 61,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData>) {
   const { page, filters: urlFilters, setPage, setFilters } = useDataTableQueryState({ defaultPageSize: 10 });
 
   const [sorting, setSorting] = useState<SortingState>(initialSort ? [initialSort] : []);
@@ -68,10 +68,10 @@ export function DataTable<TData, TValue>({
     refetchOnWindowFocus: false,
   });
 
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     data: data?.items || [],
     columns,
-    getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     manualSorting: true,
     manualFiltering: true,
@@ -81,8 +81,8 @@ export function DataTable<TData, TValue>({
       pagination,
       sorting,
       columnFilters,
-      filters,
     },
+    meta: { filters },
     initialState: {
       columnVisibility: columns.reduce(
         (acc, column) => {

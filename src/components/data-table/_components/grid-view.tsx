@@ -18,7 +18,7 @@ export function GridView({ isLoading }: GridViewProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-6 gap-y-4">
       {isLoading ? (
-        Array.from({ length: table?.getState().pagination.pageSize }).map((_, index) => (
+        Array.from({ length: table?.state.pagination.pageSize }).map((_, index) => (
           <Skeleton key={index} className="h-96 rounded-xl" />
         ))
       ) : table.getRowModel().rows?.length ? (
@@ -48,7 +48,7 @@ export function GridView({ isLoading }: GridViewProps) {
           );
         })
       ) : (
-        <TableCell colSpan={table._getColumnDefs.length} className="h-24 col-span-3 text-center">
+        <TableCell colSpan={table.getVisibleLeafColumns().length} className="h-24 col-span-3 text-center">
           {t("table.noResults")}
         </TableCell>
       )}

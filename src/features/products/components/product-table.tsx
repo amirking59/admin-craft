@@ -2,6 +2,7 @@ import { DataTable } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { getProducts, useDeleteProduct } from "@/features/products/services";
 import { ColumnDef } from "@tanstack/react-table";
+import { DataTableFeatures } from "@/components/data-table/_types";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 import { Product, ProductCategory } from "@/features/products/types";
@@ -22,7 +23,7 @@ export const ProductTable = () => {
   const { t } = useTranslation("products");
   const deleteMutation = useDeleteProduct();
 
-  const columns: ColumnDef<Product>[] = [
+  const columns: ColumnDef<DataTableFeatures, Product>[] = [
     {
       accessorKey: "productId",
       header: t("productId"),

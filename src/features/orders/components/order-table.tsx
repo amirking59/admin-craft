@@ -2,6 +2,7 @@ import { DataTable } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { getOrders } from "@/features/orders/services";
 import { ColumnDef } from "@tanstack/react-table";
+import { DataTableFeatures } from "@/components/data-table/_types";
 import dayjs from "dayjs";
 import { formatNumber } from "@/lib/utils";
 import { Order, OrderStatus } from "@/features/orders/types";
@@ -21,7 +22,7 @@ const statusVariant: Record<OrderStatus, "default" | "secondary" | "outline" | "
 export const OrderTable = () => {
   const { t } = useTranslation("orders");
 
-  const columns: ColumnDef<Order>[] = [
+  const columns: ColumnDef<DataTableFeatures, Order>[] = [
     {
       accessorKey: "orderId",
       header: t("orderId"),

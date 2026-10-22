@@ -13,12 +13,12 @@ export function FiltersForm({ onClose }: FiltersFormProps) {
   const { table } = useTableContext();
   const { t } = useTranslation();
 
-  const filters = table.getState().filters;
+  const filters = table.options.meta?.filters ?? [];
 
   const form = useAppForm({
     defaultValues: filters.reduce(
       (acc, filter) => {
-        const initialValue = table.getState().columnFilters.find((columnFilter) => columnFilter.id === filter.name)
+        const initialValue = table.state.columnFilters.find((columnFilter) => columnFilter.id === filter.name)
           ?.value as string | string[] | undefined;
 
         acc[filter.name] = initialValue ?? "";
@@ -81,7 +81,7 @@ export function FiltersForm({ onClose }: FiltersFormProps) {
       </div>
 
       <DialogFooter>
-        {table.getState().columnFilters.length > 0 && (
+        {table.state.columnFilters.length > 0 && (
           <Button onClick={resetFilters} type="button" variant={"outline"}>
             {t("table.resetFilters")}
           </Button>

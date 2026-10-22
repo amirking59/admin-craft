@@ -1,23 +1,27 @@
 import { FilterDef } from "@/components/data-table/_types";
 import "@tanstack/react-table";
-import { CellContext } from "@tanstack/react-table";
+import { CellContext, CellData, RowData, TableFeatures } from "@tanstack/react-table";
 import React from "react";
 
 declare module "@tanstack/react-table" {
-  interface ColumnMeta<TData, TValue> {
+  interface ColumnMeta<
+    in out TFeatures extends TableFeatures,
+    in out TData extends RowData,
+    TValue extends CellData = CellData,
+  > {
     label?: string;
-    tooltip?: string | ((context: CellContext<TData, TValue>) => React.ReactNode);
+    tooltip?: string | ((context: CellContext<TFeatures, TData, TValue>) => React.ReactNode);
     editable?: {
-      onSubmit: (value: string | number, context: CellContext<TData, TValue>) => void;
-      getDefaultValue?: (context: CellContext<TData, TValue>) => string | number;
+      onSubmit: (value: string | number, context: CellContext<TFeatures, TData, TValue>) => void;
+      getDefaultValue?: (context: CellContext<TFeatures, TData, TValue>) => string | number;
       input?: React.ReactNode;
       loading?: boolean;
     };
     initialHidden?: boolean;
   }
 
-  interface TableState {
-    globalSearch: string;
-    filters: FilterDef[];
+  // v9 table state only holds registered feature slices, so the filter definitions ride on meta.
+  interface TableMeta<in out TFeatures extends TableFeatures, in out TData extends RowData> {
+    filters?: FilterDef[];
   }
 }

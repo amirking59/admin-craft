@@ -12,15 +12,15 @@ export const FiltersButton = () => {
   const { table } = useTableContext();
 
   return (
-    table?.getState().filters?.length > 0 && (
+    !!table?.options.meta?.filters?.length && (
       <DialogButton content={<FiltersForm />} icon={Filter} title={t("table.filters")}>
-        {table.getState().columnFilters.length > 0 && (
+        {table.state.columnFilters.length > 0 && (
           <Badge
             className={cn(
               "absolute top-0 start-0 text-background rounded-full leading-1 ltr:-translate-x-1/2 rtl:translate-x-1/2 size-5 -translate-y-1/2 pt-1.5",
             )}
           >
-            {table.getState().columnFilters.length > 10 ? "10+" : table.getState().columnFilters.length}
+            {table.state.columnFilters.length > 10 ? "10+" : table.state.columnFilters.length}
           </Badge>
         )}
       </DialogButton>

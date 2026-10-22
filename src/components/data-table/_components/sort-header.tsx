@@ -1,13 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { Column } from "@tanstack/react-table";
+import { Column, RowData } from "@tanstack/react-table";
+import { DataTableFeatures } from "@/components/data-table/_types";
 import { ArrowDownIcon, ArrowUpIcon, ChevronsLeftRightIcon } from "lucide-react";
 import { HTMLAttributes } from "react";
 
-interface DataTableSortHeaderProps<TData, TValue> extends HTMLAttributes<HTMLDivElement> {
-  column: Column<TData, TValue>;
+interface DataTableSortHeaderProps<TData extends RowData, TValue> extends HTMLAttributes<HTMLDivElement> {
+  column: Column<DataTableFeatures, TData, TValue>;
 }
 
-export const DataTableSortHeader = <TData, TValue>({ column, children }: DataTableSortHeaderProps<TData, TValue>) => {
+export const DataTableSortHeader = <TData extends RowData, TValue>({
+  column,
+  children,
+}: DataTableSortHeaderProps<TData, TValue>) => {
   const renderSortIcon = () => {
     const sort = column.getIsSorted();
     if (!sort) {
