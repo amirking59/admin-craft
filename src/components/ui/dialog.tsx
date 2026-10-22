@@ -67,13 +67,11 @@ function DialogContent({
                 {showCloseButton && (
                   <DialogPrimitive.Close
                     data-slot="dialog-close"
-                    render={
-                      <Button variant="ghost" className="absolute top-2 end-2" size="icon-sm">
-                        <XIcon />
-                        <span className="sr-only">Close</span>
-                      </Button>
-                    }
-                  />
+                    render={<Button variant="ghost" className="absolute end-2 top-2" size="icon-sm" />}
+                  >
+                    <XIcon />
+                    <span className="sr-only">Close</span>
+                  </DialogPrimitive.Close>
                 )}
               </DialogPrimitive.Popup>
             </ScrollAreaPrimitive.Content>
@@ -108,7 +106,7 @@ function DialogFooter({
       {...props}
     >
       {children}
-      {showCloseButton && <DialogPrimitive.Close render={<Button variant="outline">Close</Button>} />}
+      {showCloseButton && <DialogPrimitive.Close render={<Button variant="outline" />}>Close</DialogPrimitive.Close>}
     </div>
   );
 }
@@ -117,7 +115,7 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("cn-font-heading text-base leading-none font-medium", className)}
+      className={cn("font-heading text-base leading-none font-medium", className)}
       {...props}
     />
   );

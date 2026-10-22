@@ -1,7 +1,7 @@
+import * as React from "react";
 import { useEffect, useState } from "react";
 import { Input as InputPrimitive } from "@base-ui/react/input";
-
-import { cn } from "@/lib/utils";
+import { cn } from "cn";
 import { useDebounce } from "@/hooks/use-debounce";
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
