@@ -11,13 +11,18 @@ import {
 import { Button, ButtonProps } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { AlertTriangle, LucideIcon } from "lucide-react";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 interface ConfirmDialogButtonProps extends Omit<ButtonProps, "onClick" | "form"> {
+  /** Visible trigger label. An icon-only trigger (no title/children) needs an `aria-label`. */
   title?: string;
   icon?: LucideIcon;
-  onOk: (onClose: () => void) => void;
+  /** Runs on confirm. Return a promise (e.g. `mutation.mutateAsync(...)`): the dialog closes when it resolves
+   * and stays open, ready to retry, when it rejects. */
+  onOk: () => unknown;
   okTitle?: string;
   okVariant?: "default" | "destructive" | "success";
   cancelTitle?: string;
@@ -37,48 +42,45 @@ export const ConfirmDialogButton = ({
   title,
   descriptionDialog,
   icon: Icon,
-  iconDialog: IconDialog,
+  iconDialog: DialogIcon = AlertTriangle,
   titleDialog,
-  variant,
-  size = "default",
-  className,
-  disabled,
   loading,
   children,
   confirmText,
   confirmTextLabel,
-  ...rest
+  ...buttonProps
 }: ConfirmDialogButtonProps) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [typed, setTyped] = useState("");
 
-  // Reset the typed value whenever the dialog re-opens.
-  useEffect(() => {
-    if (isOpen) setTyped("");
-  }, [isOpen]);
-
+  const busy = isLoading || !!loading;
   const typingGateOk = !confirmText || typed === confirmText;
 
+  const handleOpenChange = (open: boolean) => {
+    if (open) setTyped("");
+    setIsOpen(open);
+  };
+
   const handleConfirm = async () => {
-    if (!typingGateOk) return;
+    if (!typingGateOk || busy) return;
+
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      onOk(() => {
-        setIsOpen(false);
-        setIsLoading(false);
-      });
+      await onOk();
+      setIsOpen(false);
     } catch (error) {
+      // The failing call reports its own error (e.g. the API client's toast); keep the dialog open for a retry.
       console.error("Confirm action failed:", error);
+    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <AlertDialog onOpenChange={setIsOpen} open={isOpen}>
-      <AlertDialogTrigger
-        render={<Button variant={variant} size={size} className={className} disabled={disabled} {...rest} />}
-      >
+    <AlertDialog onOpenChange={handleOpenChange} open={isOpen}>
+      <AlertDialogTrigger render={<Button {...buttonProps} />}>
         {Icon && <Icon />}
         {title}
         {children}
@@ -86,25 +88,21 @@ export const ConfirmDialogButton = ({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            {IconDialog ? (
-              <IconDialog
-                className={`h-5 w-5 ${okVariant === "destructive" ? "text-destructive" : "text-amber-500"}`}
-              />
-            ) : (
-              <AlertTriangle
-                className={`h-5 w-5 ${okVariant === "destructive" ? "text-destructive" : "text-amber-500"}`}
-              />
-            )}
-            {titleDialog || "Are you sure?"}
+            <DialogIcon className={cn("size-5", okVariant === "destructive" ? "text-destructive" : "text-amber-500")} />
+            {titleDialog || t("areYouSure")}
           </AlertDialogTitle>
-          <AlertDialogDescription>{descriptionDialog || "This action cannot be undone."}</AlertDialogDescription>
+          <AlertDialogDescription>{descriptionDialog || t("thisActionCanNotUnDone")}</AlertDialogDescription>
         </AlertDialogHeader>
         {confirmText && (
           <div className="space-y-2">
             <Label htmlFor="confirm-dialog-typing-gate" className="text-sm">
               {confirmTextLabel || (
                 <span>
-                  Type <span className="font-mono font-semibold text-destructive">{confirmText}</span> to confirm
+                  <Trans
+                    i18nKey="typeXToConfirm"
+                    values={{ x: confirmText }}
+                    components={{ code: <span className="font-mono font-semibold text-destructive" /> }}
+                  />
                 </span>
               )}
             </Label>
@@ -116,7 +114,7 @@ export const ConfirmDialogButton = ({
               placeholder={confirmText}
               onChange={(e) => setTyped(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && typingGateOk && !isLoading && !loading) {
+                if (e.key === "Enter") {
                   e.preventDefault();
                   handleConfirm();
                 }
@@ -126,15 +124,15 @@ export const ConfirmDialogButton = ({
           </div>
         )}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading || loading}>{cancelTitle || "Cancel"}</AlertDialogCancel>
+          <AlertDialogCancel disabled={busy}>{cancelTitle || t("cancel")}</AlertDialogCancel>
           <Button
             autoFocus={!confirmText}
             onClick={handleConfirm}
             variant={okVariant}
-            loading={isLoading || loading}
-            disabled={isLoading || loading || !typingGateOk}
+            loading={busy}
+            disabled={!typingGateOk}
           >
-            {okTitle || "Confirm"}
+            {okTitle || t("confirm")}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -33,6 +33,8 @@ export const base = {
   areYouSure: "هل أنت متأكد؟",
   thisActionCanNotUnDone: "هذا الإجراء لا يمكن التراجع عنه.",
   ok: "موافق",
+  confirm: "تأكيد",
+  typeXToConfirm: "اكتب <code>{{x}}</code> للتأكيد",
   weCouldNotFindPage: "لم نتمكن من العثور على الصفحة المطلوبة. قد تكون الصفحة قد تم نقلها أو حذفها",
   table: {
     noResults: "لم يتم العثور على نتائج",
