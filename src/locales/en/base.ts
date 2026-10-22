@@ -35,7 +35,7 @@ export const base = {
   ok: "Ok",
   confirm: "Confirm",
   typeXToConfirm: "Type <code>{{x}}</code> to confirm",
-  weCouldNotFindPage: "We couldn&apos;t find the page you were looking for. The page might have been moved or deleted",
+  weCouldNotFindPage: "We couldn't find the page you were looking for. It might have been moved or deleted.",
   table: {
     noResults: "No results found",
     totalRows: "Total Rows",

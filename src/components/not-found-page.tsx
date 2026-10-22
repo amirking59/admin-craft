@@ -1,25 +1,26 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeftIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 
 export function NotFoundPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 py-12 md:px-12">
-      <div className="flex flex-col items-center gap-2 text-center">
-        <div className="rounded-full bg-muted p-4">
-          <div className="text-6xl font-bold">404</div>
-        </div>
-        <h1 className="text-2xl font-bold tracking-tight">{t("pageNotFound")}</h1>
-        <p className="h-125 text-muted-foreground">{t("weCouldNotFindPage")}</p>
-      </div>
-      <Button className="" render={<Link to="/" />}>
-        {t("backToDashboard")}
-        <ArrowLeftIcon className="me-2 h-4 w-4" />
-      </Button>
-    </div>
+    <Empty className="min-h-svh">
+      <EmptyHeader>
+        <EmptyMedia className="text-7xl font-bold tracking-tighter text-muted-foreground/40">404</EmptyMedia>
+        <EmptyTitle className="text-xl">{t("pageNotFound")}</EmptyTitle>
+        <EmptyDescription>{t("weCouldNotFindPage")}</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button render={<Link to="/" />}>
+          <ArrowLeftIcon className="rtl:rotate-180" />
+          {t("backToDashboard")}
+        </Button>
+      </EmptyContent>
+    </Empty>
   );
 }
