@@ -11,12 +11,6 @@ declare module "@tanstack/react-table" {
   > {
     label?: string;
     tooltip?: string | ((context: CellContext<TFeatures, TData, TValue>) => React.ReactNode);
-    editable?: {
-      onSubmit: (value: string | number, context: CellContext<TFeatures, TData, TValue>) => void;
-      getDefaultValue?: (context: CellContext<TFeatures, TData, TValue>) => string | number;
-      input?: React.ReactNode;
-      loading?: boolean;
-    };
     initialHidden?: boolean;
   }
 

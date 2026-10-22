@@ -4,13 +4,8 @@ import { Pagination } from "@/components/data-table/components/pagination";
 import { DataTableViewOptions } from "@/components/data-table/components/data-table-view-options";
 import { TableView } from "@/components/data-table/components/table-view";
 import { TableProvider } from "@/components/data-table/table-context";
-import { DataTableFeatures, dataTableFeatures, TableViewType } from "@/components/data-table/types";
-import { GridView } from "@/components/data-table/components/grid-view";
+import { DataTableFeatures, dataTableFeatures } from "@/components/data-table/types";
 import { getInitialColumnVisibility } from "@/components/data-table/utils";
-import { useNavigate, useSearch } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { LayoutGrid, TableProperties } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 interface DataTableProps<TData extends RowData> {
   /** Must be stable (module scope or `useMemo`); see DataTable. */
@@ -21,12 +16,10 @@ interface DataTableProps<TData extends RowData> {
   data: TData[];
   hasPagination?: boolean;
   rowHeight?: number;
-  defaultViewType?: TableViewType;
-  id?: string;
   isLoading?: boolean;
 }
 
-/** Client-side table over in-memory `data`, with an optional grid view toggled through the URL. */
+/** Client-side table over in-memory `data`. */
 export function SimpleDataTable<TData extends RowData>({
   columns,
   initialSort,
@@ -35,23 +28,8 @@ export function SimpleDataTable<TData extends RowData>({
   data = [],
   hasPagination = false,
   rowHeight = 61,
-  defaultViewType = TableViewType.LIST,
-  id,
   isLoading = false,
 }: DataTableProps<TData>) {
-  const { t } = useTranslation();
-  const viewTypeKey = id ? `${id}-viewType` : "view";
-  const navigate = useNavigate();
-  const searchViewType = useSearch({
-    strict: false,
-    select: (search) => (search as Record<string, unknown>)[viewTypeKey],
-  });
-  const viewType = Object.values(TableViewType).includes(searchViewType as TableViewType)
-    ? (searchViewType as TableViewType)
-    : defaultViewType;
-  const setViewType = (next: TableViewType) =>
-    navigate({ to: ".", search: ((prev: object) => ({ ...prev, [viewTypeKey]: next })) as never, replace: true });
-
   const table = useTable({
     features: dataTableFeatures,
     data,
@@ -76,23 +54,9 @@ export function SimpleDataTable<TData extends RowData>({
           {actions}
 
           <DataTableViewOptions />
-
-          <Button
-            onClick={() => setViewType(viewType === TableViewType.GRID ? TableViewType.LIST : TableViewType.GRID)}
-            size="icon"
-            variant="outline"
-            aria-label={viewType === TableViewType.GRID ? t("table.listView") : t("table.gridView")}
-          >
-            {viewType === TableViewType.GRID && <TableProperties />}
-            {viewType === TableViewType.LIST && <LayoutGrid />}
-          </Button>
         </DataTableActions>
 
-        {viewType === TableViewType.LIST ? (
-          <TableView rowHeight={rowHeight} isLoading={isLoading} />
-        ) : (
-          <GridView isLoading={isLoading} />
-        )}
+        <TableView rowHeight={rowHeight} isLoading={isLoading} />
 
         {hasPagination && <Pagination />}
       </div>

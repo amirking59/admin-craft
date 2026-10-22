@@ -52,8 +52,6 @@ export const base = {
     previousPage: "الصفحة السابقة",
     nextPage: "الصفحة التالية",
     lastPage: "الصفحة الأخيرة",
-    gridView: "عرض الشبكة",
-    listView: "عرض القائمة",
   },
   active: "نشط",
   inactive: "غير نشط",

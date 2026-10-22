@@ -52,8 +52,6 @@ export const base = {
     previousPage: "Previous page",
     nextPage: "Next page",
     lastPage: "Last page",
-    gridView: "Grid view",
-    listView: "List view",
   },
   active: "Active",
   inactive: "Inactive",

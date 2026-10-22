@@ -28,11 +28,6 @@ export const dataTableFeatures = tableFeatures({
 
 export type DataTableFeatures = typeof dataTableFeatures;
 
-export enum TableViewType {
-  LIST = "list",
-  GRID = "grid",
-}
-
 export enum FilterOperator {
   Like = "lk",
   Equal = "eq",

@@ -1,5 +1,4 @@
 import { CellTooltip } from "@/components/data-table/components/cell-tooltip";
-import { EditableField } from "@/components/data-table/components/editable-field";
 import { DataTableSortHeader, getAriaSort } from "@/components/data-table/components/sort-header";
 import { useTableContext } from "@/components/data-table/table-context";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -54,11 +53,7 @@ export function TableView({ isLoading, rowHeight }: TableViewProps) {
               <TableRow key={row.id} style={{ height: rowHeight }}>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
-                    <CellTooltip cell={cell}>
-                      <EditableField cell={cell}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </EditableField>
-                    </CellTooltip>
+                    <CellTooltip cell={cell}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</CellTooltip>
                   </TableCell>
                 ))}
               </TableRow>
