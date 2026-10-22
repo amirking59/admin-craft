@@ -1,6 +1,8 @@
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { CalendarIcon, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import { useFieldContext } from "@/components/form/form-context";
 
 interface DateTimeFieldProps {
@@ -11,7 +13,9 @@ interface DateTimeFieldProps {
 }
 
 export function DateTimeField({ label, clearable = false, disabled = false, placeholder }: DateTimeFieldProps) {
-  const field = useFieldContext<any>();
+  const { t } = useTranslation();
+  /** ISO string, as DateTimePicker emits it. */
+  const field = useFieldContext<string | null>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
   return (
@@ -20,20 +24,25 @@ export function DateTimeField({ label, clearable = false, disabled = false, plac
 
       <div className="relative">
         <DateTimePicker
-          placeholder={placeholder || `Select ${label}`}
+          placeholder={placeholder ?? (label ? t("selectX", { x: label }) : "")}
           disabled={disabled}
+          aria-invalid={isInvalid}
           value={field.state.value || null}
-          onChange={(value) => field.handleChange(value)}
+          onChange={field.handleChange}
         />
 
-        {!disabled && (
-          <div className="absolute end-2 top-1/2 -translate-y-1/2 cursor-pointer p-1">
-            {clearable && field.state.value ? (
-              <X size={16} onClick={() => field.handleChange("")} />
-            ) : (
-              <CalendarIcon className="pointer-events-none" size={16} />
-            )}
-          </div>
+        {clearable && !disabled && field.state.value ? (
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label={t("clear")}
+            className="absolute end-1.5 top-1/2 -translate-y-1/2"
+            onClick={() => field.handleChange(null)}
+          >
+            <X />
+          </Button>
+        ) : (
+          <CalendarIcon className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2" />
         )}
       </div>
 

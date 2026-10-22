@@ -6,6 +6,8 @@ export const base = {
   login: "تسجيل الدخول",
   submit: "إرسال",
   close: "إغلاق",
+  clear: "مسح",
+  removeX: "إزالة {{x}}",
   cancel: "إلغاء",
   save: "حفظ",
   back: "العودة",

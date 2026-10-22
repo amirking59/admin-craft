@@ -6,6 +6,8 @@ export const base = {
   login: "Login",
   submit: "Submit",
   close: "Close",
+  clear: "Clear",
+  removeX: "Remove {{x}}",
   cancel: "Cancel",
   save: "Save",
   back: "Back",

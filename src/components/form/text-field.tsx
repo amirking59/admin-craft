@@ -1,68 +1,47 @@
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { DebouncedInput, Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { useFieldContext } from "@/components/form/form-context";
 import { X } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
+import { useTranslation } from "react-i18next";
 
-interface TextFieldProps {
-  placeholder?: string;
+// The form owns these; use the field's validators/listeners instead of passing them.
+type BoundInputProps = "value" | "defaultValue" | "onChange" | "onBlur" | "name" | "id";
+
+interface TextFieldProps extends Omit<React.ComponentProps<"input">, BoundInputProps> {
   label?: string;
   clearable?: boolean;
-  debounceMs?: number;
-  disabled?: boolean;
-  textarea?: boolean;
 }
 
-export function TextField({
-  label,
-  clearable = false,
-  debounceMs,
-  disabled = false,
-  textarea,
-  ...props
-}: (TextFieldProps & React.ComponentProps<"input">) & React.ComponentProps<"textarea">) {
+export function TextField({ label, clearable = false, disabled = false, ...props }: TextFieldProps) {
+  const { t } = useTranslation();
   const field = useFieldContext<string | number>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-
-  const fieldProps = {
-    "id": field.name,
-    "name": field.name,
-    "value": field.state.value ?? "",
-    "onBlur": field.handleBlur,
-    "aria-invalid": isInvalid,
-  };
+  const hasValue = field.state.value != null && field.state.value !== "";
 
   return (
     <Field data-invalid={isInvalid}>
       {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
 
-      <div className="relative">
-        {debounceMs ? (
-          <DebouncedInput
-            disabled={disabled}
-            debounceMs={debounceMs}
-            {...fieldProps}
-            onChange={(e) => field.handleChange(e.target.value)}
-            {...props}
-          />
-        ) : textarea ? (
-          <Textarea
-            disabled={disabled}
-            placeholder={props.placeholder}
-            {...fieldProps}
-            onChange={(e) => field.handleChange(e.target.value)}
-            {...props}
-          />
-        ) : (
-          <Input disabled={disabled} {...fieldProps} onChange={(e) => field.handleChange(e.target.value)} {...props} />
-        )}
+      <InputGroup>
+        <InputGroupInput
+          {...props}
+          disabled={disabled}
+          id={field.name}
+          name={field.name}
+          value={field.state.value ?? ""}
+          onBlur={field.handleBlur}
+          onChange={(e) => field.handleChange(e.target.value)}
+          aria-invalid={isInvalid}
+        />
 
-        {clearable && !disabled && field.state.value && (
-          <div className="absolute end-2 top-1/2 -translate-y-1/2 cursor-pointer p-1">
-            <X onClick={() => field.handleChange("")} size={16} />
-          </div>
+        {clearable && !disabled && hasValue && (
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton size="icon-xs" aria-label={t("clear")} onClick={() => field.handleChange("")}>
+              <X />
+            </InputGroupButton>
+          </InputGroupAddon>
         )}
-      </div>
+      </InputGroup>
 
       {isInvalid && <FieldError errors={field.state.meta.errors} />}
     </Field>

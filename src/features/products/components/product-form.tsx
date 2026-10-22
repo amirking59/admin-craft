@@ -70,7 +70,9 @@ export const ProductForm = ({ prevData, onClose }: ProductFormProps) => {
           <form.AppField name="name">{(field) => <field.TextField label={t("name")} />}</form.AppField>
         </div>
         <div className="col-span-2">
-          <form.AppField name="description">{(field) => <field.TextField label={t("description")} />}</form.AppField>
+          <form.AppField name="description">
+            {(field) => <field.TextareaField label={t("description")} />}
+          </form.AppField>
         </div>
         <form.AppField name="category">
           {(field) => (

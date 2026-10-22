@@ -1,26 +1,35 @@
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { DebouncedInput, Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useFieldContext } from "@/components/form/form-context";
 import { NumericFormat, NumericFormatProps } from "react-number-format";
 
-interface NumberFieldProps {
-  placeholder?: string;
+// The form owns these; use the field's validators/listeners instead of passing them.
+type BoundNumberProps =
+  | "value"
+  | "defaultValue"
+  | "onValueChange"
+  | "onChange"
+  | "onBlur"
+  | "name"
+  | "id"
+  | "customInput";
+
+interface NumberFieldProps extends Omit<NumericFormatProps, BoundNumberProps> {
   label?: string;
   clearable?: boolean;
-  disabled?: boolean;
-  debounceMs?: number;
-  decimalScale?: number;
 }
 
 export function NumberField({
   label,
-  debounceMs,
-  clearable,
+  clearable = false,
+  disabled = false,
   placeholder,
   allowNegative = false,
   ...props
-}: NumberFieldProps & NumericFormatProps) {
+}: NumberFieldProps) {
+  const { t } = useTranslation();
   const field = useFieldContext<number | undefined>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -28,52 +37,30 @@ export function NumberField({
     <Field data-invalid={isInvalid}>
       {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
 
-      <div className="relative">
-        {debounceMs ? (
-          <NumericFormat
-            debounceMs={debounceMs}
-            valueIsNumericString={true}
-            value={field.state.value?.toString() || ""}
-            onValueChange={(values) => {
-              field.handleChange(values.floatValue);
-            }}
-            onBlur={field.handleBlur}
-            name={field.name}
-            allowNegative={allowNegative}
-            id={field.name}
-            aria-invalid={isInvalid}
-            {...props}
-            placeholder={placeholder || `Enter ${label}`}
-            customInput={DebouncedInput}
-          />
-        ) : (
-          <NumericFormat
-            valueIsNumericString={true}
-            value={field.state.value?.toString() || ""}
-            onValueChange={(values) => {
-              field.handleChange(values.floatValue);
-            }}
-            onBlur={field.handleBlur}
-            name={field.name}
-            allowNegative={allowNegative}
-            id={field.name}
-            aria-invalid={isInvalid}
-            {...props}
-            placeholder={placeholder || `Enter ${label}`}
-            customInput={Input}
-          />
-        )}
+      <InputGroup>
+        <NumericFormat
+          {...props}
+          customInput={InputGroupInput}
+          disabled={disabled}
+          placeholder={placeholder ?? (label ? t("enterX", { x: label }) : undefined)}
+          allowNegative={allowNegative}
+          valueIsNumericString={true}
+          id={field.name}
+          name={field.name}
+          value={field.state.value?.toString() ?? ""}
+          onValueChange={(values) => field.handleChange(values.floatValue)}
+          onBlur={field.handleBlur}
+          aria-invalid={isInvalid}
+        />
 
-        {clearable && field.state.value !== 0 && (
-          <button
-            type="button"
-            onClick={() => field.handleChange(0)}
-            className="absolute end-2 top-1/2 -translate-y-1/2 p-1 hover:opacity-70"
-          >
-            <X size={16} />
-          </button>
+        {clearable && !disabled && field.state.value != null && (
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton size="icon-xs" aria-label={t("clear")} onClick={() => field.handleChange(undefined)}>
+              <X />
+            </InputGroupButton>
+          </InputGroupAddon>
         )}
-      </div>
+      </InputGroup>
 
       {isInvalid && <FieldError errors={field.state.meta.errors} />}
     </Field>

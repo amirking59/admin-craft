@@ -79,7 +79,15 @@ export const OrderTable = () => {
     {
       name: "status",
       operator: FilterOperator.Equal,
-      input: () => <EnumField enumObject={OrderStatus} multiple clearable placeholder={t("status")} />,
+      input: () => (
+        <EnumField
+          enumObject={OrderStatus}
+          getItemLabel={(value) => t(`orderStatus.${value}`)}
+          multiple
+          clearable
+          placeholder={t("status")}
+        />
+      ),
     },
     {
       name: "created_at_from",
