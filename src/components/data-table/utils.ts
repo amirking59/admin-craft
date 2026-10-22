@@ -1,5 +1,11 @@
-import { ColumnFiltersState } from "@tanstack/react-table";
-import { DataTableFilters } from "@/components/data-table/_types";
+import { ColumnDef, ColumnFiltersState, RowData } from "@tanstack/react-table";
+import { DataTableFeatures, DataTableFilters } from "@/components/data-table/types";
+
+/** Hides columns marked `meta.initialHidden` on first render. */
+export const getInitialColumnVisibility = <TData extends RowData>(columns: ColumnDef<DataTableFeatures, TData>[]) =>
+  Object.fromEntries(
+    columns.filter((column) => column.meta?.initialHidden && column.id).map((column) => [column.id!, false]),
+  );
 
 export const isFilterValueEmpty = (value: unknown) => {
   if (value == null) return true;

@@ -1,13 +1,11 @@
-import { DataTable } from "@/components/data-table";
+import { DataTable, DataTableFeatures, FilterDef, FilterOperator } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { getOrders } from "@/features/orders/services";
 import { ColumnDef } from "@tanstack/react-table";
-import { DataTableFeatures } from "@/components/data-table/_types";
 import dayjs from "dayjs";
 import { formatNumber } from "@/lib/utils";
 import { Order, OrderStatus } from "@/features/orders/types";
 import { useTranslation } from "react-i18next";
-import { FilterDef, FilterOperator } from "@/components/data-table/_types";
 import { EnumField } from "@/components/form/enum-field";
 import { DateField } from "@/components/form/date-field";
 

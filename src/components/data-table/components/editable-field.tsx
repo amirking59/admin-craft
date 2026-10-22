@@ -6,24 +6,31 @@ import { TextField } from "@/components/form/text-field";
 import { useAppForm } from "@/components/form/use-app-form";
 import { cn } from "@/lib/utils";
 import { Cell, RowData } from "@tanstack/react-table";
-import { DataTableFeatures } from "@/components/data-table/_types";
+import { DataTableFeatures } from "@/components/data-table/types";
 
 const formSchema = z.object({
   value: z.string().min(1, "").or(z.number()),
 });
 
-interface editableFieldProps<TData extends RowData, TValue> {
+interface EditableFieldProps<TData extends RowData, TValue> {
   children?: React.ReactNode;
   cell: Cell<DataTableFeatures, TData, TValue>;
 }
 
-export function EditableField<TData extends RowData, TValue>({ children, cell }: editableFieldProps<TData, TValue>) {
-  const formRef = useRef(null);
+/** Double-click to edit cells whose column sets `meta.editable`; other cells render as-is. */
+export function EditableField<TData extends RowData, TValue>({ children, cell }: EditableFieldProps<TData, TValue>) {
+  // Checked before any hooks so non-editable cells don't each create a form.
+  if (!cell.column.columnDef.meta?.editable) return children;
+
+  return <EditableCell cell={cell}>{children}</EditableCell>;
+}
+
+function EditableCell<TData extends RowData, TValue>({ children, cell }: EditableFieldProps<TData, TValue>) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [editing, setEditing] = useState(false);
 
-  const editableMeta = cell.column.columnDef.meta?.editable;
-
-  const defaultValue = editableMeta?.getDefaultValue?.(cell.getContext()) || "";
+  const editableMeta = cell.column.columnDef.meta!.editable!;
+  const defaultValue = editableMeta.getDefaultValue?.(cell.getContext()) || "";
 
   const form = useAppForm({
     defaultValues: {
@@ -33,14 +40,15 @@ export function EditableField<TData extends RowData, TValue>({ children, cell }:
     validators: { onDynamic: formSchema },
     onSubmit: ({ value: { value } }) => {
       if (value !== defaultValue) {
-        editableMeta?.onSubmit?.(value, cell.getContext());
+        editableMeta.onSubmit(value, cell.getContext());
       }
 
       setEditing(false);
     },
   });
 
-  const onCancel = async () => {
+  const onClickOutside = async () => {
+    if (!editing) return;
     // handleSubmit reads values after async validation, so reset only once it settles.
     await form.handleSubmit();
 
@@ -48,19 +56,11 @@ export function EditableField<TData extends RowData, TValue>({ children, cell }:
     setEditing(false);
   };
 
-  const onEdit = () => {
-    setEditing(true);
-  };
-
-  useOnClickOutside(formRef as unknown as RefObject<HTMLElement>, onCancel);
-
-  if (!editableMeta) {
-    return children;
-  }
+  useOnClickOutside(formRef as RefObject<HTMLElement>, onClickOutside);
 
   if (!editing) {
     return (
-      <div className={cn("", editableMeta.loading && "opacity-50")} onDoubleClick={onEdit}>
+      <div className={cn(editableMeta.loading && "opacity-50")} onDoubleClick={() => setEditing(true)}>
         {children}
       </div>
     );

@@ -1,16 +1,19 @@
 import { ColumnDef, RowData, SortingState, useTable } from "@tanstack/react-table";
-import { DataTableActions } from "@/components/data-table/_components/data-table-actions";
-import { Pagination } from "@/components/data-table/_components/pagination";
-import { DataTableViewOptions } from "@/components/data-table/_components/data-table-view-options";
-import { TableView } from "@/components/data-table/_components/table-view";
-import { TableProvider } from "@/components/data-table/_context/table";
-import { DataTableFeatures, dataTableFeatures, TableViewType } from "@/components/data-table/_types";
-import { GridView } from "@/components/data-table/_components/grid-view";
+import { DataTableActions } from "@/components/data-table/components/data-table-actions";
+import { Pagination } from "@/components/data-table/components/pagination";
+import { DataTableViewOptions } from "@/components/data-table/components/data-table-view-options";
+import { TableView } from "@/components/data-table/components/table-view";
+import { TableProvider } from "@/components/data-table/table-context";
+import { DataTableFeatures, dataTableFeatures, TableViewType } from "@/components/data-table/types";
+import { GridView } from "@/components/data-table/components/grid-view";
+import { getInitialColumnVisibility } from "@/components/data-table/utils";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, TableProperties } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface DataTableProps<TData extends RowData> {
+  /** Must be stable (module scope or `useMemo`); see DataTable. */
   columns: ColumnDef<DataTableFeatures, TData>[];
   initialSort?: SortingState[0];
   title?: string;
@@ -23,6 +26,7 @@ interface DataTableProps<TData extends RowData> {
   isLoading?: boolean;
 }
 
+/** Client-side table over in-memory `data`, with an optional grid view toggled through the URL. */
 export function SimpleDataTable<TData extends RowData>({
   columns,
   initialSort,
@@ -35,6 +39,7 @@ export function SimpleDataTable<TData extends RowData>({
   id,
   isLoading = false,
 }: DataTableProps<TData>) {
+  const { t } = useTranslation();
   const viewTypeKey = id ? `${id}-viewType` : "view";
   const navigate = useNavigate();
   const searchViewType = useSearch({
@@ -57,15 +62,7 @@ export function SimpleDataTable<TData extends RowData>({
     manualPagination: !hasPagination,
     initialState: {
       sorting: initialSort ? [initialSort] : [],
-      columnVisibility: columns.reduce(
-        (acc, column) => {
-          if (column.meta?.initialHidden && column.id) {
-            acc[column.id] = false;
-          }
-          return acc;
-        },
-        {} as Record<string, boolean>,
-      ),
+      columnVisibility: getInitialColumnVisibility(columns),
     },
     defaultColumn: {
       enableSorting: false,
@@ -82,8 +79,9 @@ export function SimpleDataTable<TData extends RowData>({
 
           <Button
             onClick={() => setViewType(viewType === TableViewType.GRID ? TableViewType.LIST : TableViewType.GRID)}
-            size={"icon"}
+            size="icon"
             variant="outline"
+            aria-label={viewType === TableViewType.GRID ? t("table.listView") : t("table.gridView")}
           >
             {viewType === TableViewType.GRID && <TableProperties />}
             {viewType === TableViewType.LIST && <LayoutGrid />}

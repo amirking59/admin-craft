@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/hooks/use-is-mobile";
-import { useTableContext } from "@/components/data-table/_context/table";
+import { useTableContext } from "@/components/data-table/table-context";
 
 export function DataTableViewOptions() {
   const { table } = useTableContext();

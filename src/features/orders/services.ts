@@ -1,5 +1,5 @@
 import { Order, OrderStatus } from "@/features/orders/types";
-import { DataTableQueryParams, TableQueryFnResponse } from "@/components/data-table/_types";
+import { DataTableQueryParams, TableQueryFnResponse } from "@/components/data-table";
 import dayjs from "dayjs";
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));

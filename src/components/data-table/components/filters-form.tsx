@@ -1,8 +1,8 @@
-import { useTableContext } from "@/components/data-table/_context/table";
+import { useTableContext } from "@/components/data-table/table-context";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
-import { isFilterValueEmpty } from "@/components/data-table/_utils";
+import { isFilterValueEmpty } from "@/components/data-table/utils";
 import { useAppForm } from "@/components/form/use-app-form";
 
 interface FiltersFormProps {

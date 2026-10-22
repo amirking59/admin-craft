@@ -28,21 +28,6 @@ export const dataTableFeatures = tableFeatures({
 
 export type DataTableFeatures = typeof dataTableFeatures;
 
-export interface PaginatedQueryFnParams {
-  limit: number;
-  skip: number;
-  sort?: {
-    field: string;
-    operator: "asc" | "des";
-  }[];
-  query?: {
-    field: string | string[];
-    operator: FilterOperator;
-    value: string | number | boolean | string[] | number[];
-  }[];
-  [key: string]: any;
-}
-
 export enum TableViewType {
   LIST = "list",
   GRID = "grid",
@@ -55,11 +40,10 @@ export enum FilterOperator {
 }
 
 export type FilterDef = {
+  /** The filter's field; it reads its name and value from the form's field context. */
   input?: () => React.ReactNode;
   name: string;
   operator: FilterOperator;
-  defaultValue?: string;
-  transformValue?: (value: string) => number | boolean | string[] | number[];
   onValueChange?: (form: AnyFormApi) => void;
 };
 

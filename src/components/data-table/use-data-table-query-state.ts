@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { DataTableFilters } from "@/components/data-table/_types";
+import { DataTableFilters } from "@/components/data-table/types";
 
 interface DataTablePageState {
   index: number;

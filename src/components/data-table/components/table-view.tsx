@@ -1,7 +1,7 @@
-import { CellTooltip } from "@/components/data-table/_components/cell-tooltip";
-import { EditableField } from "@/components/data-table/_components/editable-field";
-import { DataTableSortHeader } from "@/components/data-table/_components/sort-header";
-import { useTableContext } from "@/components/data-table/_context/table";
+import { CellTooltip } from "@/components/data-table/components/cell-tooltip";
+import { EditableField } from "@/components/data-table/components/editable-field";
+import { DataTableSortHeader, getAriaSort } from "@/components/data-table/components/sort-header";
+import { useTableContext } from "@/components/data-table/table-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { flexRender } from "@tanstack/react-table";
@@ -17,43 +17,41 @@ export function TableView({ isLoading, rowHeight }: TableViewProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="rounded-md border overflow-hidden">
+    <div className="overflow-hidden rounded-md border">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead
-                    key={header.id}
-                    style={{
-                      minWidth: `${header.getSize()}px`,
-                      width: `${header.getSize()}px`,
-                    }}
-                  >
+              {headerGroup.headers.map((header) => (
+                <TableHead
+                  key={header.id}
+                  aria-sort={getAriaSort(header.column)}
+                  style={{ minWidth: header.getSize(), width: header.getSize() }}
+                >
+                  {header.isPlaceholder ? null : (
                     <DataTableSortHeader column={header.column}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                      {flexRender(header.column.columnDef.header, header.getContext())}
                     </DataTableSortHeader>
-                  </TableHead>
-                );
-              })}
+                  )}
+                </TableHead>
+              ))}
             </TableRow>
           ))}
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            Array.from({ length: table?.state.pagination.pageSize }).map((_, index) => (
-              <TableRow key={index}>
-                {table.getVisibleFlatColumns().map((_, colIndex) => (
-                  <TableCell style={{ height: rowHeight + "px" }} key={colIndex}>
-                    <Skeleton className="h-full w-1/2" />
+            Array.from({ length: table.state.pagination.pageSize }).map((_, index) => (
+              <TableRow key={index} style={{ height: rowHeight }}>
+                {table.getVisibleLeafColumns().map((column) => (
+                  <TableCell key={column.id}>
+                    <Skeleton className="h-4 w-1/2" />
                   </TableCell>
                 ))}
               </TableRow>
             ))
-          ) : table.getRowModel().rows?.length ? (
+          ) : table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow className="h-14" key={row.id}>
+              <TableRow key={row.id} style={{ height: rowHeight }}>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     <CellTooltip cell={cell}>

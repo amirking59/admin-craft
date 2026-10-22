@@ -1,6 +1,6 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Cell, RowData } from "@tanstack/react-table";
-import { DataTableFeatures } from "@/components/data-table/_types";
+import { DataTableFeatures } from "@/components/data-table/types";
 
 interface CellTooltipProps<TData extends RowData, TValue> {
   children: React.ReactNode;

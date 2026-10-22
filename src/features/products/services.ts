@@ -1,5 +1,5 @@
 import { Product, ProductCategory, CreateProductParams, UpdateProductParams } from "@/features/products/types";
-import { DataTableQueryParams, TableQueryFnResponse } from "@/components/data-table/_types";
+import { DataTableQueryParams, TableQueryFnResponse } from "@/components/data-table";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";

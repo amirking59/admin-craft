@@ -1,4 +1,4 @@
-import { useTableContext } from "@/components/data-table/_context/table";
+import { useTableContext } from "@/components/data-table/table-context";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,7 +10,7 @@ export function Pagination() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex mt-3 items-center justify-between px-4">
+    <div className="mt-3 flex items-center justify-between px-4">
       <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
         {t("table.totalRows")}: {table.getRowCount() || 0}
       </div>
@@ -48,7 +48,9 @@ export function Pagination() {
         <div className="ms-auto flex items-center gap-2 lg:ms-0">
           <Button
             variant="outline"
-            className="hidden h-8 w-8 p-0 lg:flex"
+            size="icon"
+            className="hidden lg:flex"
+            aria-label={t("table.firstPage")}
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
@@ -56,8 +58,8 @@ export function Pagination() {
           </Button>
           <Button
             variant="outline"
-            className="size-8"
             size="icon"
+            aria-label={t("table.previousPage")}
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
@@ -65,8 +67,8 @@ export function Pagination() {
           </Button>
           <Button
             variant="outline"
-            className="size-8"
             size="icon"
+            aria-label={t("table.nextPage")}
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
@@ -74,8 +76,9 @@ export function Pagination() {
           </Button>
           <Button
             variant="outline"
-            className="hidden size-8 lg:flex"
             size="icon"
+            className="hidden lg:flex"
+            aria-label={t("table.lastPage")}
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >

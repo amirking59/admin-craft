@@ -1,4 +1,4 @@
-import { FilterDef } from "@/components/data-table/_types";
+import { FilterDef } from "@/components/data-table/types";
 import "@tanstack/react-table";
 import { CellContext, CellData, RowData, TableFeatures } from "@tanstack/react-table";
 import React from "react";
