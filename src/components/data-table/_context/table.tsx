@@ -1,26 +1,27 @@
 import { createContext, useContext } from "react";
-import { Table } from "@tanstack/react-table";
+import { ReactTable, RowData } from "@tanstack/react-table";
+import { DataTableFeatures } from "@/components/data-table/_types";
 
-interface TableContext<TData> {
-  table: Table<TData> | null;
+interface TableContext<TData extends RowData> {
+  table: ReactTable<DataTableFeatures, TData> | null;
 }
 
-const TableContext = createContext<TableContext<unknown>>({
+const TableContext = createContext<TableContext<RowData>>({
   table: null,
 });
 
-interface TableProviderProps<TData> {
+interface TableProviderProps<TData extends RowData> {
   children: React.ReactNode;
-  table: Table<TData>;
+  table: ReactTable<DataTableFeatures, TData>;
 }
 
-export function TableProvider<TData>({ children, table }: TableProviderProps<TData>) {
+export function TableProvider<TData extends RowData>({ children, table }: TableProviderProps<TData>) {
   return (
     <TableContext.Provider
       value={
         {
           table,
-        } as unknown as TableContext<unknown>
+        } as unknown as TableContext<RowData>
       }
     >
       {children}
@@ -28,7 +29,7 @@ export function TableProvider<TData>({ children, table }: TableProviderProps<TDa
   );
 }
 
-export function useTableContext<TData>() {
+export function useTableContext<TData extends RowData = RowData>() {
   const context = useContext(TableContext);
 
   if (context === undefined) {
@@ -36,6 +37,6 @@ export function useTableContext<TData>() {
   }
 
   return {
-    table: context.table as Table<TData>,
+    table: context.table as ReactTable<DataTableFeatures, TData>,
   };
 }

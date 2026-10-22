@@ -1,24 +1,17 @@
-import {
-  ColumnDef,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  SortingState,
-  useReactTable,
-} from "@tanstack/react-table";
+import { ColumnDef, RowData, SortingState, useTable } from "@tanstack/react-table";
 import { DataTableActions } from "@/components/data-table/_components/data-table-actions";
 import { Pagination } from "@/components/data-table/_components/pagination";
 import { DataTableViewOptions } from "@/components/data-table/_components/data-table-view-options";
 import { TableView } from "@/components/data-table/_components/table-view";
 import { TableProvider } from "@/components/data-table/_context/table";
-import { TableViewType } from "@/components/data-table/_types";
+import { DataTableFeatures, dataTableFeatures, TableViewType } from "@/components/data-table/_types";
 import { GridView } from "@/components/data-table/_components/grid-view";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, TableProperties } from "lucide-react";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
+interface DataTableProps<TData extends RowData> {
+  columns: ColumnDef<DataTableFeatures, TData>[];
   initialSort?: SortingState[0];
   title?: string;
   actions?: React.ReactNode[];
@@ -30,7 +23,7 @@ interface DataTableProps<TData, TValue> {
   isLoading?: boolean;
 }
 
-export function SimpleDataTable<TData, TValue>({
+export function SimpleDataTable<TData extends RowData>({
   columns,
   initialSort,
   title,
@@ -41,7 +34,7 @@ export function SimpleDataTable<TData, TValue>({
   defaultViewType = TableViewType.LIST,
   id,
   isLoading = false,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData>) {
   const viewTypeKey = id ? `${id}-viewType` : "view";
   const navigate = useNavigate();
   const searchViewType = useSearch({
@@ -54,16 +47,16 @@ export function SimpleDataTable<TData, TValue>({
   const setViewType = (next: TableViewType) =>
     navigate({ to: ".", search: ((prev: object) => ({ ...prev, [viewTypeKey]: next })) as never, replace: true });
 
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
     rowCount: data?.length || 0,
     enableSortingRemoval: false,
-    getPaginationRowModel: hasPagination ? getPaginationRowModel() : undefined,
-    getSortedRowModel: getSortedRowModel(),
+    // Skips the paginated row model, as omitting getPaginationRowModel did in v8.
+    manualPagination: !hasPagination,
     initialState: {
-      sorting: initialSort ? [initialSort] : undefined,
+      sorting: initialSort ? [initialSort] : [],
       columnVisibility: columns.reduce(
         (acc, column) => {
           if (column.meta?.initialHidden && column.id) {

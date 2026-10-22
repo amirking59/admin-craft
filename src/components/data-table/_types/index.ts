@@ -1,4 +1,32 @@
 import type { AnyFormApi } from "@tanstack/react-form";
+import {
+  columnFilteringFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createPaginatedRowModel,
+  createSortedRowModel,
+  rowPaginationFeature,
+  rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_datetime,
+  sortFn_text,
+  tableFeatures,
+} from "@tanstack/react-table";
+
+// Shared by DataTable (manual/server-side) and SimpleDataTable (client-side row models).
+export const dataTableFeatures = tableFeatures({
+  columnFilteringFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  rowPaginationFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+  // The names `sortFn: "auto"` resolves to, as in v8.
+  sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text, datetime: sortFn_datetime },
+});
+
+export type DataTableFeatures = typeof dataTableFeatures;
 
 export interface PaginatedQueryFnParams {
   limit: number;

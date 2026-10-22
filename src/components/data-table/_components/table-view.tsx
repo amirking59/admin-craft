@@ -42,7 +42,7 @@ export function TableView({ isLoading, rowHeight }: TableViewProps) {
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            Array.from({ length: table?.getState().pagination.pageSize }).map((_, index) => (
+            Array.from({ length: table?.state.pagination.pageSize }).map((_, index) => (
               <TableRow key={index}>
                 {table.getVisibleFlatColumns().map((_, colIndex) => (
                   <TableCell style={{ height: rowHeight + "px" }} key={colIndex}>
@@ -53,7 +53,7 @@ export function TableView({ isLoading, rowHeight }: TableViewProps) {
             ))
           ) : table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow className="h-14" key={row.id} data-state={row.getIsSelected() && "selected"}>
+              <TableRow className="h-14" key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     <CellTooltip cell={cell}>
@@ -67,7 +67,7 @@ export function TableView({ isLoading, rowHeight }: TableViewProps) {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={table._getColumnDefs.length} className="h-24 text-center">
+              <TableCell colSpan={table.getVisibleLeafColumns().length} className="h-24 text-center">
                 {t("table.noResults")}
               </TableCell>
             </TableRow>

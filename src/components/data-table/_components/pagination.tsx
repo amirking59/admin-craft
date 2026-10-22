@@ -20,13 +20,13 @@ export function Pagination() {
             {t("table.rowsPerPage")}
           </Label>
           <Select
-            value={`${table.getState().pagination.pageSize}`}
+            value={`${table.state.pagination.pageSize}`}
             onValueChange={(value) => {
               table.setPageSize(Number(value));
             }}
           >
             <SelectTrigger className="w-20" id="rows-per-page">
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
+              <SelectValue placeholder={table.state.pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
               <SelectGroup>
@@ -41,7 +41,7 @@ export function Pagination() {
         </div>
         <div className="flex w-fit items-center justify-center text-sm font-medium">
           {t("table.PageXOfY", {
-            page: table.getState().pagination.pageIndex + 1,
+            page: table.state.pagination.pageIndex + 1,
             total: table.getPageCount(),
           })}
         </div>

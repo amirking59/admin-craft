@@ -1959,15 +1959,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/react-table@npm:^8.21.3":
-  version: 8.21.3
-  resolution: "@tanstack/react-table@npm:8.21.3"
+"@tanstack/react-table@npm:^9.3.1":
+  version: 9.3.1
+  resolution: "@tanstack/react-table@npm:9.3.1"
   dependencies:
-    "@tanstack/table-core": "npm:8.21.3"
+    "@tanstack/react-store": "npm:^0.11.2"
+    "@tanstack/table-core": "npm:9.3.1"
   peerDependencies:
-    react: ">=16.8"
-    react-dom: ">=16.8"
-  checksum: 10c0/85d1d0fcb690ecc011f68a5a61c96f82142e31a0270dcf9cbc699a6f36715b1653fe6ff1518302a6d08b7093351fc4cabefd055a7db3cd8ac01e068956b0f944
+    react: ">=18"
+  checksum: 10c0/f9661605c1aa1308622cb26cd6867bd84c446c1a7586be2248d8aee1637ca918fa31740fdc3147fd08faf9a0409111b2a71c6c48a5cd2d920b97607b91966461
   languageName: node
   linkType: hard
 
@@ -2129,17 +2129,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/store@npm:0.11.2, @tanstack/store@npm:^0.11.0":
+"@tanstack/store@npm:0.11.2, @tanstack/store@npm:^0.11.0, @tanstack/store@npm:^0.11.2":
   version: 0.11.2
   resolution: "@tanstack/store@npm:0.11.2"
   checksum: 10c0/5422149c853c16e642a0ddfb51c2b4a867a11516069d3b9647659212e9762b86d609144de6ac6ec099b0360c3b198d1243f613148d69c1028dee56382f0430cd
   languageName: node
   linkType: hard
 
-"@tanstack/table-core@npm:8.21.3":
-  version: 8.21.3
-  resolution: "@tanstack/table-core@npm:8.21.3"
-  checksum: 10c0/40e3560e6d55e07cc047024aa7f83bd47a9323d21920d4adabba8071fd2d21230c48460b26cedf392588f8265b9edc133abb1b0d6d0adf4dae0970032900a8c9
+"@tanstack/table-core@npm:9.3.1":
+  version: 9.3.1
+  resolution: "@tanstack/table-core@npm:9.3.1"
+  dependencies:
+    "@tanstack/store": "npm:^0.11.2"
+  checksum: 10c0/c3210477e552a046e9e80b8108dd5bad00d7651481ff47a2ffe7d18b0f51d4dcbeaa2e4d05fd8c2af2175ba7d6f730c597d0e791faa0032cea10b1fdc4b747d8
   languageName: node
   linkType: hard
 
@@ -2260,7 +2262,7 @@ __metadata:
     "@tanstack/react-query": "npm:5.104.5"
     "@tanstack/react-router": "npm:^1.170.45"
     "@tanstack/react-start": "npm:^1.169.3"
-    "@tanstack/react-table": "npm:^8.21.3"
+    "@tanstack/react-table": "npm:^9.3.1"
     "@types/node": "npm:^26.6.5"
     "@types/qs": "npm:^6.15.1"
     "@types/react": "npm:^19.3.0"

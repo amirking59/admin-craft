@@ -1,12 +1,13 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cell } from "@tanstack/react-table";
+import { Cell, RowData } from "@tanstack/react-table";
+import { DataTableFeatures } from "@/components/data-table/_types";
 
-interface CellTooltipProps<TData, TValue> {
+interface CellTooltipProps<TData extends RowData, TValue> {
   children: React.ReactNode;
-  cell?: Cell<TData, TValue>;
+  cell?: Cell<DataTableFeatures, TData, TValue>;
 }
 
-export function CellTooltip<TData, TValue>({ children, cell }: CellTooltipProps<TData, TValue>) {
+export function CellTooltip<TData extends RowData, TValue>({ children, cell }: CellTooltipProps<TData, TValue>) {
   const tooltipMeta = cell?.column.columnDef.meta?.tooltip;
 
   if (!tooltipMeta) return children;

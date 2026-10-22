@@ -5,18 +5,19 @@ import { useOnClickOutside } from "usehooks-ts";
 import { TextField } from "@/components/form/text-field";
 import { useAppForm } from "@/components/form/use-app-form";
 import { cn } from "@/lib/utils";
-import { Cell } from "@tanstack/react-table";
+import { Cell, RowData } from "@tanstack/react-table";
+import { DataTableFeatures } from "@/components/data-table/_types";
 
 const formSchema = z.object({
   value: z.string().min(1, "").or(z.number()),
 });
 
-interface editableFieldProps<TData, TValue> {
+interface editableFieldProps<TData extends RowData, TValue> {
   children?: React.ReactNode;
-  cell: Cell<TData, TValue>;
+  cell: Cell<DataTableFeatures, TData, TValue>;
 }
 
-export function EditableField<TData, TValue>({ children, cell }: editableFieldProps<TData, TValue>) {
+export function EditableField<TData extends RowData, TValue>({ children, cell }: editableFieldProps<TData, TValue>) {
   const formRef = useRef(null);
   const [editing, setEditing] = useState(false);
 
