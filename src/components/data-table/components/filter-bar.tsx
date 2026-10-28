@@ -5,15 +5,19 @@ import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { Check, ChevronRight, Plus, X } from "lucide-react";
 import { useTableContext } from "@/components/data-table/table-context";
 import type { FilterDef, FilterOption, FilterValue } from "@/components/data-table/types";
-import { filtersArrayToObject, isFilterValueEmpty } from "@/components/data-table/utils";
+import dayjs from "dayjs";
+import { datePresets, filtersArrayToObject, isFilterValueEmpty } from "@/components/data-table/utils";
 import { useAppForm } from "@/components/form/use-app-form";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
+import { Calendar } from "@/components/ui/calendar";
 import { ComboboxItem, isRowPress } from "@/components/ui/combobox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { formatDate } from "@/lib/utils";
 
 const formatFilterValue = (filter: FilterDef, value: FilterValue) => {
   if (filter.formatValue) return filter.formatValue(value);
+  if (filter.date) return formatDate(String(value), false);
   const labels = new Map(filter.options?.().map((option) => [option.value, option.label]));
   return [value]
     .flat()
@@ -81,9 +85,11 @@ export function FilterBar() {
 
   const pinned = filters.filter((filter) => filter.pinned);
   const chips = filters.filter((filter) => !filter.pinned && (filter.name in applied || filter.name === active));
-  // In "+ Filter": a filter with options always (more values can be picked there, like Linear); others until set.
+  // In "+ Filter": a filter with options or a date always (its values can be picked there, like Linear); others
+  // until set.
   const addable = filters.filter(
-    (filter) => !filter.pinned && (filter.options || (!(filter.name in applied) && filter.name !== active)),
+    (filter) =>
+      !filter.pinned && (filter.options || filter.date || (!(filter.name in applied) && filter.name !== active)),
   );
 
   return (
@@ -123,7 +129,6 @@ export function FilterBar() {
                 onOpenChangeComplete={(open) => {
                   if (!open) setActive((current) => (current === filter.name ? null : current));
                 }}
-                title={label}
                 list={!!filter.options}
                 trigger={<Button variant="outline" size="sm" className="max-w-72 min-w-28 justify-start font-normal" />}
                 triggerContent={
@@ -141,7 +146,7 @@ export function FilterBar() {
                       filter.onValueChange?.(form);
                       apply();
                     },
-                    onChangeDebounceMs: filter.options ? 0 : 300,
+                    onChangeDebounceMs: filter.options || filter.date ? 0 : 300,
                   }}
                 >
                   {(field) =>
@@ -155,6 +160,14 @@ export function FilterBar() {
                         onChange={(next, close) => {
                           field.handleChange(next);
                           if (close) setEditing(null);
+                        }}
+                      />
+                    ) : filter.date ? (
+                      <FilterCalendar
+                        value={field.state.value}
+                        onChange={(next) => {
+                          field.handleChange(next);
+                          setEditing(null);
                         }}
                       />
                     ) : (
@@ -211,7 +224,6 @@ interface FilterEditorProps {
   onOpenChange: (open: boolean) => void;
   /** After the open or close animation ends. */
   onOpenChangeComplete: (open: boolean) => void;
-  title: string;
   /** The content is a FilterOptionsList: the popover is just the list, and its search line takes focus. */
   list: boolean;
   trigger: React.ReactElement;
@@ -227,7 +239,6 @@ function FilterEditor({
   open,
   onOpenChange,
   onOpenChangeComplete,
-  title,
   list,
   trigger,
   triggerContent,
@@ -255,8 +266,13 @@ function FilterEditor({
   return (
     <Popover open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
       <PopoverTrigger render={trigger}>{triggerContent}</PopoverTrigger>
-      <PopoverContent ref={popupRef} initialFocus={popupRef} align="start" className="flex w-72 flex-col gap-3">
-        <p className="text-sm font-medium">{title}</p>
+      <PopoverContent
+        ref={popupRef}
+        initialFocus={popupRef}
+        align="start"
+        // A calendar is the picker itself: the popover fits it, as DatePicker's does.
+        className="has-data-[slot=calendar]:w-auto has-data-[slot=calendar]:p-0"
+      >
         {children}
       </PopoverContent>
     </Popover>
@@ -316,6 +332,23 @@ function FilterOptionsList({ open, placeholder, options, multiple, value, onChan
   );
 }
 
+/**
+ * A date filter's editor: a calendar, one pick, which applies and closes like a single-pick list. The value is the
+ * day's start as an ISO string, as from DateField; picking the selected day again clears it.
+ */
+function FilterCalendar({ value, onChange }: { value: FilterValue; onChange: (value: string) => void }) {
+  const selected = value ? dayjs(String(value)).toDate() : undefined;
+
+  return (
+    <Calendar
+      mode="single"
+      defaultMonth={selected}
+      selected={selected}
+      onSelect={(date) => onChange(date ? dayjs(date).toISOString() : "")}
+    />
+  );
+}
+
 const popupClassName =
   "origin-(--transform-origin) overflow-hidden rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-none transition-[scale,opacity] duration-100 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0";
 const searchClassName =
@@ -336,7 +369,8 @@ interface AddFilterMenuProps {
 /**
  * "+ Filter", on Base UI's searchable Menu: type to narrow the filters. A filter with options opens its values in a
  * searchable submenu, like Linear, and Base UI handles the submenu (hover intent and the path to it, → or ← by text
- * direction, focus). Anything else adds a chip and opens its editor.
+ * direction, focus). A date filter offers "1 day ago" … "1 year ago" the same way, plus "Custom…". Anything else
+ * adds a chip and opens its editor.
  */
 function AddFilterMenu({ filters, values, onPick, onChange }: AddFilterMenuProps) {
   // Closed through Base UI, not a controlled `open`: closing that way from inside the submenu leaves the trigger
@@ -369,15 +403,38 @@ function AddFilterMenu({ filters, values, onPick, onChange }: AddFilterMenuProps
               <MenuPrimitive.List className="max-h-72 overflow-y-auto p-1 outline-none">
                 {filters.map((filter) =>
                   filter.options ? (
-                    <FilterSubmenu
-                      key={filter.name}
-                      filter={filter}
-                      value={values[filter.name]}
-                      onChange={(next, close) => {
-                        onChange(filter.name, next);
-                        if (close) actions.current?.close();
-                      }}
-                    />
+                    <FilterSubmenu key={filter.name} label={filter.label()}>
+                      <OptionItems
+                        filter={filter}
+                        value={values[filter.name]}
+                        onChange={(next, close) => {
+                          onChange(filter.name, next);
+                          if (close) actions.current?.close();
+                        }}
+                      />
+                    </FilterSubmenu>
+                  ) : filter.date ? (
+                    // A preset applies at once; "Custom…" opens the chip's calendar.
+                    <FilterSubmenu key={filter.name} label={filter.label()}>
+                      {datePresets().map((preset) => (
+                        <MenuPrimitive.Item
+                          key={preset.value}
+                          label={preset.label}
+                          className={menuItemClassName}
+                          onClick={() => onChange(filter.name, preset.value)}
+                        >
+                          {preset.icon}
+                          {preset.label}
+                        </MenuPrimitive.Item>
+                      ))}
+                      <MenuPrimitive.Item
+                        label={m.table_custom()}
+                        className={menuItemClassName}
+                        onClick={() => onPick(filter.name)}
+                      >
+                        {m.table_custom()}
+                      </MenuPrimitive.Item>
+                    </FilterSubmenu>
                   ) : (
                     <MenuPrimitive.Item
                       key={filter.name}
@@ -404,19 +461,8 @@ const isMenuRowPress = (event: Event | undefined) =>
   !(event instanceof KeyboardEvent) &&
   !(event.target instanceof Element && event.target.closest("[data-slot=menu-item-checkbox]"));
 
-interface FilterSubmenuProps {
-  filter: FilterDef;
-  value: FilterValue | undefined;
-  /** `close`: the pick was a row press (or a single pick), so the whole menu closes. */
-  onChange: (value: FilterValue, close: boolean) => void;
-}
-
-/** One filter's values in a searchable submenu: a checkbox per option, in front, as in the chip's editor. */
-function FilterSubmenu({ filter, value, onChange }: FilterSubmenuProps) {
-  const label = filter.label();
-  const multiple = filter.multiple !== false;
-  const selected = [value ?? []].flat().filter((v) => v !== "");
-
+/** One filter's values in a submenu, searchable like the menu itself. */
+function FilterSubmenu({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <MenuPrimitive.FilterProvider>
       <MenuPrimitive.SubmenuRoot>
@@ -436,41 +482,54 @@ function FilterSubmenu({ filter, value, onChange }: FilterSubmenuProps) {
               <MenuPrimitive.Empty className="px-3 py-2 text-sm text-muted-foreground">
                 {m.no_items_found()}
               </MenuPrimitive.Empty>
-              <MenuPrimitive.List className="max-h-72 overflow-y-auto p-1 outline-none">
-                {filter.options?.().map((option) => (
-                  <MenuPrimitive.CheckboxItem
-                    key={option.value}
-                    label={option.label}
-                    checked={selected.includes(option.value)}
-                    closeOnClick={false}
-                    className={menuItemClassName}
-                    onCheckedChange={(checked, details) => {
-                      const next = multiple
-                        ? checked
-                          ? [...selected, option.value]
-                          : selected.filter((v) => v !== option.value)
-                        : checked
-                          ? option.value
-                          : "";
-                      onChange(next, !multiple || isMenuRowPress(details.event));
-                    }}
-                  >
-                    <span data-slot="menu-item-checkbox" className="-m-1 shrink-0 p-1">
-                      <span className="flex size-4 items-center justify-center rounded-[4px] border border-input group-data-checked/menu-item:border-primary group-data-checked/menu-item:bg-primary group-data-checked/menu-item:text-primary-foreground">
-                        <MenuPrimitive.CheckboxItemIndicator>
-                          <Check className="size-3" />
-                        </MenuPrimitive.CheckboxItemIndicator>
-                      </span>
-                    </span>
-                    {option.icon}
-                    <span className="truncate">{option.label}</span>
-                  </MenuPrimitive.CheckboxItem>
-                ))}
-              </MenuPrimitive.List>
+              <MenuPrimitive.List className="max-h-72 overflow-y-auto p-1 outline-none">{children}</MenuPrimitive.List>
             </MenuPrimitive.Popup>
           </MenuPrimitive.Positioner>
         </MenuPrimitive.Portal>
       </MenuPrimitive.SubmenuRoot>
     </MenuPrimitive.FilterProvider>
   );
+}
+
+interface OptionItemsProps {
+  filter: FilterDef;
+  value: FilterValue | undefined;
+  /** `close`: the pick was a row press (or a single pick), so the whole menu closes. */
+  onChange: (value: FilterValue, close: boolean) => void;
+}
+
+/** A filter's options in its submenu: a checkbox per option, in front, as in the chip's editor. */
+function OptionItems({ filter, value, onChange }: OptionItemsProps) {
+  const multiple = filter.multiple !== false;
+  const selected = [value ?? []].flat().filter((v) => v !== "");
+
+  return filter.options?.().map((option) => (
+    <MenuPrimitive.CheckboxItem
+      key={option.value}
+      label={option.label}
+      checked={selected.includes(option.value)}
+      closeOnClick={false}
+      className={menuItemClassName}
+      onCheckedChange={(checked, details) => {
+        const next = multiple
+          ? checked
+            ? [...selected, option.value]
+            : selected.filter((v) => v !== option.value)
+          : checked
+            ? option.value
+            : "";
+        onChange(next, !multiple || isMenuRowPress(details.event));
+      }}
+    >
+      <span data-slot="menu-item-checkbox" className="-m-1 shrink-0 p-1">
+        <span className="flex size-4 items-center justify-center rounded-[4px] border border-input group-data-checked/menu-item:border-primary group-data-checked/menu-item:bg-primary group-data-checked/menu-item:text-primary-foreground">
+          <MenuPrimitive.CheckboxItemIndicator>
+            <Check className="size-3" />
+          </MenuPrimitive.CheckboxItemIndicator>
+        </span>
+      </span>
+      {option.icon}
+      <span className="truncate">{option.label}</span>
+    </MenuPrimitive.CheckboxItem>
+  ));
 }

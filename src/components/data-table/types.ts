@@ -49,9 +49,14 @@ export type FilterDef = {
   options?: () => FilterOption[];
   /** With `options`: pick several values (the default) or one. */
   multiple?: boolean;
-  /** For anything else (a date, a number): the filter's field. It reads its name and value from the form's field context. */
+  /**
+   * A date, like Linear's: "+ Filter" offers "1 day ago" … "1 year ago" and "Custom…", and the editor is a calendar.
+   * The value is the day's start as an ISO string, as from DateField; `input` isn't needed.
+   */
+  date?: boolean;
+  /** For anything else (a number, text): the filter's field. It reads its name and value from the form's field context. */
   input?: () => React.ReactNode;
-  /** How the value reads on the chip. Defaults to the options' labels, or the value(s) joined with commas. */
+  /** How the value reads on the chip. Defaults to the options' labels, the date, or the value(s) joined with commas. */
   formatValue?: (value: FilterValue) => string;
   /** Always shown in the filter bar, applied as you type (e.g. a search box), instead of behind "+ Filter". */
   pinned?: boolean;
