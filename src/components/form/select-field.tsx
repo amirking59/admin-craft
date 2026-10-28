@@ -73,6 +73,7 @@ export function SelectField({
       ? field.state.value
       : []
     : (field.state.value as SelectValue | null) || null;
+  const placeholderText = placeholder ?? (label ? m.select_x({ x: label.toLowerCase() }) : m.search());
 
   const inputProps = {
     "id": field.name,
@@ -122,7 +123,7 @@ export function SelectField({
                       {m.x_more({ x: chips.length - multipleMaxDisplay })}
                     </span>
                   )}
-                  <ComboboxChipsInput {...inputProps} placeholder={chips.length ? undefined : placeholder} />
+                  <ComboboxChipsInput {...inputProps} placeholder={chips.length ? undefined : placeholderText} />
                 </>
               )}
             </ComboboxValue>
@@ -131,7 +132,7 @@ export function SelectField({
           <ComboboxInput
             {...inputProps}
             className="w-full"
-            placeholder={placeholder ?? (label ? m.select_x({ x: label.toLowerCase() }) : m.search())}
+            placeholder={placeholderText}
             showClear={clearable && value !== null}
             clearLabel={m.clear()}
           />

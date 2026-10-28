@@ -164,7 +164,7 @@ export function FilterBar() {
                     filter.options ? (
                       <FilterOptionsList
                         open={editing === filter.name}
-                        placeholder={label}
+                        label={label}
                         options={filter.options()}
                         multiple={filter.multiple !== false}
                         value={field.state.value}
@@ -313,7 +313,8 @@ function FilterEditor({
 interface FilterOptionsListProps {
   /** The surrounding editor's open state: closing it resets the search line. */
   open: boolean;
-  placeholder: string;
+  /** The filter's name, for the search line's accessible name. */
+  label: string;
   options: FilterOption[];
   multiple: boolean;
   value: unknown;
@@ -326,7 +327,7 @@ interface FilterOptionsListProps {
  * at once. With `multiple`, every pick toggles its option: from the checkbox (or the keyboard) the list stays for
  * more picks, from the rest of the row the editor closes. An inline combobox, so arrows, Enter and typing work.
  */
-function FilterOptionsList({ open, placeholder, options, multiple, value, onChange }: FilterOptionsListProps) {
+function FilterOptionsList({ open, label, options, multiple, value, onChange }: FilterOptionsListProps) {
   const labels = new Map(options.map((option) => [option.value, option.label]));
   const icons = new Map(options.map((option) => [option.value, option.icon]));
   const selected = [value].flat().filter((v): v is string => typeof v === "string" && v !== "");
@@ -345,7 +346,8 @@ function FilterOptionsList({ open, placeholder, options, multiple, value, onChan
       autoHighlight
     >
       <ComboboxPrimitive.Input
-        placeholder={placeholder}
+        aria-label={label}
+        placeholder={m.table_filter_search()}
         className="w-full border-b bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
       />
       <ComboboxPrimitive.Empty className="px-3 py-2 text-sm text-muted-foreground empty:hidden">
@@ -520,7 +522,11 @@ function FilterSubmenu({ label, children }: { label: string; children: React.Rea
             data-base-ui-swipe-ignore=""
           >
             <MenuPrimitive.Popup className={`w-60 ${popupClassName}`}>
-              <MenuPrimitive.Input aria-label={label} placeholder={label} className={searchClassName} />
+              <MenuPrimitive.Input
+                aria-label={label}
+                placeholder={m.table_filter_search()}
+                className={searchClassName}
+              />
               <MenuPrimitive.Empty className="px-3 py-2 text-sm text-muted-foreground">
                 {m.no_items_found()}
               </MenuPrimitive.Empty>
@@ -551,7 +557,7 @@ function OptionItems({ filter, value, onChange }: OptionItemsProps) {
       label={option.label}
       checked={selected.includes(option.value)}
       closeOnClick={false}
-      className={menuItemClassName}
+      className={`${menuItemClassName} ${multiple ? "" : "pe-8"}`}
       onCheckedChange={(checked, details) => {
         const next = multiple
           ? checked
@@ -563,15 +569,23 @@ function OptionItems({ filter, value, onChange }: OptionItemsProps) {
         onChange(next, !multiple || isMenuRowPress(details.event));
       }}
     >
-      <span data-slot="menu-item-checkbox" className="-m-1 shrink-0 p-1">
-        <span className="flex size-4 items-center justify-center rounded-[4px] border border-input group-data-checked/menu-item:border-primary group-data-checked/menu-item:bg-primary group-data-checked/menu-item:text-primary-foreground">
-          <MenuPrimitive.CheckboxItemIndicator>
-            <Check className="size-3" />
-          </MenuPrimitive.CheckboxItemIndicator>
+      {/* Several picks: a checkbox in front. One pick: a check mark at the end, as in the chip's list. */}
+      {multiple && (
+        <span data-slot="menu-item-checkbox" className="-m-1 shrink-0 p-1">
+          <span className="flex size-4 items-center justify-center rounded-[4px] border border-input group-data-checked/menu-item:border-primary group-data-checked/menu-item:bg-primary group-data-checked/menu-item:text-primary-foreground">
+            <MenuPrimitive.CheckboxItemIndicator>
+              <Check className="size-3" />
+            </MenuPrimitive.CheckboxItemIndicator>
+          </span>
         </span>
-      </span>
+      )}
       {option.icon}
       <span className="truncate">{option.label}</span>
+      {!multiple && (
+        <MenuPrimitive.CheckboxItemIndicator className="pointer-events-none absolute end-2 flex size-4 items-center justify-center">
+          <Check className="size-4" />
+        </MenuPrimitive.CheckboxItemIndicator>
+      )}
     </MenuPrimitive.CheckboxItem>
   ));
 }

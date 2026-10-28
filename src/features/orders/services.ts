@@ -1,9 +1,14 @@
-import { Order, OrderStatus } from "@/features/orders/types";
+import { m } from "@/paraglide/messages.js";
+import { CreateOrderParams, Order, OrderStatus, OrderTag, PaymentMethod } from "@/features/orders/types";
 import { DataTableQueryParams, TableQueryFnResponse } from "@/components/data-table";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import dayjs from "dayjs";
 import { delay, sortRows } from "@/lib/mock";
 
-const mockOrders: Order[] = [
+type SeedOrder = Omit<Order, "paymentMethod" | "paid" | "tags" | "deliveryWindow" | "note">;
+
+const seedOrders: SeedOrder[] = [
   {
     orderId: 1001,
     customerName: "Alice Johnson",
@@ -256,19 +261,46 @@ const mockOrders: Order[] = [
   },
 ];
 
+// The fields the seed rows leave out, spread over them so every filter has something to find.
+const paymentMethods = Object.values(PaymentMethod);
+const mockOrders: Order[] = seedOrders.map((order, index) => ({
+  ...order,
+  paymentMethod: paymentMethods[index % paymentMethods.length],
+  paid: order.status !== OrderStatus.Pending && order.status !== OrderStatus.Cancelled,
+  tags: index % 4 === 0 ? [OrderTag.Gift] : index % 5 === 0 ? [OrderTag.Express, OrderTag.Fragile] : [],
+  deliveryWindow: null,
+  note: "",
+}));
+
+/** The customers and products in the mock orders, for the customer filter and the order form's product list. */
+export const orderCustomers = [...new Set(seedOrders.map((order) => order.customerName))].toSorted();
+export const orderProducts = [...new Set(seedOrders.map((order) => order.product))].toSorted();
+
+// A filter value is a string or, from a multi-pick, a list of them.
+const asList = (value: string | string[] | undefined) => (value === undefined ? [] : [value].flat());
+
 export const getOrders = async ({ page, sort, filters }: DataTableQueryParams): TableQueryFnResponse<Order> => {
   await delay(200);
 
-  const statusFilter = filters?.status;
-  const statuses = Array.isArray(statusFilter) ? statusFilter : statusFilter ? [statusFilter] : [];
+  const statuses = asList(filters?.status);
+  const customers = asList(filters?.customer);
+  const tags = asList(filters?.tags);
+  const paymentMethod = filters?.payment_method;
+  const paid = filters?.paid;
   const createdAtFrom = typeof filters?.created_at_from === "string" ? filters.created_at_from : undefined;
   const totalMin = filters?.total_min ? Number(filters.total_min) : undefined;
+  const product = typeof filters?.product === "string" ? filters.product.trim().toLowerCase() : "";
   const query = typeof filters?.q === "string" ? filters.q.trim().toLowerCase() : "";
 
   const filtered = mockOrders.filter((order) => {
     if (statuses.length > 0 && !statuses.includes(order.status)) return false;
+    if (customers.length > 0 && !customers.includes(order.customerName)) return false;
+    if (tags.length > 0 && !tags.some((tag) => order.tags.includes(tag as OrderTag))) return false;
+    if (paymentMethod && order.paymentMethod !== paymentMethod) return false;
+    if (paid && String(order.paid) !== paid) return false;
     if (createdAtFrom && dayjs(order.createdAt).isBefore(dayjs(createdAtFrom))) return false;
     if (totalMin !== undefined && order.total < totalMin) return false;
+    if (product && !order.product.toLowerCase().includes(product)) return false;
     if (query && ![order.customerName, order.customerEmail, order.product].some((s) => s.toLowerCase().includes(query)))
       return false;
     return true;
@@ -280,4 +312,22 @@ export const getOrders = async ({ page, sort, filters }: DataTableQueryParams): 
     items: sortRows(filtered, sort).slice(skip, skip + page.size),
     total: filtered.length,
   };
+};
+
+const createOrder = async (params: CreateOrderParams) => {
+  await delay(400);
+  const order = { ...params, orderId: Math.max(...mockOrders.map((o) => o.orderId)) + 1 };
+  mockOrders.push(order);
+  return order;
+};
+
+export const useCreateOrder = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      toast.success(m.add_success());
+    },
+  });
 };

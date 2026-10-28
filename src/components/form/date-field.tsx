@@ -26,6 +26,7 @@ export function DateField({
   const field = useFieldContext<string | DateRangeValue | null>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
   const value = field.state.value || null;
+  const placeholderText = placeholder ?? (label ? m.select_x({ x: label.toLowerCase() }) : undefined);
 
   return (
     <Field data-invalid={isInvalid}>
@@ -35,7 +36,7 @@ export function DateField({
         {mode === "range" ? (
           <DatePicker
             mode="range"
-            placeholder={placeholder}
+            placeholder={placeholderText}
             disabled={disabled}
             aria-invalid={isInvalid}
             value={typeof value === "object" ? value : null}
@@ -44,7 +45,7 @@ export function DateField({
         ) : (
           <DatePicker
             mode="single"
-            placeholder={placeholder}
+            placeholder={placeholderText}
             disabled={disabled}
             aria-invalid={isInvalid}
             value={typeof value === "string" ? value : null}
