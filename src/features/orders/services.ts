@@ -262,10 +262,15 @@ export const getOrders = async ({ page, sort, filters }: DataTableQueryParams): 
   const statusFilter = filters?.status;
   const statuses = Array.isArray(statusFilter) ? statusFilter : statusFilter ? [statusFilter] : [];
   const createdAtFrom = typeof filters?.created_at_from === "string" ? filters.created_at_from : undefined;
+  const totalMin = filters?.total_min ? Number(filters.total_min) : undefined;
+  const query = typeof filters?.q === "string" ? filters.q.trim().toLowerCase() : "";
 
   const filtered = mockOrders.filter((order) => {
     if (statuses.length > 0 && !statuses.includes(order.status)) return false;
     if (createdAtFrom && dayjs(order.createdAt).isBefore(dayjs(createdAtFrom))) return false;
+    if (totalMin !== undefined && order.total < totalMin) return false;
+    if (query && ![order.customerName, order.customerEmail, order.product].some((s) => s.toLowerCase().includes(query)))
+      return false;
     return true;
   });
 

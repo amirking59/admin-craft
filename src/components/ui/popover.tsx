@@ -27,6 +27,8 @@ function PopoverContent({
         side={side}
         sideOffset={sideOffset}
         className="isolate z-50"
+        // Inside a drawer (e.g. a date picker), keep the drawer from turning a press here into a swipe.
+        data-base-ui-swipe-ignore=""
       >
         <PopoverPrimitive.Popup
           data-slot="popover-content"

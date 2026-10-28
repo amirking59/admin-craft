@@ -16,8 +16,9 @@ export const dataTableSearchSchema = z.object({
     .optional()
     .catch(undefined),
   sort: z.string().optional().catch(undefined),
+  // Values are strings, as a pasted URL gives them; a number from a number field becomes one too.
   filters: z
-    .record(z.string(), z.union([z.string(), z.array(z.string())]))
+    .record(z.string(), z.union([z.array(z.coerce.string()), z.coerce.string()]))
     .optional()
     .catch(undefined),
 });

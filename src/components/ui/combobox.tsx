@@ -93,6 +93,9 @@ function ComboboxContent({
         alignOffset={alignOffset}
         anchor={anchor}
         className="isolate z-50"
+        // Inside a drawer, the list's events bubble (through the portal) to the drawer, which would start a
+        // swipe and swallow the click on an option drawn over it.
+        data-base-ui-swipe-ignore=""
       >
         <ComboboxPrimitive.Popup
           data-slot="combobox-content"

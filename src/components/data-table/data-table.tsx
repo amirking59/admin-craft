@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { DataTableFeatures, dataTableFeatures, DataTableQueryParams, FilterDef } from "@/components/data-table/types";
 import { DataTableActions } from "@/components/data-table/components/data-table-actions";
 import { DataTableViewOptions } from "@/components/data-table/components/data-table-view-options";
-import { FiltersButton } from "@/components/data-table/components/filters-button";
+import { FilterBar } from "@/components/data-table/components/filter-bar";
 import { Pagination } from "@/components/data-table/components/pagination";
 import { TableView } from "@/components/data-table/components/table-view";
 import { TableProvider } from "@/components/data-table/table-context";
@@ -128,8 +128,6 @@ export function DataTable<TData extends RowData>({
         <DataTableActions title={title}>
           {actions}
 
-          <FiltersButton />
-
           <DataTableViewOptions />
 
           <Button
@@ -141,6 +139,8 @@ export function DataTable<TData extends RowData>({
             <RefreshCcw className={cn(isFetching && "animate-spin")} />
           </Button>
         </DataTableActions>
+
+        {filters.length > 0 && <FilterBar />}
 
         {/* Skeletons only on first load; later fetches dim the rows that are already there. */}
         <div aria-busy={isFetching} className={cn("transition-opacity", isFetching && !isPending && "opacity-60")}>

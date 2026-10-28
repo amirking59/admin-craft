@@ -8,6 +8,8 @@ import { formatNumber } from "@/lib/utils";
 import { Order, OrderStatus } from "@/features/orders/types";
 import { EnumField } from "@/components/form/enum-field";
 import { DateField } from "@/components/form/date-field";
+import { NumberField } from "@/components/form/number-field";
+import { TextField } from "@/components/form/text-field";
 
 const statusVariant: Record<OrderStatus, "default" | "secondary" | "outline" | "destructive"> = {
   [OrderStatus.Pending]: "secondary",
@@ -82,8 +84,21 @@ const columns: ColumnDef<DataTableFeatures, Order>[] = [
 
 const filters: FilterDef[] = [
   {
+    name: "q",
+    label: m.search,
+    pinned: true,
+    operator: FilterOperator.Like,
+    input: () => <TextField placeholder={m.orders_search()} clearable />,
+  },
+  {
     name: "status",
+    label: m.orders_status,
     operator: FilterOperator.Equal,
+    formatValue: (value) =>
+      [value]
+        .flat()
+        .map((status) => statusLabel[status as OrderStatus]())
+        .join(", "),
     input: () => (
       <EnumField
         enumObject={OrderStatus}
@@ -96,8 +111,17 @@ const filters: FilterDef[] = [
   },
   {
     name: "created_at_from",
+    label: m.orders_created_from,
     operator: FilterOperator.BetweenDate,
-    input: () => <DateField mode="single" clearable placeholder={m.orders_created_at()} />,
+    formatValue: (value) => dayjs(String(value)).format("YYYY/MM/DD"),
+    input: () => <DateField mode="single" clearable placeholder={m.orders_created_from()} />,
+  },
+  {
+    name: "total_min",
+    label: m.orders_total_min,
+    operator: FilterOperator.Equal,
+    formatValue: (value) => `$${formatNumber(Number(value))}`,
+    input: () => <NumberField thousandSeparator placeholder={m.orders_total_min()} />,
   },
 ];
 

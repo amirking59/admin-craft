@@ -60,6 +60,34 @@ export const Route = createFileRoute("/_main/orders")({
 
 Columns must be stable (module scope or `useMemo`), since cells render as components.
 
+### Filters
+
+Pass `filters` and the table shows a filter bar above the rows:
+
+- **Pinned filters** (`pinned: true`) sit inline and apply as you type, e.g. a search box.
+- **The rest** are added from «+ Filters», a searchable list, so a table with many filters stays easy to use. Each set filter shows as a chip, e.g. «Status: Pending, Shipped». Clicking a chip edits that filter alone (a popover, or a drawer from the bottom on phones), and its × removes it.
+
+```tsx
+const filters: FilterDef[] = [
+  {
+    name: "q",
+    label: m.search,
+    pinned: true,
+    operator: FilterOperator.Like,
+    input: () => <TextField placeholder={m.orders_search()} clearable />,
+  },
+  {
+    name: "status",
+    label: m.orders_status, // the chip's name; a message function
+    operator: FilterOperator.Equal,
+    formatValue: (value) => [value].flat().map((status) => statusLabel[status]()).join(", "), // the chip's value
+    input: () => <EnumField enumObject={OrderStatus} multiple placeholder={m.orders_status()} />,
+  },
+];
+```
+
+Filter values reach the API as strings (or string arrays), the same as from a pasted URL.
+
 ## API calls
 
 `api()` in `src/configs/api.ts` adds the base URL, the Bearer token and a 30s timeout. On an error it:
