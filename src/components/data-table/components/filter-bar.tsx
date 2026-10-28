@@ -1,14 +1,15 @@
 import { m } from "@/paraglide/messages.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
-import { Plus, X } from "lucide-react";
+import { Menu as MenuPrimitive } from "@base-ui/react/menu";
+import { Check, ChevronRight, Plus, X } from "lucide-react";
 import { useTableContext } from "@/components/data-table/table-context";
 import type { FilterDef, FilterOption, FilterValue } from "@/components/data-table/types";
 import { filtersArrayToObject, isFilterValueEmpty } from "@/components/data-table/utils";
 import { useAppForm } from "@/components/form/use-app-form";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
-import { Combobox, ComboboxEmpty, ComboboxItem, ComboboxList, isRowPress } from "@/components/ui/combobox";
+import { ComboboxItem, isRowPress } from "@/components/ui/combobox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const formatFilterValue = (filter: FilterDef, value: FilterValue) => {
@@ -80,7 +81,10 @@ export function FilterBar() {
 
   const pinned = filters.filter((filter) => filter.pinned);
   const chips = filters.filter((filter) => !filter.pinned && (filter.name in applied || filter.name === active));
-  const addable = filters.filter((filter) => !filter.pinned && !(filter.name in applied) && filter.name !== active);
+  // In "+ Filter": a filter with options always (more values can be picked there, like Linear); others until set.
+  const addable = filters.filter(
+    (filter) => !filter.pinned && (filter.options || (!(filter.name in applied) && filter.name !== active)),
+  );
 
   return (
     <div className="mb-3 flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
@@ -182,6 +186,12 @@ export function FilterBar() {
               // Mount the chip closed first: an editor that is already open when it mounts doesn't animate in.
               setActive(name);
               requestAnimationFrame(() => setEditing(name));
+            }}
+            values={applied}
+            onChange={(name, next) => {
+              form.setFieldValue(name, next, { dontRunListeners: true });
+              filters.find((filter) => filter.name === name)?.onValueChange?.(form);
+              apply();
             }}
           />
         )}
@@ -306,49 +316,161 @@ function FilterOptionsList({ open, placeholder, options, multiple, value, onChan
   );
 }
 
+const popupClassName =
+  "origin-(--transform-origin) overflow-hidden rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-none transition-[scale,opacity] duration-100 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0";
+const searchClassName =
+  "w-full border-b bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground";
+const menuItemClassName =
+  "group/menu-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground";
+
+interface AddFilterMenuProps {
+  filters: FilterDef[];
+  /** The applied values, so a filter's submenu shows what's already picked. */
+  values: Record<string, FilterValue>;
+  /** A filter without options: add its chip and open its editor. */
+  onPick: (name: string) => void;
+  /** A filter with options: its new value, picked in its submenu. */
+  onChange: (name: string, value: FilterValue) => void;
+}
+
 /**
- * "+ Filter": the filters not set yet, as a menu with a line on top to type into. A combobox rather than a menu,
- * because a menu can only jump by first letter, and typing part of a name is what keeps a long list quick.
+ * "+ Filter", on Base UI's searchable Menu: type to narrow the filters. A filter with options opens its values in a
+ * searchable submenu, like Linear, and Base UI handles the submenu (hover intent and the path to it, → or ← by text
+ * direction, focus). Anything else adds a chip and opens its editor.
  */
-function AddFilterMenu({ filters, onPick }: { filters: FilterDef[]; onPick: (name: string) => void }) {
-  const labels = new Map(filters.map((filter) => [filter.name, filter.label()]));
+function AddFilterMenu({ filters, values, onPick, onChange }: AddFilterMenuProps) {
+  // Closed through Base UI, not a controlled `open`: closing that way from inside the submenu leaves the trigger
+  // thinking the menu is still open, so its next press does nothing.
+  const actions = useRef<MenuPrimitive.Root.Actions>(null);
 
   return (
-    <Combobox<string>
-      items={filters.map((filter) => filter.name)}
-      // An action list, not a choice: nothing stays selected.
-      value={null}
-      onValueChange={(name) => name && onPick(name)}
-      itemToStringLabel={(name) => labels.get(name) ?? name}
-      autoHighlight
-    >
-      <ComboboxPrimitive.Trigger render={<Button variant="outline" size="sm" className="shrink-0 border-dashed" />}>
-        <Plus />
-        {m.table_filter()}
-      </ComboboxPrimitive.Trigger>
-      <ComboboxPrimitive.Portal>
-        <ComboboxPrimitive.Positioner
-          align="start"
-          sideOffset={4}
-          className="isolate z-50"
-          data-base-ui-swipe-ignore=""
-        >
-          <ComboboxPrimitive.Popup className="group/combobox-content w-56 origin-(--transform-origin) overflow-hidden rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95">
-            <ComboboxPrimitive.Input
-              placeholder={m.table_filter_by()}
-              className="w-full border-b bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
-            />
-            <ComboboxEmpty>{m.no_items_found()}</ComboboxEmpty>
-            <ComboboxList>
-              {(name: string) => (
-                <ComboboxItem key={name} value={name}>
-                  {labels.get(name)}
-                </ComboboxItem>
-              )}
-            </ComboboxList>
-          </ComboboxPrimitive.Popup>
-        </ComboboxPrimitive.Positioner>
-      </ComboboxPrimitive.Portal>
-    </Combobox>
+    <MenuPrimitive.FilterProvider>
+      <MenuPrimitive.Root actionsRef={actions}>
+        <MenuPrimitive.Trigger render={<Button variant="outline" size="sm" className="shrink-0 border-dashed" />}>
+          <Plus />
+          {m.table_filter()}
+        </MenuPrimitive.Trigger>
+        <MenuPrimitive.Portal>
+          <MenuPrimitive.Positioner
+            align="start"
+            sideOffset={4}
+            className="isolate z-50 outline-none"
+            data-base-ui-swipe-ignore=""
+          >
+            <MenuPrimitive.Popup className={`w-56 ${popupClassName}`}>
+              <MenuPrimitive.Input
+                aria-label={m.table_filter_by()}
+                placeholder={m.table_filter_by()}
+                className={searchClassName}
+              />
+              <MenuPrimitive.Empty className="px-3 py-2 text-sm text-muted-foreground">
+                {m.no_items_found()}
+              </MenuPrimitive.Empty>
+              <MenuPrimitive.List className="max-h-72 overflow-y-auto p-1 outline-none">
+                {filters.map((filter) =>
+                  filter.options ? (
+                    <FilterSubmenu
+                      key={filter.name}
+                      filter={filter}
+                      value={values[filter.name]}
+                      onChange={(next, close) => {
+                        onChange(filter.name, next);
+                        if (close) actions.current?.close();
+                      }}
+                    />
+                  ) : (
+                    <MenuPrimitive.Item
+                      key={filter.name}
+                      label={filter.label()}
+                      className={menuItemClassName}
+                      onClick={() => onPick(filter.name)}
+                    >
+                      {filter.label()}
+                    </MenuPrimitive.Item>
+                  ),
+                )}
+              </MenuPrimitive.List>
+            </MenuPrimitive.Popup>
+          </MenuPrimitive.Positioner>
+        </MenuPrimitive.Portal>
+      </MenuPrimitive.Root>
+    </MenuPrimitive.FilterProvider>
+  );
+}
+
+// A change from a press on the row, not on its checkbox and not from the keyboard: that one toggles and closes.
+const isMenuRowPress = (event: Event | undefined) =>
+  !!event &&
+  !(event instanceof KeyboardEvent) &&
+  !(event.target instanceof Element && event.target.closest("[data-slot=menu-item-checkbox]"));
+
+interface FilterSubmenuProps {
+  filter: FilterDef;
+  value: FilterValue | undefined;
+  /** `close`: the pick was a row press (or a single pick), so the whole menu closes. */
+  onChange: (value: FilterValue, close: boolean) => void;
+}
+
+/** One filter's values in a searchable submenu: a checkbox per option, in front, as in the chip's editor. */
+function FilterSubmenu({ filter, value, onChange }: FilterSubmenuProps) {
+  const label = filter.label();
+  const multiple = filter.multiple !== false;
+  const selected = [value ?? []].flat().filter((v) => v !== "");
+
+  return (
+    <MenuPrimitive.FilterProvider>
+      <MenuPrimitive.SubmenuRoot>
+        <MenuPrimitive.SubmenuTrigger label={label} className={`${menuItemClassName} data-popup-open:bg-accent`}>
+          <span className="flex-1 truncate">{label}</span>
+          <ChevronRight className="size-4 text-muted-foreground rtl:rotate-180" />
+        </MenuPrimitive.SubmenuTrigger>
+        <MenuPrimitive.Portal>
+          <MenuPrimitive.Positioner
+            sideOffset={6}
+            alignOffset={-5}
+            className="isolate z-50 outline-none"
+            data-base-ui-swipe-ignore=""
+          >
+            <MenuPrimitive.Popup className={`w-60 ${popupClassName}`}>
+              <MenuPrimitive.Input aria-label={label} placeholder={label} className={searchClassName} />
+              <MenuPrimitive.Empty className="px-3 py-2 text-sm text-muted-foreground">
+                {m.no_items_found()}
+              </MenuPrimitive.Empty>
+              <MenuPrimitive.List className="max-h-72 overflow-y-auto p-1 outline-none">
+                {filter.options?.().map((option) => (
+                  <MenuPrimitive.CheckboxItem
+                    key={option.value}
+                    label={option.label}
+                    checked={selected.includes(option.value)}
+                    closeOnClick={false}
+                    className={menuItemClassName}
+                    onCheckedChange={(checked, details) => {
+                      const next = multiple
+                        ? checked
+                          ? [...selected, option.value]
+                          : selected.filter((v) => v !== option.value)
+                        : checked
+                          ? option.value
+                          : "";
+                      onChange(next, !multiple || isMenuRowPress(details.event));
+                    }}
+                  >
+                    <span data-slot="menu-item-checkbox" className="-m-1 shrink-0 p-1">
+                      <span className="flex size-4 items-center justify-center rounded-[4px] border border-input group-data-checked/menu-item:border-primary group-data-checked/menu-item:bg-primary group-data-checked/menu-item:text-primary-foreground">
+                        <MenuPrimitive.CheckboxItemIndicator>
+                          <Check className="size-3" />
+                        </MenuPrimitive.CheckboxItemIndicator>
+                      </span>
+                    </span>
+                    {option.icon}
+                    <span className="truncate">{option.label}</span>
+                  </MenuPrimitive.CheckboxItem>
+                ))}
+              </MenuPrimitive.List>
+            </MenuPrimitive.Popup>
+          </MenuPrimitive.Positioner>
+        </MenuPrimitive.Portal>
+      </MenuPrimitive.SubmenuRoot>
+    </MenuPrimitive.FilterProvider>
   );
 }
