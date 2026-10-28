@@ -1,56 +1,57 @@
 import { m } from "@/paraglide/messages.js";
-import { Check, Settings2 } from "lucide-react";
-
+import { Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import * as React from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useTableContext } from "@/components/data-table/table-context";
 
+/** "View": a checkbox per column that can be hidden. The menu stays open, so several columns can be toggled. */
 export function DataTableViewOptions() {
   const { table } = useTableContext();
-  const isMobile = useIsMobile();
 
-  const columns = React.useMemo(
-    () => table.getAllColumns().filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide()),
-    [table],
-  );
+  const columns = table
+    .getAllColumns()
+    .filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide());
+  const allVisible = columns.every((column) => column.getIsVisible());
 
   return (
-    <Popover>
-      <PopoverTrigger render={<Button variant="outline" />}>
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>
         <Settings2 />
         {m.table_view()}
-      </PopoverTrigger>
-      <PopoverContent align={isMobile ? "center" : "end"} className="w-44 p-0">
-        <Command>
-          <CommandInput placeholder={m.search()} />
-          <CommandList>
-            <CommandEmpty>{m.table_no_column_found()}</CommandEmpty>
-            <CommandGroup>
-              {columns.map((column) => {
-                return (
-                  <CommandItem
-                    className="cursor-pointer"
-                    key={column.id}
-                    onSelect={() => column.toggleVisibility(!column.getIsVisible())}
-                  >
-                    <span className="grow truncate">
-                      {column.columnDef.meta?.label ??
-                        (typeof column.columnDef.header === "string" && column.columnDef.header?.toString())}
-                    </span>
-                    <Check
-                      className={cn("ms-auto size-4 shrink-0", column.getIsVisible() ? "opacity-100" : "opacity-0")}
-                    />
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuGroup>
+          {columns.map((column) => (
+            <DropdownMenuCheckboxItem
+              key={column.id}
+              checked={column.getIsVisible()}
+              onCheckedChange={(checked) => column.toggleVisibility(checked)}
+              closeOnClick={false}
+            >
+              <span className="truncate">
+                {column.columnDef.meta?.label ??
+                  (typeof column.columnDef.header === "string" ? column.columnDef.header : column.id)}
+              </span>
+            </DropdownMenuCheckboxItem>
+          ))}
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          disabled={allVisible}
+          closeOnClick={false}
+          onClick={() => columns.forEach((column) => column.toggleVisibility(true))}
+        >
+          {m.table_show_all()}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

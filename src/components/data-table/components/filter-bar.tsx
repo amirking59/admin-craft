@@ -1,5 +1,6 @@
 import { m } from "@/paraglide/messages.js";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { Plus, X } from "lucide-react";
 import { useTableContext } from "@/components/data-table/table-context";
 import type { FilterDef, FilterValue } from "@/components/data-table/types";
@@ -7,7 +8,7 @@ import { filtersArrayToObject, isFilterValueEmpty } from "@/components/data-tabl
 import { useAppForm } from "@/components/form/use-app-form";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
-import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Combobox, ComboboxEmpty, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -24,7 +25,7 @@ const sameValue = (a: unknown, b: unknown) => JSON.stringify(asStrings(a)) === J
  * - pinned filters sit inline and apply as you type
  * - the rest show once set, each as a button group (the filter, and × to remove it); the filter button opens it
  *   alone in a popover (a drawer on phones)
- * - "+ Filters" lists the unset ones, searchable, so a long list stays easy to use
+ * - "+ Filters" lists the unset ones, with a line to type into, so a long list stays easy to use
  */
 export function FilterBar() {
   const { table } = useTableContext();
@@ -38,7 +39,6 @@ export function FilterBar() {
   // until the close animation ends, even with no value, and its draft is kept until then).
   const [editing, setEditing] = useState<string | null>(null);
   const [active, setActive] = useState<string | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   // One draft form for all filters, so a filter's onValueChange can reach the others.
   const form = useAppForm({
@@ -156,34 +156,14 @@ export function FilterBar() {
         })}
 
         {addable.length > 0 && (
-          <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-            <PopoverTrigger render={<Button variant="outline" size="sm" className="shrink-0 border-dashed" />}>
-              <Plus />
-              {m.table_filters()}
-            </PopoverTrigger>
-            <PopoverContent align="start" className="w-56 p-0">
-              <Command>
-                <CommandInput placeholder={m.search()} />
-                <CommandList>
-                  <CommandEmpty>{m.no_items_found()}</CommandEmpty>
-                  {addable.map((filter) => (
-                    <CommandItem
-                      key={filter.name}
-                      value={filter.label()}
-                      onSelect={() => {
-                        setMenuOpen(false);
-                        // Mount the chip closed first: an editor that is already open when it mounts doesn't animate in.
-                        setActive(filter.name);
-                        requestAnimationFrame(() => setEditing(filter.name));
-                      }}
-                    >
-                      {filter.label()}
-                    </CommandItem>
-                  ))}
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
+          <AddFilterMenu
+            filters={addable}
+            onPick={(name) => {
+              // Mount the chip closed first: an editor that is already open when it mounts doesn't animate in.
+              setActive(name);
+              requestAnimationFrame(() => setEditing(name));
+            }}
+          />
         )}
 
         {Object.keys(applied).length > 0 && (
@@ -245,5 +225,52 @@ function FilterEditor({
         {children}
       </PopoverContent>
     </Popover>
+  );
+}
+
+/**
+ * "+ Filters": the filters not set yet, as a menu with a line on top to type into. A combobox rather than a menu,
+ * because a menu can only jump by first letter, and typing part of a name is what keeps a long list quick.
+ */
+function AddFilterMenu({ filters, onPick }: { filters: FilterDef[]; onPick: (name: string) => void }) {
+  const labels = new Map(filters.map((filter) => [filter.name, filter.label()]));
+
+  return (
+    <Combobox<string>
+      items={filters.map((filter) => filter.name)}
+      // An action list, not a choice: nothing stays selected.
+      value={null}
+      onValueChange={(name) => name && onPick(name)}
+      itemToStringLabel={(name) => labels.get(name) ?? name}
+      autoHighlight
+    >
+      <ComboboxPrimitive.Trigger render={<Button variant="outline" size="sm" className="shrink-0 border-dashed" />}>
+        <Plus />
+        {m.table_filters()}
+      </ComboboxPrimitive.Trigger>
+      <ComboboxPrimitive.Portal>
+        <ComboboxPrimitive.Positioner
+          align="start"
+          sideOffset={4}
+          className="isolate z-50"
+          data-base-ui-swipe-ignore=""
+        >
+          <ComboboxPrimitive.Popup className="group/combobox-content w-56 origin-(--transform-origin) overflow-hidden rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95">
+            <ComboboxPrimitive.Input
+              placeholder={m.table_filter_by()}
+              className="w-full border-b bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
+            />
+            <ComboboxEmpty>{m.no_items_found()}</ComboboxEmpty>
+            <ComboboxList>
+              {(name: string) => (
+                <ComboboxItem key={name} value={name}>
+                  {labels.get(name)}
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+          </ComboboxPrimitive.Popup>
+        </ComboboxPrimitive.Positioner>
+      </ComboboxPrimitive.Portal>
+    </Combobox>
   );
 }
