@@ -28,42 +28,46 @@ export const dataTableFeatures = tableFeatures({
 
 export type DataTableFeatures = typeof dataTableFeatures;
 
-export enum FilterOperator {
-  Like = "lk",
-  Equal = "eq",
-  BetweenDate = "btd",
-}
-
 export type FilterValue = string | string[];
 
 export type FilterOption = { value: string; label: string; icon?: React.ReactNode };
 
+/**
+ * One filter of a DataTable. `type` says what it is, and the filter bar draws its editor:
+ * - `select` / `multiselect`: one or several of `options`, as a list with a search line, like Linear's.
+ * - `date`: "+ Filter" offers "1 day ago" … "1 year ago" and "Custom…" (a dialog); the editor is a calendar. The
+ *   value is the day's start as an ISO string, as from DateField.
+ * - `text`: a text box. Pinned, it's the table's search box, with `label` as its placeholder.
+ * - `number`: a range, "min..max" with either end empty ("100..", "..500"; see `parseRange`), with a "from" and a
+ *   "to" box.
+ * - `custom`: `input` draws the field.
+ */
 export type FilterDef = {
   name: string;
-  /** The filter's name, on its chip and in the "add filter" menu. A message function, e.g. `m.orders_status`. */
+  /** The filter's name, on its chip and in "+ Filter". A message function, e.g. `m.orders_status`. */
   label: () => string;
-  /**
-   * A fixed set of values to pick from (a function, so labels follow the language). The editor is then a list with
-   * a search line and a checkbox per option, like Linear's; `input` isn't needed.
-   */
-  options?: () => FilterOption[];
-  /** With `options`: pick several values (the default) or one. */
-  multiple?: boolean;
-  /**
-   * A date, like Linear's: "+ Filter" offers "1 day ago" … "1 year ago" and "Custom…", and the editor is a calendar.
-   * The value is the day's start as an ISO string, as from DateField; `input` isn't needed.
-   */
-  date?: boolean;
-  /** For anything else (a number, text): the filter's field. It reads its name and value from the form's field context. */
-  input?: () => React.ReactNode;
-  /** How the value reads on the chip. Defaults to the options' labels, the date, or the value(s) joined with commas. */
-  formatValue?: (value: FilterValue) => string;
   /** Always shown in the filter bar, applied as you type (e.g. a search box), instead of behind "+ Filter". */
   pinned?: boolean;
-  operator: FilterOperator;
+  /**
+   * How the value reads on the chip. Defaults to the options' labels, the date, or the value(s) joined with commas.
+   * For a `number` it formats one end of the range (e.g. `$1,250`).
+   */
+  formatValue?: (value: FilterValue) => string;
   /** Runs when this filter's value changes, with the form holding every filter (e.g. to clear a dependent one). */
   onValueChange?: (form: AnyFormApi) => void;
-};
+} & (
+  | {
+      type: "select" | "multiselect";
+      /** The values to pick from: a function, so labels follow the language. */
+      options: () => FilterOption[];
+    }
+  | { type: "date" | "text" | "number" }
+  | {
+      type: "custom";
+      /** The filter's field. It reads its name and value from the form's field context. */
+      input: () => React.ReactNode;
+    }
+);
 
 export type TableQueryFnResponse<T> = Promise<{
   items: T[];

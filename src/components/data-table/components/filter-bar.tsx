@@ -6,25 +6,54 @@ import { Check, ChevronRight, Plus, X } from "lucide-react";
 import { useTableContext } from "@/components/data-table/table-context";
 import type { FilterDef, FilterOption, FilterValue } from "@/components/data-table/types";
 import dayjs from "dayjs";
-import { datePresets, filtersArrayToObject, isFilterValueEmpty } from "@/components/data-table/utils";
+import { NumericFormat } from "react-number-format";
+import {
+  datePresets,
+  filtersArrayToObject,
+  isFilterValueEmpty,
+  parseRange,
+  toRange,
+} from "@/components/data-table/utils";
+import { TextField } from "@/components/form/text-field";
 import { useAppForm } from "@/components/form/use-app-form";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Calendar } from "@/components/ui/calendar";
 import { ComboboxItem, isRowPress } from "@/components/ui/combobox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatNumber } from "@/lib/utils";
+
+/** A number filter's range as it reads: "$100 – $500", "from $100", "to $500". */
+const formatRange = (filter: FilterDef, value: FilterValue) => {
+  const format = filter.formatValue ?? ((end: FilterValue) => formatNumber(Number(end)));
+  const [from, to] = parseRange(value);
+  if (from && to) return `${format(from)} – ${format(to)}`;
+  return from ? `${m.table_from()} ${format(from)}` : `${m.table_to()} ${format(to)}`;
+};
 
 const formatFilterValue = (filter: FilterDef, value: FilterValue) => {
+  if (filter.type === "number") return formatRange(filter, value);
   if (filter.formatValue) return filter.formatValue(value);
-  if (filter.date) return formatDate(String(value), false);
-  const labels = new Map(filter.options?.().map((option) => [option.value, option.label]));
+  if (filter.type === "date") return formatDate(String(value), false);
+  const labels = new Map("options" in filter ? filter.options().map((option) => [option.value, option.label]) : []);
   return [value]
     .flat()
     .map((v) => labels.get(v) ?? v)
     .join(", ");
 };
+
+/** The editor of a filter that's a field (text, number or custom), inside its form field. */
+const fieldInput = (filter: FilterDef, value: FilterValue, onChange: (value: string) => void) => {
+  if (filter.type === "text") return <TextField placeholder={filter.label()} clearable />;
+  if (filter.type === "number") return <RangeInputs value={value} onChange={onChange} />;
+  if (filter.type === "custom") return filter.input();
+  return null;
+};
+
+/** A filter picked from a list of options. */
+type ListFilter = Extract<FilterDef, { options: unknown }>;
 
 // The URL holds strings while a field may hold a number (500 vs "500"), so compare as strings.
 const asStrings = (value: unknown) => (Array.isArray(value) ? value.map(String) : String(value ?? ""));
@@ -100,7 +129,8 @@ export function FilterBar() {
   // until set.
   const addable = filters.filter(
     (filter) =>
-      !filter.pinned && (filter.options || filter.date || (!(filter.name in applied) && filter.name !== active)),
+      !filter.pinned &&
+      ("options" in filter || filter.type === "date" || (!(filter.name in applied) && filter.name !== active)),
   );
 
   return (
@@ -118,7 +148,7 @@ export function FilterBar() {
               onChangeDebounceMs: 300,
             }}
           >
-            {() => filter.input?.()}
+            {(field) => fieldInput(filter, field.state.value, field.handleChange)}
           </form.AppField>
         </div>
       ))}
@@ -140,7 +170,7 @@ export function FilterBar() {
                 onOpenChangeComplete={(open) => {
                   if (!open) setActive((current) => (current === filter.name ? null : current));
                 }}
-                list={!!filter.options}
+                list={"options" in filter}
                 trigger={<Button variant="outline" size="sm" className="max-w-72 min-w-28 justify-start font-normal" />}
                 triggerContent={
                   <>
@@ -157,23 +187,23 @@ export function FilterBar() {
                       filter.onValueChange?.(form);
                       apply();
                     },
-                    onChangeDebounceMs: filter.options || filter.date ? 0 : 300,
+                    onChangeDebounceMs: "options" in filter || filter.type === "date" ? 0 : 300,
                   }}
                 >
                   {(field) =>
-                    filter.options ? (
+                    "options" in filter ? (
                       <FilterOptionsList
                         open={editing === filter.name}
                         label={label}
                         options={filter.options()}
-                        multiple={filter.multiple !== false}
+                        multiple={filter.type === "multiselect"}
                         value={field.state.value}
                         onChange={(next, close) => {
                           field.handleChange(next);
                           if (close) setEditing(null);
                         }}
                       />
-                    ) : filter.date ? (
+                    ) : filter.type === "date" ? (
                       <FilterCalendar
                         value={field.state.value}
                         onChange={(next) => {
@@ -182,7 +212,7 @@ export function FilterBar() {
                         }}
                       />
                     ) : (
-                      filter.input?.()
+                      fieldInput(filter, field.state.value, field.handleChange)
                     )
                   }
                 </form.AppField>
@@ -391,6 +421,33 @@ function FilterCalendar({
   );
 }
 
+/** A number filter's two ends, "from" and "to", either of which may be left empty. */
+function RangeInputs({ value, onChange }: { value: FilterValue; onChange: (value: string) => void }) {
+  const [from, to] = parseRange(value);
+  const end = (current: string, placeholder: string, next: (typed: string) => string) => (
+    <InputGroup>
+      <NumericFormat
+        customInput={InputGroupInput}
+        aria-label={placeholder}
+        placeholder={placeholder}
+        thousandSeparator
+        allowNegative={false}
+        valueIsNumericString
+        value={current}
+        // Only typing: a new `value` from outside also calls this, and must not write itself back.
+        onValueChange={(values, { source }) => source === "event" && onChange(next(values.value))}
+      />
+    </InputGroup>
+  );
+
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {end(from, m.table_from(), (typed) => toRange(typed, to))}
+      {end(to, m.table_to(), (typed) => toRange(from, typed))}
+    </div>
+  );
+}
+
 const popupClassName =
   "origin-(--transform-origin) overflow-hidden rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-none transition-[scale,opacity] duration-100 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0";
 const searchClassName =
@@ -404,7 +461,7 @@ interface AddFilterMenuProps {
   values: Record<string, FilterValue>;
   /** A filter without options: add its chip and open its editor. */
   onPick: (name: string) => void;
-  /** A filter with options: its new value, picked in its submenu. */
+  /** A filter's new value, picked in its submenu. */
   onChange: (name: string, value: FilterValue) => void;
   /** A date filter's "Custom…". */
   onCustom: (name: string) => void;
@@ -414,7 +471,7 @@ interface AddFilterMenuProps {
  * "+ Filter", on Base UI's searchable Menu: type to narrow the filters. A filter with options opens its values in a
  * searchable submenu, like Linear, and Base UI handles the submenu (hover intent and the path to it, → or ← by text
  * direction, focus). A date filter offers "1 day ago" … "1 year ago" the same way, plus "Custom…". Anything else
- * adds a chip and opens its editor.
+ * (text, a number) adds a chip and opens its editor.
  */
 function AddFilterMenu({ filters, values, onPick, onChange, onCustom }: AddFilterMenuProps) {
   // Closed through Base UI, not a controlled `open`: closing that way from inside the submenu leaves the trigger
@@ -446,7 +503,7 @@ function AddFilterMenu({ filters, values, onPick, onChange, onCustom }: AddFilte
               </MenuPrimitive.Empty>
               <MenuPrimitive.List className="max-h-72 overflow-y-auto p-1 outline-none">
                 {filters.map((filter) =>
-                  filter.options ? (
+                  "options" in filter ? (
                     <FilterSubmenu key={filter.name} label={filter.label()}>
                       <OptionItems
                         filter={filter}
@@ -457,7 +514,7 @@ function AddFilterMenu({ filters, values, onPick, onChange, onCustom }: AddFilte
                         }}
                       />
                     </FilterSubmenu>
-                  ) : filter.date ? (
+                  ) : filter.type === "date" ? (
                     // A preset applies at once; "Custom…" opens a dialog to pick the date.
                     <FilterSubmenu key={filter.name} label={filter.label()}>
                       {datePresets().map((preset) => (
@@ -467,7 +524,6 @@ function AddFilterMenu({ filters, values, onPick, onChange, onCustom }: AddFilte
                           className={menuItemClassName}
                           onClick={() => onChange(filter.name, preset.value)}
                         >
-                          {preset.icon}
                           {preset.label}
                         </MenuPrimitive.Item>
                       ))}
@@ -540,7 +596,7 @@ function FilterSubmenu({ label, children }: { label: string; children: React.Rea
 }
 
 interface OptionItemsProps {
-  filter: FilterDef;
+  filter: ListFilter;
   value: FilterValue | undefined;
   /** `close`: the pick was a row press (or a single pick), so the whole menu closes. */
   onChange: (value: FilterValue, close: boolean) => void;
@@ -548,10 +604,10 @@ interface OptionItemsProps {
 
 /** A filter's options in its submenu: a checkbox per option, in front, as in the chip's editor. */
 function OptionItems({ filter, value, onChange }: OptionItemsProps) {
-  const multiple = filter.multiple !== false;
+  const multiple = filter.type === "multiselect";
   const selected = [value ?? []].flat().filter((v) => v !== "");
 
-  return filter.options?.().map((option) => (
+  return filter.options().map((option) => (
     <MenuPrimitive.CheckboxItem
       key={option.value}
       label={option.label}

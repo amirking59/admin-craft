@@ -1,6 +1,6 @@
 import { m } from "@/paraglide/messages.js";
 import { CreateOrderParams, Order, OrderStatus, OrderTag, PaymentMethod } from "@/features/orders/types";
-import { DataTableQueryParams, TableQueryFnResponse } from "@/components/data-table";
+import { DataTableQueryParams, parseRange, TableQueryFnResponse } from "@/components/data-table";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import dayjs from "dayjs";
@@ -288,7 +288,7 @@ export const getOrders = async ({ page, sort, filters }: DataTableQueryParams): 
   const paymentMethod = filters?.payment_method;
   const paid = filters?.paid;
   const createdAtFrom = typeof filters?.created_at_from === "string" ? filters.created_at_from : undefined;
-  const totalMin = filters?.total_min ? Number(filters.total_min) : undefined;
+  const [totalFrom, totalTo] = parseRange(filters?.total);
   const product = typeof filters?.product === "string" ? filters.product.trim().toLowerCase() : "";
   const query = typeof filters?.q === "string" ? filters.q.trim().toLowerCase() : "";
 
@@ -299,7 +299,8 @@ export const getOrders = async ({ page, sort, filters }: DataTableQueryParams): 
     if (paymentMethod && order.paymentMethod !== paymentMethod) return false;
     if (paid && String(order.paid) !== paid) return false;
     if (createdAtFrom && dayjs(order.createdAt).isBefore(dayjs(createdAtFrom))) return false;
-    if (totalMin !== undefined && order.total < totalMin) return false;
+    if (totalFrom && order.total < Number(totalFrom)) return false;
+    if (totalTo && order.total > Number(totalTo)) return false;
     if (product && !order.product.toLowerCase().includes(product)) return false;
     if (query && ![order.customerName, order.customerEmail, order.product].some((s) => s.toLowerCase().includes(query)))
       return false;

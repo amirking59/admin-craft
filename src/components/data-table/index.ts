@@ -2,4 +2,5 @@
 export { DataTable } from "@/components/data-table/data-table";
 export { SimpleDataTable } from "@/components/data-table/simple-data-table";
 export * from "@/components/data-table/types";
+export { parseRange } from "@/components/data-table/utils";
 export { dataTableSearchSchema, type DataTableSearch } from "@/components/data-table/search";

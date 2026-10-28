@@ -67,38 +67,36 @@ Pass `filters` and the table shows a filter bar above the rows:
 - **Pinned filters** (`pinned: true`) sit inline and apply as you type, e.g. a search box.
 - **The rest** are added from «+ Filter», a searchable list, so a table with many filters stays easy to use. Each set filter shows as a chip, e.g. «Status: Pending, Shipped». Clicking a chip edits that filter alone in a popover, and its × removes it.
 - **Changes apply at once**, as in Linear: there's no Apply button. Picking an option applies right away; typing applies after a short pause.
-- **A filter with `options`** edits as a list: a search line, then a checkbox per option (one pick with `multiple: false`). Anything else (a date, a number) gives its own `input` field.
-- **A filter with `date: true`** works the same way, like Linear's dates: «+ Filter» offers «1 day ago» … «1 year ago» and «Custom…», which opens a dialog to pick the date. The chip's editor is a calendar, and the chip shows the date.
+
+Every filter has a `name` (its URL key), a `label` (a message function) and a `type`; the bar draws the editor for the type:
+
+| `type`                   | Extra field | Editor                                                                                                                                                                      |
+| ------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `select` / `multiselect` | `options`   | A list with a search line: a check mark for one pick, checkboxes for several. In «+ Filter» the values open in a submenu.                                                   |
+| `date`                   |             | A calendar. «+ Filter» offers «1 day ago» … «1 year ago», and «Custom…» opens a dialog to pick a day.                                                                      |
+| `text`                   |             | A text box, e.g. «Product contains: pro». Pinned, it's the table's search box, with the label as its placeholder.                                                         |
+| `number`                 |             | A range: a «from» and a «to» box, either of which may be empty. The value is `"min..max"` (`"100.."`, `"..500"`); `parseRange` splits it for the API.                     |
+| `custom`                 | `input`     | Your own field, reading its name and value from the form's field context.                                                                                                   |
+
+Any filter can also be `pinned`, set `formatValue` (how the chip reads the value; for a `number`, each end) and `onValueChange`.
 
 ```tsx
 const filters: FilterDef[] = [
-  {
-    name: "q",
-    label: m.search,
-    pinned: true,
-    operator: FilterOperator.Like,
-    input: () => <TextField placeholder={m.orders_search()} clearable />,
-  },
+  { name: "q", label: m.orders_search, type: "text", pinned: true },
   {
     name: "status",
-    label: m.orders_status, // the chip's name; a message function
-    operator: FilterOperator.Equal,
-    // The chip reads the picked options' labels, e.g. «Status: Pending, Shipped».
+    label: m.orders_status,
+    type: "multiselect", // the chip reads the picked labels, e.g. «Status: Pending, Shipped»
     options: () => Object.values(OrderStatus).map((status) => ({ value: status, label: statusLabel[status]() })),
   },
+  { name: "created_at_from", label: m.orders_created_from, type: "date" },
   {
-    name: "created_at_from",
-    label: m.orders_created_from,
-    operator: FilterOperator.BetweenDate,
-    date: true, // presets in «+ Filter», a calendar to edit, the date on the chip
+    name: "total",
+    label: m.orders_total,
+    type: "number", // «Total: $100 – $500», «from $100», «to $500»
+    formatValue: (value) => `$${formatNumber(Number(value))}`,
   },
-  {
-    name: "total_min",
-    label: m.orders_total_min,
-    operator: FilterOperator.Equal,
-    formatValue: (value) => `$${formatNumber(Number(value))}`, // how the chip reads the value
-    input: () => <NumberField thousandSeparator placeholder={m.orders_total_min()} />,
-  },
+  { name: "product", label: m.orders_product_contains, type: "text" },
 ];
 ```
 

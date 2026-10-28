@@ -56,3 +56,12 @@ export const datePresets = (): FilterOption[] => {
     label: relative.format(-amount, unit),
   }));
 };
+
+/** A number filter's "min..max" value as its two ends, "" where open: "100.." → ["100", ""]. */
+export const parseRange = (value: unknown): [string, string] => {
+  const [from = "", to = ""] = String(value ?? "").split("..");
+  return [from, to];
+};
+
+/** The reverse of parseRange: "" when both ends are open, so the filter goes away. */
+export const toRange = (from: string, to: string) => (from || to ? `${from}..${to}` : "");
