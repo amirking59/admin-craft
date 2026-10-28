@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { m } from "@/paraglide/messages.js";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { useFieldContext } from "@/components/form/form-context";
 import {
@@ -55,7 +55,6 @@ export function SelectField({
   multiple = false,
   multipleMaxDisplay = 2,
 }: SelectFieldProps) {
-  const { t } = useTranslation();
   const field = useFieldContext<SelectValue | SelectValue[] | null>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
   const anchor = useComboboxAnchor();
@@ -104,14 +103,14 @@ export function SelectField({
                     <ComboboxChip
                       key={chip}
                       showRemove={clearable && !disabled}
-                      removeLabel={t("removeX", { x: labelOf(chip) })}
+                      removeLabel={m.remove_x({ x: labelOf(chip) })}
                     >
                       {render?.(chip) ?? labelOf(chip)}
                     </ComboboxChip>
                   ))}
                   {chips.length > multipleMaxDisplay && (
                     <span className="text-xs text-muted-foreground">
-                      {t("xMore", { x: chips.length - multipleMaxDisplay })}
+                      {m.x_more({ x: chips.length - multipleMaxDisplay })}
                     </span>
                   )}
                   <ComboboxChipsInput {...inputProps} placeholder={chips.length ? undefined : placeholder} />
@@ -123,9 +122,9 @@ export function SelectField({
           <ComboboxInput
             {...inputProps}
             className="w-full"
-            placeholder={placeholder ?? (label ? t("selectX", { x: label }) : t("search"))}
+            placeholder={placeholder ?? (label ? m.select_x({ x: label.toLowerCase() }) : m.search())}
             showClear={clearable && value !== null}
-            clearLabel={t("clear")}
+            clearLabel={m.clear()}
           />
         )}
 
@@ -138,7 +137,7 @@ export function SelectField({
             </div>
           ) : (
             <>
-              <ComboboxEmpty>{t("noItemsFound")}</ComboboxEmpty>
+              <ComboboxEmpty>{m.no_items_found()}</ComboboxEmpty>
               <ComboboxList>
                 {(item: SelectValue) => (
                   <ComboboxItem key={item} value={item} disabled={isItemDisabled(item)}>

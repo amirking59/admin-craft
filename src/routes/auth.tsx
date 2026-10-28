@@ -1,16 +1,20 @@
+import { m } from "@/paraglide/messages.js";
 import { LayoutDashboard } from "lucide-react";
 
 import { LoginForm } from "@/features/auth/components/login-form";
-import { useTranslation } from "react-i18next";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { getAccessToken } from "@/features/auth/services";
 
 export const Route = createFileRoute("/auth")({
+  // Already logged in: nothing to do here.
+  beforeLoad: () => {
+    if (getAccessToken()) throw redirect({ to: "/" });
+  },
+  head: () => ({ meta: [{ title: `${m.auth_login()} · ${m.app_name()}` }] }),
   component: LoginPage,
 });
 
 function LoginPage() {
-  const { t } = useTranslation();
-
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
@@ -19,7 +23,7 @@ function LoginPage() {
             <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <LayoutDashboard className="size-4" />
             </div>
-            {t("appName")}
+            {m.app_name()}
           </div>
         </div>
         <div className="flex flex-1 items-center justify-center">

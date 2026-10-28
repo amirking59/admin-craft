@@ -1,3 +1,4 @@
+import { m } from "@/paraglide/messages.js";
 import { Button } from "@/components/ui/button";
 import { revalidateLogic } from "@tanstack/react-form";
 import { z } from "zod";
@@ -5,13 +6,14 @@ import { Product, ProductCategory } from "@/features/products/types";
 import { useCreateProduct, useUpdateProduct } from "@/features/products/services";
 import { Edit, Plus } from "lucide-react";
 import { DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useTranslation } from "react-i18next";
 import { useAppForm } from "@/components/form/use-app-form";
+import { applyApiFieldErrors } from "@/components/form/api-errors";
+import { categoryLabel } from "@/features/products/labels";
 
 const formSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
-  category: z.nativeEnum(ProductCategory),
+  category: z.enum(ProductCategory),
   price: z.number().positive(),
   stock: z.number().int().min(0),
   isActive: z.boolean(),
@@ -23,7 +25,6 @@ interface ProductFormProps {
 }
 
 export const ProductForm = ({ prevData, onClose }: ProductFormProps) => {
-  const { t } = useTranslation("products");
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
 
@@ -40,11 +41,17 @@ export const ProductForm = ({ prevData, onClose }: ProductFormProps) => {
     defaultValues,
     validationLogic: revalidateLogic(),
     validators: { onDynamic: formSchema },
-    onSubmit: ({ value }) => {
-      if (prevData) {
-        updateMutation.mutate({ productId: prevData.productId, ...value }, { onSuccess: () => onClose?.() });
-      } else {
-        createMutation.mutate(value, { onSuccess: () => onClose?.() });
+    onSubmit: async ({ value, formApi }) => {
+      try {
+        if (prevData) {
+          await updateMutation.mutateAsync({ productId: prevData.productId, ...value });
+        } else {
+          await createMutation.mutateAsync(value);
+        }
+        onClose?.();
+      } catch (error) {
+        // e.g. a taken name: the API's message shows under that field.
+        applyApiFieldErrors(formApi, error);
       }
     },
   });
@@ -59,52 +66,54 @@ export const ProductForm = ({ prevData, onClose }: ProductFormProps) => {
     >
       <DialogHeader>
         <DialogTitle>
-          {prevData
-            ? t("updateItem", { item: t("product"), ns: "base" })
-            : t("addItem", { item: t("product"), ns: "base" })}
+          {prevData ? m.update_item({ item: m.products_product() }) : m.add_item({ item: m.products_product() })}
         </DialogTitle>
       </DialogHeader>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2">
-          <form.AppField name="name">{(field) => <field.TextField label={t("name")} />}</form.AppField>
+          <form.AppField name="name">{(field) => <field.TextField label={m.products_name()} />}</form.AppField>
         </div>
         <div className="col-span-2">
           <form.AppField name="description">
-            {(field) => <field.TextareaField label={t("description")} />}
+            {(field) => <field.TextareaField label={m.products_description()} />}
           </form.AppField>
         </div>
         <form.AppField name="category">
           {(field) => (
             <field.EnumField
-              label={t("category")}
+              label={m.products_category()}
               enumObject={ProductCategory}
-              getItemLabel={(v) => t(`productCategory.${v}`)}
+              getItemLabel={(v) => categoryLabel[v as ProductCategory]()}
             />
           )}
         </form.AppField>
         <form.AppField name="price">
-          {(field) => <field.NumberField thousandSeparator label={t("price")} step={0.01} />}
+          {(field) => <field.NumberField thousandSeparator label={m.products_price()} step={0.01} />}
         </form.AppField>
 
-        <form.AppField name="stock">{(field) => <field.NumberField label={t("stock")} step={1} />}</form.AppField>
+        <form.AppField name="stock">
+          {(field) => <field.NumberField label={m.products_stock()} step={1} />}
+        </form.AppField>
         <div className="flex items-end pb-2">
-          <form.AppField name="isActive">{(field) => <field.CheckboxField label={t("isActive")} />}</form.AppField>
+          <form.AppField name="isActive">
+            {(field) => <field.CheckboxField label={m.products_is_active()} />}
+          </form.AppField>
         </div>
       </div>
 
       <DialogFooter>
-        <DialogClose render={<Button variant="outline" />}>{t("cancel", { ns: "base" })}</DialogClose>
+        <DialogClose render={<Button variant="outline" />}>{m.cancel()}</DialogClose>
         <Button loading={createMutation.isPending || updateMutation.isPending} type="submit">
           {prevData ? (
             <>
               <Edit />
-              {t("update", { ns: "base" })}
+              {m.update()}
             </>
           ) : (
             <>
               <Plus />
-              {t("add", { ns: "base" })}
+              {m.add()}
             </>
           )}
         </Button>

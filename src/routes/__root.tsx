@@ -1,16 +1,27 @@
 import appCss from "@/styles.css?url";
-import { Providers } from "@/components/providers";
 import { useEffect } from "react";
-import { useDocumentTitle } from "usehooks-ts";
-import { useTranslation } from "react-i18next";
-import { useDirection } from "@/hooks/use-direction";
-import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { z } from "zod";
+import type { QueryClient } from "@tanstack/react-query";
+import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
+import { m } from "@/paraglide/messages.js";
+import { getLocale, getTextDirection } from "@/paraglide/runtime.js";
+import { ThemeProvider } from "@/theme/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import { ErrorPage } from "@/components/error-page";
 import { NotFoundPage } from "@/components/not-found-page";
+import "@/lib/date";
 
-export const Route = createRootRoute({
+// Zod's built-in validation messages in the current language. Changing the language reloads the page.
+z.config(z.locales[getLocale()]());
+
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
-    meta: [{ charSet: "utf-8" }, { name: "viewport", content: "width=device-width, initial-scale=1" }],
+    meta: [
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { title: m.app_name() },
+    ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.ico" },
@@ -21,28 +32,27 @@ export const Route = createRootRoute({
   notFoundComponent: NotFoundPage,
 });
 
+// The SPA shell is prerendered at build time in the base language, and hydration keeps the prerendered <html>
+// attributes, so the effect applies the language stored in the browser.
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const { t } = useTranslation();
-  const direction = useDirection();
-  const { i18n } = useTranslation();
-
-  useDocumentTitle(t("appName"));
+  const locale = getLocale();
+  const direction = getTextDirection(locale);
 
   useEffect(() => {
+    document.documentElement.lang = locale;
     document.documentElement.dir = direction;
-  }, [direction]);
-
-  useEffect(() => {
-    document.documentElement.lang = i18n.language;
-  }, [i18n.language]);
+  }, [locale, direction]);
 
   return (
-    <html className="font-normal" suppressHydrationWarning>
+    <html lang={locale} dir={direction} className="font-normal" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <ThemeProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster />
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>

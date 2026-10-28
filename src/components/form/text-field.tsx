@@ -1,8 +1,8 @@
+import { m } from "@/paraglide/messages.js";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { useFieldContext } from "@/components/form/form-context";
 import { X } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 // The form owns these; use the field's validators/listeners instead of passing them.
 type BoundInputProps = "value" | "defaultValue" | "onChange" | "onBlur" | "name" | "id";
@@ -13,7 +13,6 @@ interface TextFieldProps extends Omit<React.ComponentProps<"input">, BoundInputP
 }
 
 export function TextField({ label, clearable = false, disabled = false, ...props }: TextFieldProps) {
-  const { t } = useTranslation();
   const field = useFieldContext<string | number>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
   const hasValue = field.state.value != null && field.state.value !== "";
@@ -36,7 +35,7 @@ export function TextField({ label, clearable = false, disabled = false, ...props
 
         {clearable && !disabled && hasValue && (
           <InputGroupAddon align="inline-end">
-            <InputGroupButton size="icon-xs" aria-label={t("clear")} onClick={() => field.handleChange("")}>
+            <InputGroupButton size="icon-xs" aria-label={m.clear()} onClick={() => field.handleChange("")}>
               <X />
             </InputGroupButton>
           </InputGroupAddon>

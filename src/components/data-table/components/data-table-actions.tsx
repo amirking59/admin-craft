@@ -1,8 +1,8 @@
+import { m } from "@/paraglide/messages.js";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useIsMobile } from "@/hooks/use-is-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { EllipsisVertical } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 interface DataTableActionsProps {
   children: React.ReactNode;
@@ -10,7 +10,6 @@ interface DataTableActionsProps {
 }
 
 export const DataTableActions = ({ children, title }: DataTableActionsProps) => {
-  const { t } = useTranslation();
   const isMobile = useIsMobile();
 
   if (isMobile) {
@@ -21,7 +20,7 @@ export const DataTableActions = ({ children, title }: DataTableActionsProps) => 
         <div className="flex-1" />
 
         <Popover>
-          <PopoverTrigger render={<Button variant="ghost" size="icon" aria-label={t("table.actions")} />}>
+          <PopoverTrigger render={<Button variant="ghost" size="icon" aria-label={m.table_actions()} />}>
             <EllipsisVertical />
           </PopoverTrigger>
           <PopoverContent className="w-56">

@@ -1,8 +1,8 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input as InputPrimitive } from "@base-ui/react/input";
 import { cn } from "cn";
-import { useDebounce } from "@/hooks/use-debounce";
+import { useDebounceCallback } from "usehooks-ts";
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -18,28 +18,37 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   );
 }
 
-function DebouncedInput({ debounceMs = 300, ...props }: React.ComponentProps<"input"> & { debounceMs: number }) {
-  const [isFirstRender, setIsFirstRender] = useState(true);
-  const [localValue, setLocalValue] = useState(props.value);
+/** An input that reports its value through `onValueChange` once typing pauses for `debounceMs`. */
+function DebouncedInput({
+  value = "",
+  onValueChange,
+  debounceMs = 300,
+  ...props
+}: Omit<React.ComponentProps<"input">, "value" | "onChange"> & {
+  value?: string;
+  onValueChange: (value: string) => void;
+  debounceMs?: number;
+}) {
+  const [localValue, setLocalValue] = useState(value);
+  const [lastValue, setLastValue] = useState(value);
+  const report = useDebounceCallback(onValueChange, debounceMs);
 
-  const debouncedValue = useDebounce(localValue || "", debounceMs);
+  // The parent changed the value (e.g. a filter reset): show it. Adjusting state during render avoids an effect.
+  if (value !== lastValue) {
+    setLastValue(value);
+    setLocalValue(value);
+  }
 
-  useEffect(() => {
-    if (isFirstRender) {
-      setIsFirstRender(false);
-      return;
-    }
-
-    props.onChange?.({ target: { value: debouncedValue } } as React.ChangeEvent<HTMLInputElement>);
-  }, [debouncedValue]);
-
-  useEffect(() => {
-    if (props.value !== localValue) {
-      setLocalValue(props.value);
-    }
-  }, [props.value]);
-
-  return <Input {...props} value={localValue} onChange={(e) => setLocalValue(e.target.value)} />;
+  return (
+    <Input
+      {...props}
+      value={localValue}
+      onChange={(e) => {
+        setLocalValue(e.target.value);
+        report(e.target.value);
+      }}
+    />
+  );
 }
 
 // Matches Input, for buttons that act as inputs (e.g. the date pickers' triggers).

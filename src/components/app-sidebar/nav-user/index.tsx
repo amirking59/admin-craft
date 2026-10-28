@@ -1,3 +1,4 @@
+import { m } from "@/paraglide/messages.js";
 import { ChevronsUpDown, LogOut } from "lucide-react";
 
 import {
@@ -11,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 
-import { useTranslation } from "react-i18next";
 import { ThemeSwitcher } from "@/components/app-sidebar/nav-user/theme-switcher";
 import { LocaleSelect } from "@/components/app-sidebar/nav-user/locale-select";
 import { logout, useProfile } from "@/features/auth/services";
@@ -51,7 +51,6 @@ function UserSummary({ user }: { user?: User }) {
 }
 
 export function NavUser() {
-  const { t } = useTranslation();
   const { isMobile } = useSidebar();
   const { data: user } = useProfile();
 
@@ -88,7 +87,7 @@ export function NavUser() {
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={logout}>
                 <LogOut />
-                {t("logout")}
+                {m.logout()}
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

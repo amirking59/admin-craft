@@ -1,43 +1,32 @@
 import { useCallback, useMemo } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { DataTableFilters } from "@/components/data-table/types";
+import type { DataTableSearch } from "@/components/data-table/search";
 
 interface DataTablePageState {
   index: number;
   size: number;
 }
 
-type DataTableQuery = {
-  filters?: DataTableFilters;
-  page?: { index?: number | string; size?: number | string };
-  [key: string]: unknown;
-};
-
 interface UseDataTableQueryStateOptions {
   defaultPageSize?: number;
 }
 
+/** Page, sort and filters, read from and written to the URL. The route validates them with `dataTableSearchSchema`. */
 export function useDataTableQueryState({ defaultPageSize = 10 }: UseDataTableQueryStateOptions = {}) {
   const navigate = useNavigate();
-  // The router parses search with qs (see src/router.tsx).
-  const parsed = useSearch({ strict: false }) as DataTableQuery;
+  // The router parses search with qs (see src/router.tsx), then the route's validateSearch types it.
+  const search: DataTableSearch = useSearch({ strict: false });
 
-  const page = useMemo<DataTablePageState>(() => {
-    const index = Number(parsed.page?.index);
-    const size = Number(parsed.page?.size);
-    return {
-      index: Number.isFinite(index) && index > 0 ? index : 1,
-      size: Number.isFinite(size) && size > 0 ? size : defaultPageSize,
-    };
-  }, [parsed.page?.index, parsed.page?.size, defaultPageSize]);
-
-  const filters = useMemo<DataTableFilters>(
-    () => (parsed.filters && typeof parsed.filters === "object" ? parsed.filters : {}),
-    [parsed.filters],
+  const page = useMemo<DataTablePageState>(
+    () => ({ index: search.page?.index ?? 1, size: search.page?.size ?? defaultPageSize }),
+    [search.page?.index, search.page?.size, defaultPageSize],
   );
 
+  const filters = useMemo<DataTableFilters>(() => search.filters ?? {}, [search.filters]);
+
   const pushQuery = useCallback(
-    (next: DataTableQuery) => {
+    (next: DataTableSearch) => {
       navigate({ to: ".", search: next as never, replace: true, resetScroll: false });
     },
     [navigate],
@@ -45,27 +34,26 @@ export function useDataTableQueryState({ defaultPageSize = 10 }: UseDataTableQue
 
   const setPage = useCallback(
     (next: Partial<DataTablePageState>) => {
-      pushQuery({
-        ...parsed,
-        page: { index: next.index ?? page.index, size: next.size ?? page.size },
-      });
+      pushQuery({ ...search, page: { index: next.index ?? page.index, size: next.size ?? page.size } });
     },
-    [parsed, page.index, page.size, pushQuery],
+    [search, page.index, page.size, pushQuery],
+  );
+
+  // A new sort or new filters change which rows come first, so both go back to page 1.
+  const setSort = useCallback(
+    (sort: string | undefined) => {
+      pushQuery({ ...search, sort, page: { index: 1, size: page.size } });
+    },
+    [search, page.size, pushQuery],
   );
 
   const setFilters = useCallback(
     (nextFilters: DataTableFilters) => {
-      const { filters: _previousFilters, ...rest } = parsed;
       const hasFilters = Object.keys(nextFilters).length > 0;
-
-      pushQuery({
-        ...rest,
-        ...(hasFilters ? { filters: nextFilters } : {}),
-        page: { index: 1, size: page.size },
-      });
+      pushQuery({ ...search, filters: hasFilters ? nextFilters : undefined, page: { index: 1, size: page.size } });
     },
-    [parsed, page.size, pushQuery],
+    [search, page.size, pushQuery],
   );
 
-  return { page, filters, setPage, setFilters };
+  return { page, sort: search.sort, filters, setPage, setSort, setFilters };
 }

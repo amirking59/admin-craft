@@ -1,10 +1,10 @@
+import { m } from "@/paraglide/messages.js";
 import { CellTooltip } from "@/components/data-table/components/cell-tooltip";
 import { DataTableSortHeader, getAriaSort } from "@/components/data-table/components/sort-header";
 import { useTableContext } from "@/components/data-table/table-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { flexRender } from "@tanstack/react-table";
-import { useTranslation } from "react-i18next";
 
 interface TableViewProps {
   isLoading: boolean;
@@ -13,8 +13,6 @@ interface TableViewProps {
 
 export function TableView({ isLoading, rowHeight }: TableViewProps) {
   const { table } = useTableContext();
-  const { t } = useTranslation();
-
   return (
     <div className="overflow-hidden rounded-md border">
       <Table>
@@ -61,7 +59,7 @@ export function TableView({ isLoading, rowHeight }: TableViewProps) {
           ) : (
             <TableRow>
               <TableCell colSpan={table.getVisibleLeafColumns().length} className="h-24 text-center">
-                {t("table.noResults")}
+                {m.table_no_results()}
               </TableCell>
             </TableRow>
           )}

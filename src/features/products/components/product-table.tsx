@@ -1,3 +1,4 @@
+import { m } from "@/paraglide/messages.js";
 import { DataTable, DataTableFeatures } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { getProducts, useDeleteProduct } from "@/features/products/services";
@@ -5,10 +6,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 import { Product, ProductCategory } from "@/features/products/types";
-import { useTranslation } from "react-i18next";
 import { DialogButton } from "@/components/dialog-button";
 import { ProductForm } from "@/features/products/components/product-form";
 import { ConfirmDialogButton } from "@/components/confirm-dialog-button";
+import { categoryLabel } from "@/features/products/labels";
 import { useMemo } from "react";
 
 const categoryVariant: Record<ProductCategory, "default" | "secondary" | "outline" | "destructive"> = {
@@ -20,7 +21,6 @@ const categoryVariant: Record<ProductCategory, "default" | "secondary" | "outlin
 };
 
 export const ProductTable = () => {
-  const { t } = useTranslation("products");
   const { mutateAsync: deleteProduct } = useDeleteProduct();
 
   // Must be stable: flexRender renders `cell` as a component, so a new function each render remounts
@@ -29,13 +29,13 @@ export const ProductTable = () => {
     () => [
       {
         accessorKey: "productId",
-        header: t("productId"),
+        header: m.products_product_id(),
         enableSorting: true,
         size: 90,
       },
       {
         accessorKey: "name",
-        header: t("name"),
+        header: m.products_name(),
         size: 200,
         meta: {
           tooltip: (context) => context.row.original.description,
@@ -43,23 +43,22 @@ export const ProductTable = () => {
       },
       {
         accessorKey: "category",
-        header: t("category"),
+        header: m.products_category(),
         cell: ({ row }) => (
-          <Badge variant={categoryVariant[row.original.category]}>
-            {t(`productCategory.${row.original.category}`)}
-          </Badge>
+          <Badge variant={categoryVariant[row.original.category]}>{categoryLabel[row.original.category]()}</Badge>
         ),
         size: 130,
       },
       {
         accessorKey: "price",
-        header: t("price"),
+        header: m.products_price(),
+        enableSorting: true,
         cell: ({ row }) => <span>${formatNumber(row.original.price, 2)}</span>,
         size: 110,
       },
       {
         accessorKey: "stock",
-        header: t("stock"),
+        header: m.products_stock(),
         cell: ({ row }) => (
           <span className={row.original.stock === 0 ? "font-medium text-destructive" : undefined}>
             {formatNumber(row.original.stock, 0)}
@@ -69,10 +68,10 @@ export const ProductTable = () => {
       },
       {
         accessorKey: "isActive",
-        header: t("status"),
+        header: m.products_status(),
         cell: ({ row }) => (
           <Badge variant={row.original.isActive ? "default" : "secondary"}>
-            {row.original.isActive ? t("active") : t("inactive")}
+            {row.original.isActive ? m.active() : m.inactive()}
           </Badge>
         ),
         size: 100,
@@ -87,21 +86,21 @@ export const ProductTable = () => {
               size="icon"
               variant="ghost"
               icon={Edit}
-              aria-label={t("updateItem", { item: t("product"), ns: "base" })}
+              aria-label={m.update_item({ item: m.products_product() })}
               content={(close) => <ProductForm prevData={row.original} onClose={close} />}
             />
             <ConfirmDialogButton
               size="icon"
               variant="ghost"
               icon={Trash2}
-              aria-label={t("deleteItem", { item: t("product"), ns: "base" })}
+              aria-label={m.delete_item({ item: m.products_product() })}
               onOk={() => deleteProduct(row.original.productId)}
             />
           </div>
         ),
       },
     ],
-    [t, deleteProduct],
+    [deleteProduct],
   );
 
   return (
@@ -110,13 +109,13 @@ export const ProductTable = () => {
       queryFn={getProducts}
       columns={columns}
       filters={[]}
-      title={t("products")}
+      title={m.products_title()}
       actions={[
         <DialogButton
           key="createProduct"
           variant="outline"
           icon={Plus}
-          title={t("addItem", { item: t("product"), ns: "base" })}
+          title={m.add_item({ item: m.products_product() })}
           content={(close) => <ProductForm onClose={close} />}
         />,
       ]}

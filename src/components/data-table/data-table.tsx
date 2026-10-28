@@ -1,8 +1,8 @@
+import { m } from "@/paraglide/messages.js";
 import { ColumnDef, ColumnFiltersState, RowData, SortingState, useTable } from "@tanstack/react-table";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { RefreshCcw } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DataTableFeatures, dataTableFeatures, DataTableQueryParams, FilterDef } from "@/components/data-table/types";
@@ -22,6 +22,7 @@ interface DataTableProps<TData extends RowData> {
    */
   columns: ColumnDef<DataTableFeatures, TData>[];
   filters?: FilterDef[];
+  /** The sort while the URL has none. */
   initialSort?: SortingState[0];
   title?: string;
   actions?: React.ReactNode[];
@@ -33,7 +34,15 @@ interface DataTableProps<TData extends RowData> {
   rowHeight?: number;
 }
 
-/** Server-driven table: pagination, sorting and filters are sent to `queryFn`; page and filters live in the URL. */
+// The URL's sort is a column id, with a leading "-" for descending.
+const toSortParam = (sort?: SortingState[0]) => (sort ? (sort.desc ? `-${sort.id}` : sort.id) : undefined);
+const fromSortParam = (sort: string): SortingState[0] =>
+  sort.startsWith("-") ? { id: sort.slice(1), desc: true } : { id: sort, desc: false };
+
+/**
+ * Server-driven table: pagination, sorting and filters are sent to `queryFn`, and all three live in the URL.
+ * Its route needs `validateSearch: dataTableSearchSchema`.
+ */
 export function DataTable<TData extends RowData>({
   columns,
   queryKey,
@@ -44,29 +53,32 @@ export function DataTable<TData extends RowData>({
   queryFn,
   rowHeight = 61,
 }: DataTableProps<TData>) {
-  const { t } = useTranslation();
-  const { page, filters: urlFilters, setPage, setFilters } = useDataTableQueryState({ defaultPageSize: 10 });
+  const {
+    page,
+    sort,
+    filters: urlFilters,
+    setPage,
+    setSort,
+    setFilters,
+  } = useDataTableQueryState({ defaultPageSize: 10 });
 
-  const [sorting, setSorting] = useState<SortingState>(initialSort ? [initialSort] : []);
+  const sortParam = sort ?? toSortParam(initialSort);
+  const sorting = useMemo<SortingState>(() => (sortParam ? [fromSortParam(sortParam)] : []), [sortParam]);
 
   const pagination = useMemo(() => ({ pageIndex: page.index - 1, pageSize: page.size }), [page.index, page.size]);
 
   const columnFilters = useMemo<ColumnFiltersState>(() => filtersObjectToArray(urlFilters), [urlFilters]);
 
   const { data, isPending, isFetching, isPlaceholderData, refetch } = useQuery({
-    queryKey: [queryKey, page, sorting, columnFilters],
+    queryKey: [queryKey, page, sortParam, columnFilters],
     queryFn: () =>
       queryFn({
         page: { index: page.index, size: page.size },
-        sort: sorting[0] ? (sorting[0].desc ? `-${sorting[0].id}` : sorting[0].id) : undefined,
+        sort: sortParam,
         filters: filtersArrayToObject(columnFilters),
       }),
     // Keep showing the current page while the next one loads.
     placeholderData: keepPreviousData,
-    gcTime: 0,
-    staleTime: 0,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
   });
 
   // Landed past the last page (e.g. its last row was deleted, or a stale URL): go back to the first page.
@@ -97,7 +109,10 @@ export function DataTable<TData extends RowData>({
       const next = typeof updater === "function" ? updater(pagination) : updater;
       setPage({ index: next.pageIndex + 1, size: next.pageSize });
     },
-    onSortingChange: setSorting,
+    onSortingChange: (updater) => {
+      const next = typeof updater === "function" ? updater(sorting) : updater;
+      setSort(toSortParam(next[0]));
+    },
     onColumnFiltersChange: (updater) => {
       const next = typeof updater === "function" ? updater(columnFilters) : updater;
       setFilters(filtersArrayToObject(next));
@@ -121,7 +136,7 @@ export function DataTable<TData extends RowData>({
             onClick={() => refetch({ cancelRefetch: false })}
             size="icon"
             variant="outline"
-            aria-label={t("table.refresh")}
+            aria-label={m.table_refresh()}
           >
             <RefreshCcw className={cn(isFetching && "animate-spin")} />
           </Button>

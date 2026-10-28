@@ -1,3 +1,4 @@
+import { m } from "@/paraglide/messages.js";
 import { ChevronRight, LucideProps, ShoppingCart, Package } from "lucide-react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -13,22 +14,20 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
 import { ForwardRefExoticComponent, RefAttributes } from "react";
 import type { FileRouteTypes } from "@/routeTree.gen";
 
 type Icon = ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
 type Route = FileRouteTypes["to"];
 
+// Labels are message functions, called at render time, so they follow the current language.
 interface NavItem {
-  title: string;
-  namespace: string;
+  label: () => string;
   icon: Icon;
   route?: Route;
   subItems?: {
-    namespace: string;
+    label: () => string;
     icon?: Icon;
-    title: string;
     route: Route;
   }[];
 }
@@ -36,14 +35,12 @@ interface NavItem {
 export const navItems: NavItem[] = [
   {
     icon: Package,
-    namespace: "products",
-    title: "products",
+    label: m.products_title,
     route: "/products",
   },
   {
     icon: ShoppingCart,
-    namespace: "orders",
-    title: "orders",
+    label: m.orders_title,
     route: "/orders",
   },
 ];
@@ -53,7 +50,6 @@ const navButtonClassName =
   "h-10 gap-3 px-3 text-muted-foreground hover:text-foreground [&>svg]:size-[18px] data-active:bg-primary/10 data-active:font-medium data-active:text-primary data-active:hover:bg-primary/15";
 
 export function NavMain() {
-  const { t } = useTranslation();
   const pathname = useLocation({ select: (location) => location.pathname });
   const { setOpenMobile } = useSidebar();
 
@@ -61,15 +57,15 @@ export function NavMain() {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>{t("navigation")}</SidebarGroupLabel>
+      <SidebarGroupLabel>{m.navigation()}</SidebarGroupLabel>
       <SidebarMenu className="gap-1">
         {navItems.map((item) => {
-          const label = t(item.title, { ns: item.namespace });
+          const label = item.label();
 
           if (item.subItems?.length) {
             return (
               <Collapsible
-                key={item.title}
+                key={label}
                 render={<SidebarMenuItem />}
                 defaultOpen={item.subItems.some((subItem) => pathname.startsWith(subItem.route))}
                 className="group/collapsible"
@@ -82,12 +78,12 @@ export function NavMain() {
                 <CollapsibleContent>
                   <SidebarMenuSub>
                     {item.subItems.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
+                      <SidebarMenuSubItem key={subItem.route}>
                         <SidebarMenuSubButton
                           isActive={pathname.startsWith(subItem.route)}
                           render={<Link onClick={closeMobile} to={subItem.route} />}
                         >
-                          <span>{t(subItem.title, { ns: subItem.namespace })}</span>
+                          <span>{subItem.label()}</span>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ))}

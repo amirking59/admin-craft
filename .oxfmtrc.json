@@ -7,8 +7,8 @@
   "proseWrap": "never",
   "printWidth": 120,
   "tabWidth": 2,
-  "useTabs:": false,
+  "useTabs": false,
   "semi": true,
   "quoteProps": "consistent",
-  "ignorePatterns": ["dist/**", ".output/**", "src/routeTree.gen.ts", "node_modules/**", "**.md"]
+  "ignorePatterns": ["dist/**", ".output/**", "src/routeTree.gen.ts", "src/paraglide/**", "node_modules/**", "**.md"]
 }

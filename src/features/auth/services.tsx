@@ -1,13 +1,27 @@
+import { m } from "@/paraglide/messages.js";
 import { LoginParams, LoginResponse, User } from "@/features/auth/types";
-import { LocalStorage } from "@/lib/storage";
-import { useMutation } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
+import { storage } from "@/lib/storage";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
+const tokenKey = "accessToken";
+
+export const getAccessToken = () => storage.get(tokenKey);
+
+let onLogout = () => {};
+
+/** src/router.tsx sets this: clear the old session's cached data and go to the login page. */
+export const setLogoutHandler = (handler: () => void) => {
+  onLogout = handler;
+};
+
+export const logout = () => {
+  storage.remove(tokenKey);
+  onLogout();
+};
+
 export const useLogin = () => {
-  const { t } = useTranslation("auth");
   const navigate = useNavigate();
 
   return useMutation({
@@ -22,8 +36,8 @@ export const useLogin = () => {
       };
     },
     onSuccess: (res) => {
-      LocalStorage.setItem("accessToken", res.access_token);
-      toast.success(t("loginSuccess"));
+      storage.set(tokenKey, res.access_token);
+      toast.success(m.auth_login_success());
       navigate({ to: "/" });
     },
   });
@@ -57,9 +71,4 @@ export const useProfile = () => {
     staleTime: Infinity,
     gcTime: Infinity,
   });
-};
-
-export const logout = () => {
-  LocalStorage.removeItem("accessToken");
-  window.location.href = "/auth";
 };

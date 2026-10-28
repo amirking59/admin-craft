@@ -1,8 +1,17 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["oxc", "typescript", "unicorn", "react"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
   "env": {
     "builtin": true
   },
-  "ignorePatterns": ["dist/**", ".output/**", "src/routeTree.gen.ts", "node_modules/**", "**.md"]
+  "rules": {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "error",
+    "react/react-in-jsx-scope": "off"
+  },
+  "ignorePatterns": ["dist/**", ".output/**", "src/routeTree.gen.ts", "src/paraglide/**", "node_modules/**", "**.md"]
 }

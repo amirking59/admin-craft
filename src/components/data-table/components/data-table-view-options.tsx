@@ -1,3 +1,4 @@
+import { m } from "@/paraglide/messages.js";
 import { Check, Settings2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -5,13 +6,11 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import * as React from "react";
-import { useTranslation } from "react-i18next";
-import { useIsMobile } from "@/hooks/use-is-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useTableContext } from "@/components/data-table/table-context";
 
 export function DataTableViewOptions() {
   const { table } = useTableContext();
-  const { t } = useTranslation();
   const isMobile = useIsMobile();
 
   const columns = React.useMemo(
@@ -23,13 +22,13 @@ export function DataTableViewOptions() {
     <Popover>
       <PopoverTrigger render={<Button variant="outline" />}>
         <Settings2 />
-        {t("table.view")}
+        {m.table_view()}
       </PopoverTrigger>
       <PopoverContent align={isMobile ? "center" : "end"} className="w-44 p-0">
         <Command>
-          <CommandInput placeholder={t("search")} />
+          <CommandInput placeholder={m.search()} />
           <CommandList>
-            <CommandEmpty>{t("table.noColumnFound")}</CommandEmpty>
+            <CommandEmpty>{m.table_no_column_found()}</CommandEmpty>
             <CommandGroup>
               {columns.map((column) => {
                 return (

@@ -1,43 +1,27 @@
 import { DropdownMenuGroup, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { useLocale } from "@/hooks/use-locale";
-import { Locale } from "@/hooks/use-locale/_types";
+import { getLocale, locales, setLocale } from "@/paraglide/runtime.js";
 import { Check, Languages } from "lucide-react";
 
-const locales: {
-  code: Locale;
-  label: string;
-}[] = [
-  {
-    code: "en",
-    label: "English",
-  },
-  {
-    code: "ar",
-    label: "عربی",
-  },
-];
+// Each language in its own name. Add a language to project.inlang/settings.json and give it a label here.
+const labels: Record<(typeof locales)[number], string> = {
+  en: "English",
+  ar: "العربية",
+  fa: "فارسی",
+};
 
+// setLocale stores the choice and reloads the page, so every message and the page direction switch together.
 export const LocaleSelect = () => {
-  const [currentLocale, setLocale] = useLocale();
+  const currentLocale = getLocale();
 
   return (
     <DropdownMenuGroup>
-      {locales.map((localeItem) => {
-        const isSelected = currentLocale === localeItem.code;
-
-        return (
-          <DropdownMenuItem
-            key={localeItem.code}
-            onClick={() => {
-              setLocale(localeItem.code);
-            }}
-          >
-            <Languages className="size-[1.2rem]" />
-            {localeItem.label}
-            {isSelected && <Check className="ms-auto size-[1.2rem] text-primary" />}
-          </DropdownMenuItem>
-        );
-      })}
+      {locales.map((locale) => (
+        <DropdownMenuItem key={locale} onClick={() => setLocale(locale)}>
+          <Languages className="size-[1.2rem]" />
+          {labels[locale]}
+          {locale === currentLocale && <Check className="ms-auto size-[1.2rem] text-primary" />}
+        </DropdownMenuItem>
+      ))}
     </DropdownMenuGroup>
   );
 };

@@ -20,13 +20,13 @@ export const FullScreenImage = ({
 
   return (
     <div className={`relative inline-block ${className}`}>
-      <img src={src} alt={alt} className={`w-full h-full object-contain ${imageClassName}`} />
+      <img src={src} alt={alt} className={`h-full w-full object-contain ${imageClassName}`} />
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger
           render={
             <div
-              className="absolute cursor-pointer bottom-2 end-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+              className="absolute end-2 bottom-2 cursor-pointer rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
               aria-label="View fullscreen"
             />
           }
@@ -40,8 +40,8 @@ export const FullScreenImage = ({
           </DialogHeader>
         </VisuallyHidden>
 
-        <DialogContent className="max-w-5xl w-[90vw] max-h-[90vh] overflow-hidden p-0 flex items-center justify-center bg-black/90">
-          <img src={src} alt={alt} className="max-w-full max-h-[calc(90vh-2rem)] w-full h-full object-contain" />
+        <DialogContent className="flex max-h-[90vh] w-[90vw] max-w-5xl items-center justify-center overflow-hidden bg-black/90 p-0">
+          <img src={src} alt={alt} className="h-full max-h-[calc(90vh-2rem)] w-full max-w-full object-contain" />
         </DialogContent>
       </Dialog>
     </div>

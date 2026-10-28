@@ -1,7 +1,7 @@
+import { m } from "@/paraglide/messages.js";
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import { revalidateLogic } from "@tanstack/react-form";
-import { useTranslation } from "react-i18next";
 import { useLogin } from "@/features/auth/services";
 import { useAppForm } from "@/components/form/use-app-form";
 
@@ -11,8 +11,6 @@ const formSchema = z.object({
 });
 
 export function LoginForm() {
-  const { t } = useTranslation("auth");
-
   const loginMutation = useLogin();
 
   const form = useAppForm({
@@ -34,18 +32,18 @@ export function LoginForm() {
       }}
     >
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">{t("loginTitle")}</h1>
-        <p className="text-sm text-balance text-muted-foreground">{t("loginDescription")}</p>
+        <h1 className="text-2xl font-bold">{m.auth_login_title()}</h1>
+        <p className="text-sm text-balance text-muted-foreground">{m.auth_login_description()}</p>
       </div>
       <div className="grid gap-6">
-        <form.AppField name="email">{(field) => <field.TextField label={t("email")} />}</form.AppField>
+        <form.AppField name="email">{(field) => <field.TextField label={m.auth_email()} />}</form.AppField>
 
         <form.AppField name="password">
-          {(field) => <field.TextField type="password" label={t("password")} />}
+          {(field) => <field.TextField type="password" label={m.auth_password()} />}
         </form.AppField>
 
         <Button loading={loginMutation.isPending} type="submit" className="w-full">
-          {t("login")}
+          {m.auth_login()}
         </Button>
       </div>
     </form>

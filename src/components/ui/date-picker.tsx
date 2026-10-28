@@ -94,7 +94,7 @@ function DatePicker({ disabled, placeholder, mode, onChange, value, ...props }: 
           <div className="sm:flex">
             <Calendar
               mode="range"
-              defaultMonth={from || new Date()}
+              defaultMonth={from || undefined}
               autoFocus
               onSelect={(range) => {
                 if (range?.from && range?.to) {

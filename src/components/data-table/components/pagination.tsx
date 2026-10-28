@@ -1,23 +1,21 @@
+import { m } from "@/paraglide/messages.js";
 import { useTableContext } from "@/components/data-table/table-context";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronsLeftIcon, ChevronsRightIcon } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 export function Pagination() {
   const { table } = useTableContext();
-  const { t } = useTranslation();
-
   return (
     <div className="mt-3 flex items-center justify-between px-4">
       <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
-        {t("table.totalRows")}: {table.getRowCount() || 0}
+        {m.table_total_rows()}: {table.getRowCount() || 0}
       </div>
       <div className="flex w-full items-center gap-8 lg:w-fit">
         <div className="hidden items-center gap-2 lg:flex">
           <Label htmlFor="rows-per-page" className="text-sm font-medium">
-            {t("table.rowsPerPage")}
+            {m.table_rows_per_page()}
           </Label>
           <Select
             value={`${table.state.pagination.pageSize}`}
@@ -40,17 +38,14 @@ export function Pagination() {
           </Select>
         </div>
         <div className="flex w-fit items-center justify-center text-sm font-medium">
-          {t("table.PageXOfY", {
-            page: table.state.pagination.pageIndex + 1,
-            total: table.getPageCount(),
-          })}
+          {m.table_page_x_of_y({ page: table.state.pagination.pageIndex + 1, total: table.getPageCount() })}
         </div>
         <div className="ms-auto flex items-center gap-2 lg:ms-0">
           <Button
             variant="outline"
             size="icon"
             className="hidden lg:flex"
-            aria-label={t("table.firstPage")}
+            aria-label={m.table_first_page()}
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
@@ -59,7 +54,7 @@ export function Pagination() {
           <Button
             variant="outline"
             size="icon"
-            aria-label={t("table.previousPage")}
+            aria-label={m.table_previous_page()}
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
@@ -68,7 +63,7 @@ export function Pagination() {
           <Button
             variant="outline"
             size="icon"
-            aria-label={t("table.nextPage")}
+            aria-label={m.table_next_page()}
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
@@ -78,7 +73,7 @@ export function Pagination() {
             variant="outline"
             size="icon"
             className="hidden lg:flex"
-            aria-label={t("table.lastPage")}
+            aria-label={m.table_last_page()}
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >

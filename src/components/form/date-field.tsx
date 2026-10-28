@@ -1,7 +1,7 @@
+import { m } from "@/paraglide/messages.js";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { CalendarIcon, X } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useFieldContext } from "@/components/form/form-context";
 
@@ -23,7 +23,6 @@ export function DateField({
   placeholder,
   mode = "single",
 }: DateFieldProps) {
-  const { t } = useTranslation();
   const field = useFieldContext<string | DateRangeValue | null>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
   const value = field.state.value || null;
@@ -57,7 +56,7 @@ export function DateField({
           <Button
             variant="ghost"
             size="icon-xs"
-            aria-label={t("clear")}
+            aria-label={m.clear()}
             // Centered with margins, not a transform: Button's press effect (active:translate-y-px) would replace it.
             className="absolute inset-y-0 end-1.5 my-auto"
             onClick={() => field.handleChange(null)}

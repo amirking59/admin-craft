@@ -1,10 +1,10 @@
+import { m } from "@/paraglide/messages.js";
 import { Product, ProductCategory, CreateProductParams, UpdateProductParams } from "@/features/products/types";
 import { DataTableQueryParams, TableQueryFnResponse } from "@/components/data-table";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
-
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+import { ApiError } from "@/configs/api";
+import { delay, sortRows } from "@/lib/mock";
 
 let mockProducts: Product[] = [
   {
@@ -236,22 +236,32 @@ let mockProducts: Product[] = [
 
 let nextId = 26;
 
-export const getProducts = async ({ page }: DataTableQueryParams): TableQueryFnResponse<Product> => {
+export const getProducts = async ({ page, sort }: DataTableQueryParams): TableQueryFnResponse<Product> => {
   await delay(200);
   const skip = (page.index - 1) * page.size;
   return {
-    items: mockProducts.slice(skip, skip + page.size),
+    items: sortRows(mockProducts, sort).slice(skip, skip + page.size),
     total: mockProducts.length,
   };
 };
 
+// What a real API answers for a taken name: a 422 with a message for the field, shown under it in the form.
+const assertNameIsFree = (name: string, productId?: number) => {
+  const taken = mockProducts.some(
+    (p) => p.productId !== productId && p.name.trim().toLowerCase() === name.trim().toLowerCase(),
+  );
+  if (taken) throw new ApiError(422, { errors: { name: "A product with this name already exists." } });
+};
+
 export const createProduct = async (data: CreateProductParams): Promise<void> => {
   await delay(300);
+  assertNameIsFree(data.name);
   mockProducts.unshift({ ...data, productId: nextId++ });
 };
 
 export const updateProduct = async (data: UpdateProductParams): Promise<void> => {
   await delay(300);
+  assertNameIsFree(data.name, data.productId);
   const idx = mockProducts.findIndex((p) => p.productId === data.productId);
   if (idx !== -1) mockProducts[idx] = { ...mockProducts[idx], ...data };
 };
@@ -263,39 +273,33 @@ export const deleteProduct = async (productId: number): Promise<void> => {
 
 export const useCreateProduct = () => {
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
-
   return useMutation({
     mutationFn: createProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success(t("addSuccess"));
+      toast.success(m.add_success());
     },
   });
 };
 
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
-
   return useMutation({
     mutationFn: updateProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success(t("updateSuccess"));
+      toast.success(m.update_success());
     },
   });
 };
 
 export const useDeleteProduct = () => {
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
-
   return useMutation({
     mutationFn: deleteProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success(t("deleteSuccess"));
+      toast.success(m.delete_success());
     },
   });
 };

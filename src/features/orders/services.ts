@@ -1,8 +1,7 @@
 import { Order, OrderStatus } from "@/features/orders/types";
 import { DataTableQueryParams, TableQueryFnResponse } from "@/components/data-table";
 import dayjs from "dayjs";
-
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+import { delay, sortRows } from "@/lib/mock";
 
 const mockOrders: Order[] = [
   {
@@ -257,7 +256,7 @@ const mockOrders: Order[] = [
   },
 ];
 
-export const getOrders = async ({ page, filters }: DataTableQueryParams): TableQueryFnResponse<Order> => {
+export const getOrders = async ({ page, sort, filters }: DataTableQueryParams): TableQueryFnResponse<Order> => {
   await delay(200);
 
   const statusFilter = filters?.status;
@@ -273,7 +272,7 @@ export const getOrders = async ({ page, filters }: DataTableQueryParams): TableQ
   const skip = (page.index - 1) * page.size;
 
   return {
-    items: filtered.slice(skip, skip + page.size),
+    items: sortRows(filtered, sort).slice(skip, skip + page.size),
     total: filtered.length,
   };
 };

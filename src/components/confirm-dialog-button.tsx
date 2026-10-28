@@ -1,3 +1,4 @@
+import { m } from "@/paraglide/messages.js";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -14,7 +15,6 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, LucideIcon } from "lucide-react";
 import { ReactNode, useState } from "react";
-import { Trans, useTranslation } from "react-i18next";
 
 interface ConfirmDialogButtonProps extends Omit<ButtonProps, "onClick" | "form"> {
   /** Visible trigger label. An icon-only trigger (no title/children) needs an `aria-label`. */
@@ -50,13 +50,14 @@ export const ConfirmDialogButton = ({
   confirmTextLabel,
   ...buttonProps
 }: ConfirmDialogButtonProps) => {
-  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [typed, setTyped] = useState("");
 
   const busy = isLoading || !!loading;
   const typingGateOk = !confirmText || typed === confirmText;
+  // The message's {x} is the text to type; splitting around a marker lets it be highlighted in any language.
+  const [typeBefore, typeAfter] = m.type_x_to_confirm({ x: "\u0000" }).split("\u0000");
 
   const handleOpenChange = (open: boolean) => {
     if (open) setTyped("");
@@ -89,20 +90,18 @@ export const ConfirmDialogButton = ({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <DialogIcon className={cn("size-5", okVariant === "destructive" ? "text-destructive" : "text-amber-500")} />
-            {titleDialog || t("areYouSure")}
+            {titleDialog || m.are_you_sure()}
           </AlertDialogTitle>
-          <AlertDialogDescription>{descriptionDialog || t("thisActionCanNotUnDone")}</AlertDialogDescription>
+          <AlertDialogDescription>{descriptionDialog || m.this_action_cannot_be_undone()}</AlertDialogDescription>
         </AlertDialogHeader>
         {confirmText && (
           <div className="space-y-2">
             <Label htmlFor="confirm-dialog-typing-gate" className="text-sm">
               {confirmTextLabel || (
                 <span>
-                  <Trans
-                    i18nKey="typeXToConfirm"
-                    values={{ x: confirmText }}
-                    components={{ code: <span className="font-mono font-semibold text-destructive" /> }}
-                  />
+                  {typeBefore}
+                  <span className="font-mono font-semibold text-destructive">{confirmText}</span>
+                  {typeAfter}
                 </span>
               )}
             </Label>
@@ -124,7 +123,7 @@ export const ConfirmDialogButton = ({
           </div>
         )}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={busy}>{cancelTitle || t("cancel")}</AlertDialogCancel>
+          <AlertDialogCancel disabled={busy}>{cancelTitle || m.cancel()}</AlertDialogCancel>
           <Button
             autoFocus={!confirmText}
             onClick={handleConfirm}
@@ -132,7 +131,7 @@ export const ConfirmDialogButton = ({
             loading={busy}
             disabled={!typingGateOk}
           >
-            {okTitle || t("confirm")}
+            {okTitle || m.confirm()}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

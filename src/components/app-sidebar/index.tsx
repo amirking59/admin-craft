@@ -1,3 +1,4 @@
+import { m } from "@/paraglide/messages.js";
 import { NavMain } from "@/components/app-sidebar/nav-main";
 import { NavUser } from "@/components/app-sidebar/nav-user";
 import {
@@ -12,17 +13,14 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Link } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
-import { useDirection } from "@/hooks/use-direction";
+import { getTextDirection } from "@/paraglide/runtime.js";
 import { LayoutDashboard } from "lucide-react";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { t } = useTranslation();
   const { setOpenMobile } = useSidebar();
-  const direction = useDirection();
 
   return (
-    <Sidebar side={direction === "rtl" ? "right" : "left"} collapsible="icon" {...props}>
+    <Sidebar side={getTextDirection() === "rtl" ? "right" : "left"} collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -31,8 +29,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <LayoutDashboard className="size-4" />
               </div>
               <div className="grid flex-1 text-start text-sm leading-tight">
-                <span className="truncate font-semibold">{t("appName")}</span>
-                <span className="truncate text-xs text-muted-foreground">{t("adminPanel")}</span>
+                <span className="truncate font-semibold">{m.app_name()}</span>
+                <span className="truncate text-xs text-muted-foreground">{m.admin_panel()}</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

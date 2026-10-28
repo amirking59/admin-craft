@@ -1,7 +1,7 @@
+import { m } from "@/paraglide/messages.js";
 import { useTableContext } from "@/components/data-table/table-context";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useTranslation } from "react-i18next";
 import { isFilterValueEmpty } from "@/components/data-table/utils";
 import { useAppForm } from "@/components/form/use-app-form";
 
@@ -11,8 +11,6 @@ interface FiltersFormProps {
 
 export function FiltersForm({ onClose }: FiltersFormProps) {
   const { table } = useTableContext();
-  const { t } = useTranslation();
-
   const filters = table.options.meta?.filters ?? [];
 
   const form = useAppForm({
@@ -60,7 +58,7 @@ export function FiltersForm({ onClose }: FiltersFormProps) {
       }}
     >
       <DialogHeader>
-        <DialogTitle>{t("table.filters")}</DialogTitle>
+        <DialogTitle>{m.table_filters()}</DialogTitle>
       </DialogHeader>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -83,13 +81,13 @@ export function FiltersForm({ onClose }: FiltersFormProps) {
       <DialogFooter>
         {table.state.columnFilters.length > 0 && (
           <Button onClick={resetFilters} type="button" variant={"outline"}>
-            {t("table.resetFilters")}
+            {m.table_reset_filters()}
           </Button>
         )}
 
-        <DialogClose render={<Button variant="outline" />}>{t("cancel")}</DialogClose>
+        <DialogClose render={<Button variant="outline" />}>{m.cancel()}</DialogClose>
 
-        <Button type="submit">{t("submit")}</Button>
+        <Button type="submit">{m.submit()}</Button>
       </DialogFooter>
     </form>
   );

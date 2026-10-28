@@ -1,7 +1,7 @@
+import { m } from "@/paraglide/messages.js";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { CalendarIcon, X } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useFieldContext } from "@/components/form/form-context";
 
@@ -13,7 +13,6 @@ interface DateTimeFieldProps {
 }
 
 export function DateTimeField({ label, clearable = false, disabled = false, placeholder }: DateTimeFieldProps) {
-  const { t } = useTranslation();
   /** ISO string, as DateTimePicker emits it. */
   const field = useFieldContext<string | null>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
@@ -24,7 +23,7 @@ export function DateTimeField({ label, clearable = false, disabled = false, plac
 
       <div className="relative">
         <DateTimePicker
-          placeholder={placeholder ?? (label ? t("selectX", { x: label }) : "")}
+          placeholder={placeholder ?? (label ? m.select_x({ x: label.toLowerCase() }) : "")}
           disabled={disabled}
           aria-invalid={isInvalid}
           value={field.state.value || null}
@@ -35,7 +34,7 @@ export function DateTimeField({ label, clearable = false, disabled = false, plac
           <Button
             variant="ghost"
             size="icon-xs"
-            aria-label={t("clear")}
+            aria-label={m.clear()}
             // Centered with margins, not a transform: Button's press effect (active:translate-y-px) would replace it.
             className="absolute inset-y-0 end-1.5 my-auto"
             onClick={() => field.handleChange(null)}

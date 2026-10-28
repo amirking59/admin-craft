@@ -1,8 +1,13 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { getAccessToken } from "@/features/auth/services";
 
+// Every page under this layout needs a login.
 export const Route = createFileRoute("/_main")({
+  beforeLoad: () => {
+    if (!getAccessToken()) throw redirect({ to: "/auth" });
+  },
   component: Layout,
 });
 

@@ -1,7 +1,7 @@
+import { m } from "@/paraglide/messages.js";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { X } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { useFieldContext } from "@/components/form/form-context";
 import { NumericFormat, NumericFormatProps } from "react-number-format";
 
@@ -29,7 +29,6 @@ export function NumberField({
   allowNegative = false,
   ...props
 }: NumberFieldProps) {
-  const { t } = useTranslation();
   const field = useFieldContext<number | undefined>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -42,7 +41,7 @@ export function NumberField({
           {...props}
           customInput={InputGroupInput}
           disabled={disabled}
-          placeholder={placeholder ?? (label ? t("enterX", { x: label }) : undefined)}
+          placeholder={placeholder ?? (label ? m.enter_x({ x: label.toLowerCase() }) : undefined)}
           allowNegative={allowNegative}
           valueIsNumericString={true}
           id={field.name}
@@ -55,7 +54,7 @@ export function NumberField({
 
         {clearable && !disabled && field.state.value != null && (
           <InputGroupAddon align="inline-end">
-            <InputGroupButton size="icon-xs" aria-label={t("clear")} onClick={() => field.handleChange(undefined)}>
+            <InputGroupButton size="icon-xs" aria-label={m.clear()} onClick={() => field.handleChange(undefined)}>
               <X />
             </InputGroupButton>
           </InputGroupAddon>
