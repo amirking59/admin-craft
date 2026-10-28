@@ -68,7 +68,7 @@ Pass `filters` and the table shows a filter bar above the rows:
 - **The rest** are added from «+ Filter», a searchable list, so a table with many filters stays easy to use. Each set filter shows as a chip, e.g. «Status: Pending, Shipped». Clicking a chip edits that filter alone in a popover, and its × removes it.
 - **Changes apply at once**, as in Linear: there's no Apply button. Picking an option applies right away; typing applies after a short pause.
 - **A filter with `options`** edits as a list: a search line, then a checkbox per option (one pick with `multiple: false`). Anything else (a date, a number) gives its own `input` field.
-- **A filter with `date: true`** works the same way, like Linear's dates: «+ Filter» offers «1 day ago» … «1 year ago» and «Custom…», the editor is a calendar, and the chip shows the date.
+- **A filter with `date: true`** works the same way, like Linear's dates: «+ Filter» offers «1 day ago» … «1 year ago» and «Custom…», which opens a dialog to pick the date. The chip's editor is a calendar, and the chip shows the date.
 
 ```tsx
 const filters: FilterDef[] = [

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Calendar } from "@/components/ui/calendar";
 import { ComboboxItem, isRowPress } from "@/components/ui/combobox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatDate } from "@/lib/utils";
 
@@ -48,6 +49,9 @@ export function FilterBar() {
   // until the close animation ends, even with no value, and its draft is kept until then).
   const [editing, setEditing] = useState<string | null>(null);
   const [active, setActive] = useState<string | null>(null);
+  // A date filter's "Custom…" dialog. The name stays after closing, so the title holds through the close animation.
+  const [custom, setCustom] = useState<{ name: string; open: boolean } | null>(null);
+  const customFilter = filters.find((filter) => filter.name === custom?.name);
 
   // One draft form for all filters, so a filter's onValueChange can reach the others.
   const form = useAppForm({
@@ -77,6 +81,13 @@ export function FilterBar() {
       }
     }
   }, [applied, active, filters, form]);
+
+  // A value picked outside a chip's editor ("+ Filter", the "Custom…" dialog).
+  const setFilter = (name: string, value: FilterValue) => {
+    form.setFieldValue(name, value, { dontRunListeners: true });
+    filters.find((filter) => filter.name === name)?.onValueChange?.(form);
+    apply();
+  };
 
   const remove = (name: string) => {
     form.setFieldValue(name, "");
@@ -200,12 +211,9 @@ export function FilterBar() {
               setActive(name);
               requestAnimationFrame(() => setEditing(name));
             }}
+            onCustom={(name) => setCustom({ name, open: true })}
             values={applied}
-            onChange={(name, next) => {
-              form.setFieldValue(name, next, { dontRunListeners: true });
-              filters.find((filter) => filter.name === name)?.onValueChange?.(form);
-              apply();
-            }}
+            onChange={setFilter}
           />
         )}
 
@@ -215,6 +223,29 @@ export function FilterBar() {
           </Button>
         )}
       </div>
+
+      {/* A date's "Custom…": its value is picked here; the filter is added once a day is picked. */}
+      <Dialog
+        open={!!custom?.open}
+        onOpenChange={(open) => !open && setCustom((current) => current && { ...current, open: false })}
+      >
+        <DialogContent className="w-auto">
+          <DialogHeader>
+            <DialogTitle>{customFilter?.label()}</DialogTitle>
+          </DialogHeader>
+          {custom && (
+            <FilterCalendar
+              // The dialog's own padding and background, not a second inset.
+              className="bg-transparent p-0"
+              value={applied[custom.name] ?? ""}
+              onChange={(next) => {
+                setFilter(custom.name, next);
+                setCustom({ ...custom, open: false });
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -336,12 +367,21 @@ function FilterOptionsList({ open, placeholder, options, multiple, value, onChan
  * A date filter's editor: a calendar, one pick, which applies and closes like a single-pick list. The value is the
  * day's start as an ISO string, as from DateField; picking the selected day again clears it.
  */
-function FilterCalendar({ value, onChange }: { value: FilterValue; onChange: (value: string) => void }) {
+function FilterCalendar({
+  value,
+  onChange,
+  className,
+}: {
+  value: FilterValue;
+  onChange: (value: string) => void;
+  className?: string;
+}) {
   const selected = value ? dayjs(String(value)).toDate() : undefined;
 
   return (
     <Calendar
       mode="single"
+      className={className}
       defaultMonth={selected}
       selected={selected}
       onSelect={(date) => onChange(date ? dayjs(date).toISOString() : "")}
@@ -364,6 +404,8 @@ interface AddFilterMenuProps {
   onPick: (name: string) => void;
   /** A filter with options: its new value, picked in its submenu. */
   onChange: (name: string, value: FilterValue) => void;
+  /** A date filter's "Custom…". */
+  onCustom: (name: string) => void;
 }
 
 /**
@@ -372,7 +414,7 @@ interface AddFilterMenuProps {
  * direction, focus). A date filter offers "1 day ago" … "1 year ago" the same way, plus "Custom…". Anything else
  * adds a chip and opens its editor.
  */
-function AddFilterMenu({ filters, values, onPick, onChange }: AddFilterMenuProps) {
+function AddFilterMenu({ filters, values, onPick, onChange, onCustom }: AddFilterMenuProps) {
   // Closed through Base UI, not a controlled `open`: closing that way from inside the submenu leaves the trigger
   // thinking the menu is still open, so its next press does nothing.
   const actions = useRef<MenuPrimitive.Root.Actions>(null);
@@ -414,7 +456,7 @@ function AddFilterMenu({ filters, values, onPick, onChange }: AddFilterMenuProps
                       />
                     </FilterSubmenu>
                   ) : filter.date ? (
-                    // A preset applies at once; "Custom…" opens the chip's calendar.
+                    // A preset applies at once; "Custom…" opens a dialog to pick the date.
                     <FilterSubmenu key={filter.name} label={filter.label()}>
                       {datePresets().map((preset) => (
                         <MenuPrimitive.Item
@@ -430,7 +472,7 @@ function AddFilterMenu({ filters, values, onPick, onChange }: AddFilterMenuProps
                       <MenuPrimitive.Item
                         label={m.table_custom()}
                         className={menuItemClassName}
-                        onClick={() => onPick(filter.name)}
+                        onClick={() => onCustom(filter.name)}
                       >
                         {m.table_custom()}
                       </MenuPrimitive.Item>
