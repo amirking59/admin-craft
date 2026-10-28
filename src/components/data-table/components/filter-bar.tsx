@@ -125,7 +125,7 @@ export function FilterBar() {
                 }}
                 title={label}
                 list={!!filter.options}
-                trigger={<Button variant="outline" size="sm" className="max-w-72 font-normal" />}
+                trigger={<Button variant="outline" size="sm" className="max-w-72 min-w-28 justify-start font-normal" />}
                 triggerContent={
                   <>
                     <span className="text-muted-foreground">{value ? `${label}:` : label}</span>
