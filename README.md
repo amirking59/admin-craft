@@ -65,7 +65,9 @@ Columns must be stable (module scope or `useMemo`), since cells render as compon
 Pass `filters` and the table shows a filter bar above the rows:
 
 - **Pinned filters** (`pinned: true`) sit inline and apply as you type, e.g. a search box.
-- **The rest** are added from «+ Filters», a searchable list, so a table with many filters stays easy to use. Each set filter shows as a chip, e.g. «Status: Pending, Shipped». Clicking a chip edits that filter alone (a popover, or a drawer from the bottom on phones), and its × removes it.
+- **The rest** are added from «+ Filter», a searchable list, so a table with many filters stays easy to use. Each set filter shows as a chip, e.g. «Status: Pending, Shipped». Clicking a chip edits that filter alone in a popover, and its × removes it.
+- **Changes apply at once**, as in Linear: there's no Apply button. Picking an option applies right away; typing applies after a short pause.
+- **A filter with `options`** edits as a list: a search line, then a checkbox per option (one pick with `multiple: false`). Anything else (a date, a number) gives its own `input` field.
 
 ```tsx
 const filters: FilterDef[] = [
@@ -80,8 +82,15 @@ const filters: FilterDef[] = [
     name: "status",
     label: m.orders_status, // the chip's name; a message function
     operator: FilterOperator.Equal,
-    formatValue: (value) => [value].flat().map((status) => statusLabel[status]()).join(", "), // the chip's value
-    input: () => <EnumField enumObject={OrderStatus} multiple placeholder={m.orders_status()} />,
+    // The chip reads the picked options' labels, e.g. «Status: Pending, Shipped».
+    options: () => Object.values(OrderStatus).map((status) => ({ value: status, label: statusLabel[status]() })),
+  },
+  {
+    name: "total_min",
+    label: m.orders_total_min,
+    operator: FilterOperator.Equal,
+    formatValue: (value) => `$${formatNumber(Number(value))}`, // how the chip reads the value
+    input: () => <NumberField thousandSeparator placeholder={m.orders_total_min()} />,
   },
 ];
 ```

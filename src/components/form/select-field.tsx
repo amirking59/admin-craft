@@ -1,4 +1,5 @@
 import { m } from "@/paraglide/messages.js";
+import { useState } from "react";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { useFieldContext } from "@/components/form/form-context";
 import {
@@ -12,6 +13,7 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxValue,
+  isRowPress,
   useComboboxAnchor,
 } from "@/components/ui/combobox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -58,6 +60,7 @@ export function SelectField({
   const field = useFieldContext<SelectValue | SelectValue[] | null>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
   const anchor = useComboboxAnchor();
+  const [open, setOpen] = useState(false);
 
   // The combobox works on the primitive values (stable across renders, unlike item objects rebuilt by callers);
   // labels are looked up from `items`.
@@ -86,7 +89,13 @@ export function SelectField({
         items={items.map((item) => item.value)}
         multiple={multiple}
         value={value}
-        onValueChange={(next) => field.handleChange(next ?? "")}
+        onValueChange={(next, details) => {
+          field.handleChange(next ?? "");
+          // Multiple: pressing a row (not its checkbox) toggles that item like the checkbox does, then closes.
+          if (multiple && isRowPress(details)) setOpen(false);
+        }}
+        open={open}
+        onOpenChange={setOpen}
         itemToStringLabel={labelOf}
         // Highlight the first match while typing, so Enter picks it instead of submitting the form.
         autoHighlight
@@ -140,7 +149,12 @@ export function SelectField({
               <ComboboxEmpty>{m.no_items_found()}</ComboboxEmpty>
               <ComboboxList>
                 {(item: SelectValue) => (
-                  <ComboboxItem key={item} value={item} disabled={isItemDisabled(item)}>
+                  <ComboboxItem
+                    key={item}
+                    value={item}
+                    disabled={isItemDisabled(item)}
+                    indicator={multiple ? "checkbox" : "check"}
+                  >
                     {render?.(item) ?? labelOf(item)}
                   </ComboboxItem>
                 )}

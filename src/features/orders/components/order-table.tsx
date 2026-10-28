@@ -6,7 +6,6 @@ import { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { formatNumber } from "@/lib/utils";
 import { Order, OrderStatus } from "@/features/orders/types";
-import { EnumField } from "@/components/form/enum-field";
 import { DateField } from "@/components/form/date-field";
 import { NumberField } from "@/components/form/number-field";
 import { TextField } from "@/components/form/text-field";
@@ -94,20 +93,7 @@ const filters: FilterDef[] = [
     name: "status",
     label: m.orders_status,
     operator: FilterOperator.Equal,
-    formatValue: (value) =>
-      [value]
-        .flat()
-        .map((status) => statusLabel[status as OrderStatus]())
-        .join(", "),
-    input: () => (
-      <EnumField
-        enumObject={OrderStatus}
-        getItemLabel={(value) => statusLabel[value as OrderStatus]()}
-        multiple
-        clearable
-        placeholder={m.orders_status()}
-      />
-    ),
+    options: () => Object.values(OrderStatus).map((status) => ({ value: status, label: statusLabel[status]() })),
   },
   {
     name: "created_at_from",

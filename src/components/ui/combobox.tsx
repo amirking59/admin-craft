@@ -124,23 +124,62 @@ function ComboboxList({ className, ...props }: ComboboxPrimitive.List.Props) {
   );
 }
 
-function ComboboxItem({ className, children, ...props }: ComboboxPrimitive.Item.Props) {
+function ComboboxItem({
+  className,
+  children,
+  indicator = "check",
+  ...props
+}: ComboboxPrimitive.Item.Props & {
+  /** `check`: a checkmark at the end when selected. `checkbox`: a checkbox in front, for picking several (see isRowPress). */
+  indicator?: "check" | "checkbox";
+}) {
   return (
     <ComboboxPrimitive.Item
       data-slot="combobox-item"
       className={cn(
-        "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 ps-2 pe-8 text-sm outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground not-data-[variant=destructive]:data-highlighted:**:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "group/combobox-item relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 ps-2 text-sm outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground not-data-[variant=destructive]:data-highlighted:**:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        indicator === "check" ? "pe-8" : "gap-2.5 pe-2",
         className,
       )}
       {...props}
     >
+      {indicator === "checkbox" && <ComboboxItemCheckbox />}
       {children}
-      <ComboboxPrimitive.ItemIndicator
-        render={<span className="pointer-events-none absolute end-2 flex size-4 items-center justify-center" />}
-      >
-        <CheckIcon className="pointer-events-none" />
-      </ComboboxPrimitive.ItemIndicator>
+      {indicator === "check" && (
+        <ComboboxPrimitive.ItemIndicator
+          render={<span className="pointer-events-none absolute end-2 flex size-4 items-center justify-center" />}
+        >
+          <CheckIcon className="pointer-events-none" />
+        </ComboboxPrimitive.ItemIndicator>
+      )}
     </ComboboxPrimitive.Item>
+  );
+}
+
+/** An item's checkbox, filled when the item is selected. Its padding widens the area that counts as "the checkbox". */
+function ComboboxItemCheckbox() {
+  return (
+    <span data-slot="combobox-item-checkbox" className="-m-1 shrink-0 p-1">
+      <span className="flex size-4 items-center justify-center rounded-[4px] border border-input group-data-selected/combobox-item:border-primary group-data-selected/combobox-item:bg-primary group-data-selected/combobox-item:text-primary-foreground">
+        <ComboboxPrimitive.ItemIndicator>
+          <CheckIcon className="size-3" />
+        </ComboboxPrimitive.ItemIndicator>
+      </span>
+    </span>
+  );
+}
+
+/**
+ * For a multiple combobox with checkbox items: whether a change came from pressing an item's row with a pointer.
+ * Every pick toggles its item; after a row press the list closes, while a checkbox press or the keyboard keeps it
+ * open for more picks.
+ */
+function isRowPress(details: ComboboxPrimitive.Root.ChangeEventDetails) {
+  const target = details.event?.target;
+  return (
+    details.reason === "item-press" &&
+    !(details.event instanceof KeyboardEvent) &&
+    !(target instanceof Element && target.closest("[data-slot=combobox-item-checkbox]"))
   );
 }
 
@@ -256,6 +295,8 @@ export {
   ComboboxContent,
   ComboboxList,
   ComboboxItem,
+  ComboboxItemCheckbox,
+  isRowPress,
   ComboboxGroup,
   ComboboxLabel,
   ComboboxCollection,

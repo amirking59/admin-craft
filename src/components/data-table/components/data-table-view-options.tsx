@@ -1,5 +1,5 @@
 import { m } from "@/paraglide/messages.js";
-import { Settings2 } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTableContext } from "@/components/data-table/table-context";
 
-/** "View": a checkbox per column that can be hidden. The menu stays open, so several columns can be toggled. */
+/**
+ * "View", an eye icon button (its name is the aria-label): a checkbox per column that can be hidden. The menu stays
+ * open, so several columns can be toggled.
+ */
 export function DataTableViewOptions() {
   const { table } = useTableContext();
 
@@ -23,9 +26,8 @@ export function DataTableViewOptions() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" />}>
-        <Settings2 />
-        {m.table_view()}
+      <DropdownMenuTrigger render={<Button variant="outline" size="icon" aria-label={m.table_view()} />}>
+        <Eye />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuGroup>

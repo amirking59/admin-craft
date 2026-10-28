@@ -36,13 +36,22 @@ export enum FilterOperator {
 
 export type FilterValue = string | string[];
 
+export type FilterOption = { value: string; label: string; icon?: React.ReactNode };
+
 export type FilterDef = {
   name: string;
   /** The filter's name, on its chip and in the "add filter" menu. A message function, e.g. `m.orders_status`. */
   label: () => string;
-  /** The filter's field; it reads its name and value from the form's field context. */
+  /**
+   * A fixed set of values to pick from (a function, so labels follow the language). The editor is then a list with
+   * a search line and a checkbox per option, like Linear's; `input` isn't needed.
+   */
+  options?: () => FilterOption[];
+  /** With `options`: pick several values (the default) or one. */
+  multiple?: boolean;
+  /** For anything else (a date, a number): the filter's field. It reads its name and value from the form's field context. */
   input?: () => React.ReactNode;
-  /** How the value reads on the chip. Defaults to the value, or the values joined with commas. */
+  /** How the value reads on the chip. Defaults to the options' labels, or the value(s) joined with commas. */
   formatValue?: (value: FilterValue) => string;
   /** Always shown in the filter bar, applied as you type (e.g. a search box), instead of behind "+ Filter". */
   pinned?: boolean;
