@@ -1,10 +1,10 @@
 import { m } from "@/paraglide/messages.js";
 import { DataTable, DataTableFeatures, FilterDef } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
-import { getOrders, orderCustomers } from "@/features/orders/services";
+import { getOrders, searchCustomers } from "@/features/orders/services";
 import { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
-import { Plus } from "lucide-react";
+import { Edit, Plus } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 import { Order, OrderStatus, OrderTag, PaymentMethod } from "@/features/orders/types";
 import { paymentMethodLabel, statusLabel, tagLabel } from "@/features/orders/labels";
@@ -83,6 +83,21 @@ const columns: ColumnDef<DataTableFeatures, Order>[] = [
     cell: ({ row }) => <span>{dayjs(row.original.createdAt).format("YYYY/MM/DD")}</span>,
     size: 120,
   },
+  {
+    id: "actions",
+    enableHiding: false,
+    size: 60,
+    cell: ({ row }) => (
+      <DialogButton
+        size="icon"
+        variant="ghost"
+        icon={Edit}
+        aria-label={m.update_item({ item: m.orders_order() })}
+        dialogClassName="sm:max-w-2xl"
+        content={(close) => <OrderForm prevData={row.original} onClose={close} />}
+      />
+    ),
+  },
 ];
 
 // One of each kind, to try the filter bar with: a pinned search, lists (several picks, one pick, a long one to
@@ -95,12 +110,8 @@ const filters: FilterDef[] = [
     type: "multiselect",
     options: () => Object.values(OrderStatus).map((status) => ({ value: status, label: statusLabel[status]() })),
   },
-  {
-    name: "customer",
-    label: m.orders_customer,
-    type: "multiselect",
-    options: () => orderCustomers.map((name) => ({ value: name, label: name })),
-  },
+  // Loaded from the server as you type, as a long customer list would be.
+  { name: "customer", label: m.orders_customer, type: "multiselect", loadOptions: searchCustomers },
   {
     name: "payment_method",
     label: m.orders_payment,
@@ -123,7 +134,7 @@ const filters: FilterDef[] = [
     type: "multiselect",
     options: () => Object.values(OrderTag).map((tag) => ({ value: tag, label: tagLabel[tag]() })),
   },
-  { name: "created_at_from", label: m.orders_created_from, type: "date" },
+  { name: "created_at", label: m.orders_created_at, type: "dateRange" },
   {
     name: "total",
     label: m.orders_total,

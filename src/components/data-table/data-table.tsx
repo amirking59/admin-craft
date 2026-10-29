@@ -2,6 +2,7 @@ import { m } from "@/paraglide/messages.js";
 import { ColumnDef, ColumnFiltersState, RowData, SortingState, useTable } from "@tanstack/react-table";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
+import { useLocalStorage } from "usehooks-ts";
 import { RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -53,6 +54,12 @@ export function DataTable<TData extends RowData>({
   queryFn,
   rowHeight = 61,
 }: DataTableProps<TData>) {
+  // Kept per table in this browser: which columns show, and the page size while the URL has none.
+  const [columnVisibility, setColumnVisibility] = useLocalStorage(`table:${queryKey}:columns`, () =>
+    getInitialColumnVisibility(columns),
+  );
+  const [pageSize, setPageSize] = useLocalStorage(`table:${queryKey}:page-size`, 10);
+
   const {
     page,
     sort,
@@ -60,7 +67,7 @@ export function DataTable<TData extends RowData>({
     setPage,
     setSort,
     setFilters,
-  } = useDataTableQueryState({ defaultPageSize: 10 });
+  } = useDataTableQueryState({ defaultPageSize: pageSize });
 
   const sortParam = sort ?? toSortParam(initialSort);
   const sorting = useMemo<SortingState>(() => (sortParam ? [fromSortParam(sortParam)] : []), [sortParam]);
@@ -69,7 +76,7 @@ export function DataTable<TData extends RowData>({
 
   const columnFilters = useMemo<ColumnFiltersState>(() => filtersObjectToArray(urlFilters), [urlFilters]);
 
-  const { data, isPending, isFetching, isPlaceholderData, refetch } = useQuery({
+  const { data, isPending, isError, isFetching, isPlaceholderData, refetch } = useQuery({
     queryKey: [queryKey, page, sortParam, columnFilters],
     queryFn: () =>
       queryFn({
@@ -100,15 +107,15 @@ export function DataTable<TData extends RowData>({
       pagination,
       sorting,
       columnFilters,
+      columnVisibility,
     },
-    meta: { filters },
-    initialState: {
-      columnVisibility: getInitialColumnVisibility(columns),
-    },
+    meta: { filters, id: queryKey },
     onPaginationChange: (updater) => {
       const next = typeof updater === "function" ? updater(pagination) : updater;
+      if (next.pageSize !== pagination.pageSize) setPageSize(next.pageSize);
       setPage({ index: next.pageIndex + 1, size: next.pageSize });
     },
+    onColumnVisibilityChange: setColumnVisibility,
     onSortingChange: (updater) => {
       const next = typeof updater === "function" ? updater(sorting) : updater;
       setSort(toSortParam(next[0]));
@@ -144,7 +151,30 @@ export function DataTable<TData extends RowData>({
 
         {/* Skeletons only on first load; later fetches dim the rows that are already there. */}
         <div aria-busy={isFetching} className={cn("transition-opacity", isFetching && !isPending && "opacity-60")}>
-          <TableView rowHeight={rowHeight} isLoading={isPending} />
+          <TableView
+            rowHeight={rowHeight}
+            isLoading={isPending}
+            empty={
+              // A failed load isn't an empty table; no rows under filters isn't either.
+              isError ? (
+                <>
+                  {m.table_load_error()}
+                  <Button variant="outline" size="sm" onClick={() => refetch()}>
+                    {m.try_again()}
+                  </Button>
+                </>
+              ) : columnFilters.length > 0 ? (
+                <>
+                  {m.table_no_matches()}
+                  <Button variant="outline" size="sm" onClick={() => table.resetColumnFilters(true)}>
+                    {m.table_reset_filters()}
+                  </Button>
+                </>
+              ) : (
+                m.table_empty()
+              )
+            }
+          />
         </div>
 
         <Pagination />

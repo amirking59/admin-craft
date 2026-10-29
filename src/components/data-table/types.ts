@@ -34,9 +34,13 @@ export type FilterOption = { value: string; label: string; icon?: React.ReactNod
 
 /**
  * One filter of a DataTable. `type` says what it is, and the filter bar draws its editor:
- * - `select` / `multiselect`: one or several of `options`, as a list with a search line, like Linear's.
+ * - `select` / `multiselect`: one or several of `options` (or of `loadOptions`, for a list kept on the server), as a
+ *   list with a search line, like Linear's.
  * - `date`: "+ Filter" offers "1 day ago" … "1 year ago" and "Custom…" (a dialog); the editor is a calendar. The
  *   value is the day's start as an ISO string, as from DateField.
+ * - `dateRange`: "+ Filter" offers "Today", "Last 7 days" … and "Custom…"; the editor is a calendar where two clicks
+ *   pick the first and last day. The value is "from..to" (see `parseRange`): the first day's start and the last
+ *   day's end, as ISO strings.
  * - `text`: a text box. Pinned, it's the table's search box, with `label` as its placeholder.
  * - `number`: a range, "min..max" with either end empty ("100..", "..500"; see `parseRange`), with a "from" and a
  *   "to" box.
@@ -61,7 +65,17 @@ export type FilterDef = {
       /** The values to pick from: a function, so labels follow the language. */
       options: () => FilterOption[];
     }
-  | { type: "date" | "text" | "number" }
+  | {
+      type: "select" | "multiselect";
+      /**
+       * For a long list kept on the server, instead of `options`: the options matching what's typed in the search
+       * line ("" before anything is), called again after a pause as that changes. Results are cached for a minute.
+       * The chip names a picked value by the label it was loaded with; on a link opened fresh, nothing is loaded
+       * yet, so it shows the value itself unless `formatValue` says otherwise.
+       */
+      loadOptions: (search: string) => Promise<FilterOption[]>;
+    }
+  | { type: "date" | "dateRange" | "text" | "number" }
   | {
       type: "custom";
       /** The filter's field. It reads its name and value from the form's field context. */

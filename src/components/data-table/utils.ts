@@ -1,5 +1,6 @@
 import { ColumnDef, ColumnFiltersState, RowData } from "@tanstack/react-table";
 import dayjs from "dayjs";
+import { m } from "@/paraglide/messages.js";
 import { getLocale } from "@/paraglide/runtime.js";
 import { DataTableFeatures, DataTableFilters, FilterOption } from "@/components/data-table/types";
 
@@ -57,7 +58,28 @@ export const datePresets = (): FilterOption[] => {
   }));
 };
 
-/** A number filter's "min..max" value as its two ends, "" where open: "100.." → ["100", ""]. */
+// The first day's start to the last day's end.
+const range = (from: dayjs.Dayjs, to: dayjs.Dayjs) =>
+  toRange(from.startOf("day").toISOString(), to.endOf("day").toISOString());
+
+/**
+ * "Today" … "This year", offered by a date range filter in "+ Filter": "from..to", the first day's start to the last
+ * day's end. Like datePresets, the URL keeps the dates, so a shared link shows the same rows later.
+ */
+export const dateRangePresets = (): FilterOption[] => {
+  const today = dayjs();
+  const lastMonth = today.subtract(1, "month");
+  return [
+    { label: m.table_today(), value: range(today, today) },
+    { label: m.table_last_7_days(), value: range(today.subtract(6, "day"), today) },
+    { label: m.table_last_30_days(), value: range(today.subtract(29, "day"), today) },
+    { label: m.table_this_month(), value: range(today.startOf("month"), today) },
+    { label: m.table_last_month(), value: range(lastMonth.startOf("month"), lastMonth.endOf("month")) },
+    { label: m.table_this_year(), value: range(today.startOf("year"), today) },
+  ];
+};
+
+/** A range filter's "from..to" value as its two ends, "" where open: "100.." → ["100", ""]. */
 export const parseRange = (value: unknown): [string, string] => {
   const [from = "", to = ""] = String(value ?? "").split("..");
   return [from, to];

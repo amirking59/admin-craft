@@ -1,11 +1,11 @@
 import { m } from "@/paraglide/messages.js";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { X } from "lucide-react";
 import { useFieldContext } from "@/components/form/form-context";
+import { FieldFrame, type FieldFrameProps } from "@/components/form/field-frame";
 import { NumericFormat, NumericFormatProps } from "react-number-format";
 
-// The form owns these; use the field's validators/listeners instead of passing them.
+// The form owns these; use the field's validators/listeners instead of passing them. `required` marks the label.
 type BoundNumberProps =
   | "value"
   | "defaultValue"
@@ -14,15 +14,17 @@ type BoundNumberProps =
   | "onBlur"
   | "name"
   | "id"
-  | "customInput";
+  | "customInput"
+  | "required";
 
-interface NumberFieldProps extends Omit<NumericFormatProps, BoundNumberProps> {
-  label?: string;
+interface NumberFieldProps extends Omit<NumericFormatProps, BoundNumberProps>, FieldFrameProps {
   clearable?: boolean;
 }
 
 export function NumberField({
   label,
+  required,
+  description,
   clearable = false,
   disabled = false,
   placeholder,
@@ -33,9 +35,7 @@ export function NumberField({
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
   return (
-    <Field data-invalid={isInvalid}>
-      {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
-
+    <FieldFrame label={label} required={required} description={description}>
       <InputGroup>
         <NumericFormat
           {...props}
@@ -60,8 +60,6 @@ export function NumberField({
           </InputGroupAddon>
         )}
       </InputGroup>
-
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-    </Field>
+    </FieldFrame>
   );
 }

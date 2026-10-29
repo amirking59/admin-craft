@@ -17,5 +17,7 @@ declare module "@tanstack/react-table" {
   // v9 table state only holds registered feature slices, so the filter definitions ride on meta.
   interface TableMeta<in out TFeatures extends TableFeatures, in out TData extends RowData> {
     filters?: FilterDef[];
+    /** The table's name for what it keeps in this browser (e.g. its saved views): DataTable's `queryKey`. */
+    id?: string;
   }
 }

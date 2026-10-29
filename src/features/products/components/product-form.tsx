@@ -20,6 +20,7 @@ const formSchema = z.object({
 });
 
 interface ProductFormProps {
+  /** The product to edit; without it, a new one. */
   prevData?: Product;
   onClose?: () => void;
 }
@@ -57,67 +58,57 @@ export const ProductForm = ({ prevData, onClose }: ProductFormProps) => {
   });
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        form.handleSubmit();
-      }}
-      className="space-y-4"
-    >
-      <DialogHeader>
-        <DialogTitle>
-          {prevData ? m.update_item({ item: m.products_product() }) : m.add_item({ item: m.products_product() })}
-        </DialogTitle>
-      </DialogHeader>
+    <form.AppForm>
+      <form.Form className="space-y-4">
+        <DialogHeader>
+          <DialogTitle>
+            {prevData ? m.update_item({ item: m.products_product() }) : m.add_item({ item: m.products_product() })}
+          </DialogTitle>
+        </DialogHeader>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
-          <form.AppField name="name">{(field) => <field.TextField label={m.products_name()} />}</form.AppField>
-        </div>
-        <div className="col-span-2">
-          <form.AppField name="description">
-            {(field) => <field.TextareaField label={m.products_description()} />}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="col-span-2">
+            <form.AppField name="name">
+              {(field) => <field.TextField label={m.products_name()} required />}
+            </form.AppField>
+          </div>
+          <div className="col-span-2">
+            <form.AppField name="description">
+              {(field) => <field.TextareaField label={m.products_description()} required />}
+            </form.AppField>
+          </div>
+          <form.AppField name="category">
+            {(field) => (
+              <field.EnumField
+                label={m.products_category()}
+                required
+                enumObject={ProductCategory}
+                getItemLabel={(v) => categoryLabel[v as ProductCategory]()}
+              />
+            )}
           </form.AppField>
-        </div>
-        <form.AppField name="category">
-          {(field) => (
-            <field.EnumField
-              label={m.products_category()}
-              enumObject={ProductCategory}
-              getItemLabel={(v) => categoryLabel[v as ProductCategory]()}
-            />
-          )}
-        </form.AppField>
-        <form.AppField name="price">
-          {(field) => <field.NumberField thousandSeparator label={m.products_price()} step={0.01} />}
-        </form.AppField>
-
-        <form.AppField name="stock">
-          {(field) => <field.NumberField label={m.products_stock()} step={1} />}
-        </form.AppField>
-        <div className="flex items-end pb-2">
-          <form.AppField name="isActive">
-            {(field) => <field.CheckboxField label={m.products_is_active()} />}
+          <form.AppField name="price">
+            {(field) => <field.NumberField thousandSeparator label={m.products_price()} required step={0.01} />}
           </form.AppField>
-        </div>
-      </div>
 
-      <DialogFooter>
-        <DialogClose render={<Button variant="outline" />}>{m.cancel()}</DialogClose>
-        <Button loading={createMutation.isPending || updateMutation.isPending} type="submit">
-          {prevData ? (
-            <>
-              <Edit />
-              {m.update()}
-            </>
-          ) : (
-            <>
-              <Plus />
-              {m.add()}
-            </>
-          )}
-        </Button>
-      </DialogFooter>
-    </form>
+          <form.AppField name="stock">
+            {(field) => <field.NumberField label={m.products_stock()} required step={1} />}
+          </form.AppField>
+          <div className="flex items-end pb-2">
+            <form.AppField name="isActive">
+              {(field) => <field.CheckboxField label={m.products_is_active()} />}
+            </form.AppField>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>{m.cancel()}</DialogClose>
+          <form.SubmitButton>
+            {prevData ? <Edit /> : <Plus />}
+            {prevData ? m.update() : m.add()}
+          </form.SubmitButton>
+        </DialogFooter>
+      </form.Form>
+    </form.AppForm>
   );
 };

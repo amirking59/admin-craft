@@ -1,26 +1,30 @@
 import { m } from "@/paraglide/messages.js";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { useFieldContext } from "@/components/form/form-context";
+import { FieldFrame, type FieldFrameProps } from "@/components/form/field-frame";
 import { X } from "lucide-react";
 
-// The form owns these; use the field's validators/listeners instead of passing them.
-type BoundInputProps = "value" | "defaultValue" | "onChange" | "onBlur" | "name" | "id";
+// The form owns these; use the field's validators/listeners instead of passing them. `required` marks the label.
+type BoundInputProps = "value" | "defaultValue" | "onChange" | "onBlur" | "name" | "id" | "required";
 
-interface TextFieldProps extends Omit<React.ComponentProps<"input">, BoundInputProps> {
-  label?: string;
+interface TextFieldProps extends Omit<React.ComponentProps<"input">, BoundInputProps>, FieldFrameProps {
   clearable?: boolean;
 }
 
-export function TextField({ label, clearable = false, disabled = false, ...props }: TextFieldProps) {
+export function TextField({
+  label,
+  required,
+  description,
+  clearable = false,
+  disabled = false,
+  ...props
+}: TextFieldProps) {
   const field = useFieldContext<string | number>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
   const hasValue = field.state.value != null && field.state.value !== "";
 
   return (
-    <Field data-invalid={isInvalid}>
-      {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
-
+    <FieldFrame label={label} required={required} description={description}>
       <InputGroup>
         <InputGroupInput
           {...props}
@@ -41,8 +45,6 @@ export function TextField({ label, clearable = false, disabled = false, ...props
           </InputGroupAddon>
         )}
       </InputGroup>
-
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-    </Field>
+    </FieldFrame>
   );
 }

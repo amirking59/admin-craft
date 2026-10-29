@@ -1,13 +1,14 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { useFieldContext } from "@/components/form/form-context";
+import { RequiredMark, type FieldFrameProps } from "@/components/form/field-frame";
 
-interface CheckboxFieldProps {
-  label?: string;
+interface CheckboxFieldProps extends FieldFrameProps {
   disabled?: boolean;
 }
 
-export function CheckboxField({ label, disabled }: CheckboxFieldProps) {
+/** A checkbox, then its label, with the help text and error under the label. */
+export function CheckboxField({ label, required, description, disabled }: CheckboxFieldProps) {
   const field = useFieldContext<boolean>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -21,9 +22,16 @@ export function CheckboxField({ label, disabled }: CheckboxFieldProps) {
         aria-invalid={isInvalid}
       />
 
-      {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
-
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+      <FieldContent>
+        {label && (
+          <FieldLabel htmlFor={field.name}>
+            {label}
+            {required && <RequiredMark />}
+          </FieldLabel>
+        )}
+        {description && <FieldDescription>{description}</FieldDescription>}
+        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+      </FieldContent>
     </Field>
   );
 }

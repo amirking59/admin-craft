@@ -1,6 +1,6 @@
 import { m } from "@/paraglide/messages.js";
 import { useState } from "react";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { FieldFrame, type FieldFrameProps } from "@/components/form/field-frame";
 import { useFieldContext } from "@/components/form/form-context";
 import {
   Combobox,
@@ -26,8 +26,7 @@ export interface SelectItem {
   disabled?: boolean;
 }
 
-export interface SelectFieldProps {
-  label?: string;
+export interface SelectFieldProps extends FieldFrameProps {
   placeholder?: string;
   items?: SelectItem[];
   disabled?: boolean;
@@ -45,6 +44,8 @@ export interface SelectFieldProps {
 
 export function SelectField({
   label,
+  required,
+  description,
   placeholder,
   items = [],
   disabled = false,
@@ -83,9 +84,7 @@ export function SelectField({
   };
 
   return (
-    <Field data-invalid={isInvalid}>
-      {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
-
+    <FieldFrame label={label} required={required} description={description}>
       <Combobox<SelectValue, boolean>
         items={items.map((item) => item.value)}
         multiple={multiple}
@@ -164,8 +163,6 @@ export function SelectField({
           )}
         </ComboboxContent>
       </Combobox>
-
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-    </Field>
+    </FieldFrame>
   );
 }

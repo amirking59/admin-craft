@@ -38,7 +38,11 @@ export function Pagination() {
           </Select>
         </div>
         <div className="flex w-fit items-center justify-center text-sm font-medium">
-          {m.table_page_x_of_y({ page: table.state.pagination.pageIndex + 1, total: table.getPageCount() })}
+          {/* No rows is still one (empty) page, not "1 of 0". */}
+          {m.table_page_x_of_y({
+            page: table.state.pagination.pageIndex + 1,
+            total: Math.max(1, table.getPageCount()),
+          })}
         </div>
         <div className="ms-auto flex items-center gap-2 lg:ms-0">
           <Button

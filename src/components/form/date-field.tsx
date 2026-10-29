@@ -1,6 +1,6 @@
 import { m } from "@/paraglide/messages.js";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { FieldFrame, type FieldFrameProps } from "@/components/form/field-frame";
 import { CalendarIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFieldContext } from "@/components/form/form-context";
@@ -8,9 +8,8 @@ import { useFieldContext } from "@/components/form/form-context";
 /** ISO strings, as DatePicker emits them. */
 type DateRangeValue = { from: string | null; to: string | null };
 
-interface DateFieldProps {
+interface DateFieldProps extends FieldFrameProps {
   placeholder?: string;
-  label?: string;
   clearable?: boolean;
   disabled?: boolean;
   mode?: "single" | "range";
@@ -18,6 +17,8 @@ interface DateFieldProps {
 
 export function DateField({
   label,
+  required,
+  description,
   clearable = false,
   disabled = false,
   placeholder,
@@ -29,9 +30,7 @@ export function DateField({
   const placeholderText = placeholder ?? (label ? m.select_x({ x: label.toLowerCase() }) : undefined);
 
   return (
-    <Field data-invalid={isInvalid}>
-      {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
-
+    <FieldFrame label={label} required={required} description={description}>
       <div className="relative">
         {mode === "range" ? (
           <DatePicker
@@ -68,8 +67,6 @@ export function DateField({
           <CalendarIcon className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2" />
         )}
       </div>
-
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-    </Field>
+    </FieldFrame>
   );
 }

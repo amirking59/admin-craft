@@ -2,13 +2,17 @@ import { m } from "@/paraglide/messages.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useDebounceValue } from "usehooks-ts";
 import { Check, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { SavedViews } from "@/components/data-table/components/saved-views";
 import { useTableContext } from "@/components/data-table/table-context";
 import type { FilterDef, FilterOption, FilterValue } from "@/components/data-table/types";
 import dayjs from "dayjs";
 import { NumericFormat } from "react-number-format";
 import {
   datePresets,
+  dateRangePresets,
   filtersArrayToObject,
   isFilterValueEmpty,
   parseRange,
@@ -23,26 +27,64 @@ import { ComboboxItem, isRowPress } from "@/components/ui/combobox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatNumber } from "@/lib/utils";
 
-/** A number filter's range as it reads: "$100 – $500", "from $100", "to $500". */
+/** A filter picked from a list of options, given up front or loaded from the server. */
+type ListFilter = Extract<FilterDef, { type: "select" | "multiselect" }>;
+const isListFilter = (filter: FilterDef): filter is ListFilter =>
+  filter.type === "select" || filter.type === "multiselect";
+/** A filter picked on a calendar. */
+const isCalendarFilter = (filter: FilterDef) => filter.type === "date" || filter.type === "dateRange";
+
+/** A range filter's value as it reads: "$100 – $500", "from $100", "to $500", and dates the same way. */
 const formatRange = (filter: FilterDef, value: FilterValue) => {
-  const format = filter.formatValue ?? ((end: FilterValue) => formatNumber(Number(end)));
+  const format =
+    filter.formatValue ??
+    (filter.type === "dateRange"
+      ? (end: FilterValue) => formatDate(String(end), false)
+      : (end: FilterValue) => formatNumber(Number(end)));
   const [from, to] = parseRange(value);
   if (from && to) return `${format(from)} – ${format(to)}`;
   return from ? `${m.table_from()} ${format(from)}` : `${m.table_to()} ${format(to)}`;
 };
 
-const formatFilterValue = (filter: FilterDef, value: FilterValue) => {
-  if (filter.type === "number") return formatRange(filter, value);
+/** `options`: a list filter's options, for its values' labels. */
+const formatFilterValue = (filter: FilterDef, value: FilterValue, options: FilterOption[]) => {
+  if (filter.type === "number" || filter.type === "dateRange") return formatRange(filter, value);
   if (filter.formatValue) return filter.formatValue(value);
   if (filter.type === "date") return formatDate(String(value), false);
-  const labels = new Map("options" in filter ? filter.options().map((option) => [option.value, option.label]) : []);
+  const labels = new Map(options.map((option) => [option.value, option.label]));
   return [value]
     .flat()
     .map((v) => labels.get(v) ?? v)
     .join(", ");
 };
+
+/** Where a list filter's options from `loadOptions` are cached, per table, by search. */
+const optionsQueryKey = (tableId: string | undefined, name: string) => ["filter-options", tableId, name];
+
+/**
+ * A list filter's options for what's typed in its search line: `options()`, or what `loadOptions` returns for it
+ * (after a pause) for a list kept on the server. `remote`: the server matched them to the search already, so the list
+ * shows them as they are. Loads only while `enabled` (its list is open).
+ */
+function useFilterOptions(filter: ListFilter, search: string, enabled = true) {
+  const { table } = useTableContext();
+  const [debounced] = useDebounceValue(search.trim(), 300);
+  const load = "loadOptions" in filter ? filter.loadOptions : null;
+  const query = useQuery({
+    queryKey: [...optionsQueryKey(table.options.meta?.id, filter.name), debounced],
+    queryFn: () => load!(debounced),
+    enabled: enabled && !!load,
+    // Keep the last results while the next search loads, rather than an empty list.
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+  });
+
+  if (!load) return { options: "options" in filter ? filter.options() : [], loading: false, remote: false };
+  return { options: query.data ?? [], loading: query.isPending, remote: true };
+}
 
 /** The editor of a filter that's a field (text, number or custom), inside its form field. */
 const fieldInput = (filter: FilterDef, value: FilterValue, onChange: (value: string) => void) => {
@@ -51,9 +93,6 @@ const fieldInput = (filter: FilterDef, value: FilterValue, onChange: (value: str
   if (filter.type === "custom") return filter.input();
   return null;
 };
-
-/** A filter picked from a list of options. */
-type ListFilter = Extract<FilterDef, { options: unknown }>;
 
 // The URL holds strings while a field may hold a number (500 vs "500"), so compare as strings.
 const asStrings = (value: unknown) => (Array.isArray(value) ? value.map(String) : String(value ?? ""));
@@ -84,6 +123,16 @@ export function FilterBar() {
   // A date filter's "Custom…" dialog. The name stays after closing, so the title holds through the close animation.
   const [custom, setCustom] = useState<{ name: string; open: boolean } | null>(null);
   const customFilter = filters.find((filter) => filter.name === custom?.name);
+
+  // A list filter's options, for its chip's labels: its own, or every one loaded from the server so far.
+  const queryClient = useQueryClient();
+  const optionsOf = (filter: FilterDef) => {
+    if (!isListFilter(filter)) return [];
+    if ("options" in filter) return filter.options();
+    return queryClient
+      .getQueriesData<FilterOption[]>({ queryKey: optionsQueryKey(table.options.meta?.id, filter.name) })
+      .flatMap(([, options]) => options ?? []);
+  };
 
   // One draft form for all filters, so a filter's onValueChange can reach the others.
   const form = useAppForm({
@@ -144,13 +193,13 @@ export function FilterBar() {
 
   const pinned = filters.filter((filter) => filter.pinned);
   const chips = filters.filter((filter) => !filter.pinned && (filter.name in applied || filter.name === active));
-  // In "+ Filter": a filter with options or a date always (its values can be picked there, like Linear); others
+  // In "+ Filter": a filter with options or dates always (its values can be picked there, like Linear); others
   // until set, or while being added there.
   const addable = filters.filter(
     (filter) =>
       !filter.pinned &&
-      ("options" in filter ||
-        filter.type === "date" ||
+      (isListFilter(filter) ||
+        isCalendarFilter(filter) ||
         filter.name === adding ||
         (!(filter.name in applied) && filter.name !== active)),
   );
@@ -181,12 +230,16 @@ export function FilterBar() {
                 onOpenChangeComplete={(open) => {
                   if (!open) setActive((current) => (current === filter.name ? null : current));
                 }}
-                bare={filter.type !== "date"}
+                bare={!isCalendarFilter(filter)}
                 trigger={<Button variant="outline" size="sm" className="max-w-72 min-w-28 justify-start font-normal" />}
                 triggerContent={
                   <>
                     <span className="text-muted-foreground">{value ? `${label}:` : label}</span>
-                    {value && <span className="truncate font-medium">{formatFilterValue(filter, value)}</span>}
+                    {value && (
+                      <span className="truncate font-medium">
+                        {formatFilterValue(filter, value, optionsOf(filter))}
+                      </span>
+                    )}
                   </>
                 }
               >
@@ -198,24 +251,23 @@ export function FilterBar() {
                       filter.onValueChange?.(form);
                       apply();
                     },
-                    onChangeDebounceMs: "options" in filter || filter.type === "date" ? 0 : 300,
+                    onChangeDebounceMs: isListFilter(filter) || isCalendarFilter(filter) ? 0 : 300,
                   }}
                 >
                   {(field) =>
-                    "options" in filter ? (
+                    isListFilter(filter) ? (
                       <FilterOptionsList
                         open={editing === filter.name}
-                        label={label}
-                        options={filter.options()}
-                        multiple={filter.type === "multiselect"}
+                        filter={filter}
                         value={field.state.value}
                         onChange={(next, close) => {
                           field.handleChange(next);
                           if (close) setEditing(null);
                         }}
                       />
-                    ) : filter.type === "date" ? (
+                    ) : isCalendarFilter(filter) ? (
                       <FilterCalendar
+                        range={filter.type === "dateRange"}
                         value={field.state.value}
                         onChange={(next) => {
                           field.handleChange(next);
@@ -264,7 +316,9 @@ export function FilterBar() {
         )}
       </div>
 
-      {/* A date's "Custom…": its value is picked here; the filter is added once a day is picked. */}
+      {table.options.meta?.id && <SavedViews className="self-start md:ms-auto" />}
+
+      {/* A date's "Custom…": its value is picked here; the filter is added once a day (or range) is picked. */}
       <Dialog
         open={!!custom?.open}
         onOpenChange={(open) => !open && setCustom((current) => current && { ...current, open: false })}
@@ -275,6 +329,7 @@ export function FilterBar() {
           </DialogHeader>
           {custom && (
             <FilterCalendar
+              range={customFilter?.type === "dateRange"}
               // The dialog's own padding and background, not a second inset.
               className="bg-transparent p-0"
               value={applied[custom.name] ?? ""}
@@ -354,10 +409,7 @@ function FilterEditor({
 interface FilterOptionsListProps {
   /** The surrounding editor's open state: closing it resets the search line. */
   open: boolean;
-  /** The filter's name, for the search line's accessible name. */
-  label: string;
-  options: FilterOption[];
-  multiple: boolean;
+  filter: ListFilter;
   value: unknown;
   /** `close`: the pick was a press on a row, so the editor closes (see isRowPress). */
   onChange: (value: FilterValue, close: boolean) => void;
@@ -365,10 +417,13 @@ interface FilterOptionsListProps {
 
 /**
  * A filter's options as Linear shows them: a search line, then one row per option with a checkbox. Picking applies
- * at once. With `multiple`, every pick toggles its option: from the checkbox (or the keyboard) the list stays for
+ * at once. With several picks, every pick toggles its option: from the checkbox (or the keyboard) the list stays for
  * more picks, from the rest of the row the editor closes. An inline combobox, so arrows, Enter and typing work.
  */
-function FilterOptionsList({ open, label, options, multiple, value, onChange }: FilterOptionsListProps) {
+function FilterOptionsList({ open, filter, value, onChange }: FilterOptionsListProps) {
+  const [search, setSearch] = useState("");
+  const { options, loading, remote } = useFilterOptions(filter, search);
+  const multiple = filter.type === "multiselect";
   const labels = new Map(options.map((option) => [option.value, option.label]));
   const icons = new Map(options.map((option) => [option.value, option.icon]));
   const selected = [value].flat().filter((v): v is string => typeof v === "string" && v !== "");
@@ -384,15 +439,18 @@ function FilterOptionsList({ open, label, options, multiple, value, onChange }: 
         onChange((next as string | string[] | null) ?? "", !multiple || isRowPress(details))
       }
       itemToStringLabel={(v) => labels.get(v) ?? v}
+      // The server matched the options to the search already.
+      filter={remote ? null : undefined}
+      onInputValueChange={setSearch}
       autoHighlight
     >
       <ComboboxPrimitive.Input
-        aria-label={label}
+        aria-label={filter.label()}
         placeholder={m.table_filter_search()}
         className="w-full border-b bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
       />
       <ComboboxPrimitive.Empty className="px-3 py-2 text-sm text-muted-foreground empty:hidden">
-        {m.no_items_found()}
+        {loading ? <LoadingRows /> : m.no_items_found()}
       </ComboboxPrimitive.Empty>
       <ComboboxPrimitive.List className="max-h-72 overflow-y-auto p-1 empty:p-0">
         {(v: string) => (
@@ -406,19 +464,56 @@ function FilterOptionsList({ open, label, options, multiple, value, onChange }: 
   );
 }
 
+/** Placeholder rows while a list's options load from the server. */
+const LoadingRows = () => (
+  <div className="flex flex-col gap-1">
+    {Array.from({ length: 4 }).map((_, index) => (
+      <Skeleton key={index} className="h-6" />
+    ))}
+  </div>
+);
+
 /**
- * A date filter's editor: a calendar, one pick, which applies and closes like a single-pick list. The value is the
- * day's start as an ISO string, as from DateField; picking the selected day again clears it.
+ * A date filter's editor: a calendar, which applies and closes like a single-pick list.
+ * - one day: the day's start as an ISO string, as from DateField; picking the selected day again clears it
+ * - `range`: the first click picks the first day and the second the last (the same day twice: just that day), as
+ *   "from..to", the first day's start and the last day's end; until then it shows what's applied
  */
 function FilterCalendar({
+  range = false,
   value,
   onChange,
   className,
 }: {
+  range?: boolean;
   value: FilterValue;
   onChange: (value: string) => void;
   className?: string;
 }) {
+  // A range's first day, once clicked, until the second click ends it.
+  const [start, setStart] = useState<Date>();
+
+  if (range) {
+    const [from, to] = parseRange(value);
+    const applied = { from: from ? dayjs(from).toDate() : undefined, to: to ? dayjs(to).toDate() : undefined };
+    const selected = start ? { from: start, to: start } : applied;
+
+    return (
+      <Calendar
+        mode="range"
+        className={className}
+        defaultMonth={selected.from ?? selected.to}
+        selected={selected}
+        onSelect={(_, day) => {
+          if (!start) return setStart(day);
+          const [first, last] = day < start ? [day, start] : [start, day];
+          setStart(undefined);
+          onChange(toRange(dayjs(first).startOf("day").toISOString(), dayjs(last).endOf("day").toISOString()));
+        }}
+      />
+    );
+  }
+
   const selected = value ? dayjs(String(value)).toDate() : undefined;
 
   return (
@@ -506,7 +601,8 @@ function FieldEditor({ label, onBack, children }: { label: string; onBack?: () =
 /**
  * "+ Filter", on Base UI's searchable Menu: type to narrow the filters. A filter with options opens its values in a
  * searchable submenu, like Linear, and Base UI handles the submenu (hover intent and the path to it, → or ← by text
- * direction, focus). A date filter offers "1 day ago" … "1 year ago" the same way, plus "Custom…". Anything else
+ * direction, focus). A date filter offers "1 day ago" … "1 year ago" the same way, plus "Custom…" (a range, "Today",
+ * "Last 7 days" …). Anything else
  * (text, a number) turns the menu into its editor, like Notion: a back button, then the field, applied as you type.
  */
 function AddFilterMenu({ filters, values, onPick, editor, onChange, onCustom }: AddFilterMenuProps) {
@@ -552,21 +648,20 @@ function AddFilterMenu({ filters, values, onPick, editor, onChange, onCustom }: 
                   </MenuPrimitive.Empty>
                   <MenuPrimitive.List className="max-h-72 overflow-y-auto p-1 outline-none">
                     {filters.map((filter) =>
-                      "options" in filter ? (
+                      isListFilter(filter) ? (
+                        <OptionsSubmenu
+                          key={filter.name}
+                          filter={filter}
+                          value={values[filter.name]}
+                          onChange={(next, close) => {
+                            onChange(filter.name, next);
+                            if (close) actions.current?.close();
+                          }}
+                        />
+                      ) : isCalendarFilter(filter) ? (
+                        // A preset applies at once; "Custom…" opens a dialog to pick the date (or range).
                         <FilterSubmenu key={filter.name} label={filter.label()}>
-                          <OptionItems
-                            filter={filter}
-                            value={values[filter.name]}
-                            onChange={(next, close) => {
-                              onChange(filter.name, next);
-                              if (close) actions.current?.close();
-                            }}
-                          />
-                        </FilterSubmenu>
-                      ) : filter.type === "date" ? (
-                        // A preset applies at once; "Custom…" opens a dialog to pick the date.
-                        <FilterSubmenu key={filter.name} label={filter.label()}>
-                          {datePresets().map((preset) => (
+                          {(filter.type === "dateRange" ? dateRangePresets() : datePresets()).map((preset) => (
                             <MenuPrimitive.Item
                               key={preset.value}
                               label={preset.label}
@@ -613,11 +708,24 @@ const isMenuRowPress = (event: Event | undefined) =>
   !(event instanceof KeyboardEvent) &&
   !(event.target instanceof Element && event.target.closest("[data-slot=menu-item-checkbox]"));
 
+interface FilterSubmenuProps {
+  label: string;
+  onOpenChange?: (open: boolean) => void;
+  /** The values come from the server, matched to what's typed: it reports the search instead of filtering. */
+  onSearchChange?: (search: string) => void;
+  /** The values are loading: placeholder rows instead of "No items found". */
+  loading?: boolean;
+  children: React.ReactNode;
+}
+
 /** One filter's values in a submenu, searchable like the menu itself. */
-function FilterSubmenu({ label, children }: { label: string; children: React.ReactNode }) {
+function FilterSubmenu({ label, onOpenChange, onSearchChange, loading, children }: FilterSubmenuProps) {
   return (
-    <MenuPrimitive.FilterProvider>
-      <MenuPrimitive.SubmenuRoot>
+    <MenuPrimitive.FilterProvider
+      filter={onSearchChange ? null : undefined}
+      onValueChange={onSearchChange && ((search) => onSearchChange(search))}
+    >
+      <MenuPrimitive.SubmenuRoot onOpenChange={onOpenChange && ((open) => onOpenChange(open))}>
         <MenuPrimitive.SubmenuTrigger label={label} className={`${menuItemClassName} data-popup-open:bg-accent`}>
           <span className="flex-1 truncate">{label}</span>
           <ChevronRight className="size-4 text-muted-foreground rtl:rotate-180" />
@@ -636,7 +744,7 @@ function FilterSubmenu({ label, children }: { label: string; children: React.Rea
                 className={searchClassName}
               />
               <MenuPrimitive.Empty className="px-3 py-2 text-sm text-muted-foreground">
-                {m.no_items_found()}
+                {loading ? <LoadingRows /> : m.no_items_found()}
               </MenuPrimitive.Empty>
               <MenuPrimitive.List className="max-h-72 overflow-y-auto p-1 outline-none">{children}</MenuPrimitive.List>
             </MenuPrimitive.Popup>
@@ -654,12 +762,30 @@ interface OptionItemsProps {
   onChange: (value: FilterValue, close: boolean) => void;
 }
 
+/** A list filter's submenu in "+ Filter". Options from the server load while it's open, for what's typed. */
+function OptionsSubmenu({ filter, value, onChange }: OptionItemsProps) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const { options, loading, remote } = useFilterOptions(filter, search, open);
+
+  return (
+    <FilterSubmenu
+      label={filter.label()}
+      onOpenChange={setOpen}
+      onSearchChange={remote ? setSearch : undefined}
+      loading={loading}
+    >
+      <OptionItems filter={filter} options={options} value={value} onChange={onChange} />
+    </FilterSubmenu>
+  );
+}
+
 /** A filter's options in its submenu: a checkbox per option, in front, as in the chip's editor. */
-function OptionItems({ filter, value, onChange }: OptionItemsProps) {
+function OptionItems({ filter, options, value, onChange }: OptionItemsProps & { options: FilterOption[] }) {
   const multiple = filter.type === "multiselect";
   const selected = [value ?? []].flat().filter((v) => v !== "");
 
-  return filter.options().map((option) => (
+  return options.map((option) => (
     <MenuPrimitive.CheckboxItem
       key={option.value}
       label={option.label}

@@ -8,6 +8,7 @@ import { EnumField } from "@/components/form/enum-field";
 import { CheckboxField } from "@/components/form/checkbox-field";
 import { DateField } from "@/components/form/date-field";
 import { DateTimeField } from "@/components/form/date-time-field";
+import { Form, SubmitButton } from "@/components/form/form";
 
 export const { useAppForm } = createFormHook({
   fieldContext,
@@ -22,5 +23,5 @@ export const { useAppForm } = createFormHook({
     DateField,
     DateTimeField,
   },
-  formComponents: {},
+  formComponents: { Form, SubmitButton },
 });

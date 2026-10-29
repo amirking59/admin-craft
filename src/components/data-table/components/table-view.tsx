@@ -9,9 +9,11 @@ import { flexRender } from "@tanstack/react-table";
 interface TableViewProps {
   isLoading: boolean;
   rowHeight: number;
+  /** In place of the rows when there are none: why, and what to do about it (e.g. an error and "Try again"). */
+  empty?: React.ReactNode;
 }
 
-export function TableView({ isLoading, rowHeight }: TableViewProps) {
+export function TableView({ isLoading, rowHeight, empty = m.table_no_results() }: TableViewProps) {
   const { table } = useTableContext();
   return (
     <div className="overflow-hidden rounded-md border">
@@ -58,8 +60,8 @@ export function TableView({ isLoading, rowHeight }: TableViewProps) {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={table.getVisibleLeafColumns().length} className="h-24 text-center">
-                {m.table_no_results()}
+              <TableCell colSpan={table.getVisibleLeafColumns().length} className="h-32 text-center">
+                <div className="flex flex-col items-center gap-3 text-muted-foreground">{empty}</div>
               </TableCell>
             </TableRow>
           )}

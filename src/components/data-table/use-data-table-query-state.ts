@@ -25,34 +25,41 @@ export function useDataTableQueryState({ defaultPageSize = 10 }: UseDataTableQue
 
   const filters = useMemo<DataTableFilters>(() => search.filters ?? {}, [search.filters]);
 
+  // Merged into the URL's search as it is when the navigation runs, not as of this render: two changes in a row
+  // (a saved view's sort, then its filters) both land.
   const pushQuery = useCallback(
-    (next: DataTableSearch) => {
-      navigate({ to: ".", search: next as never, replace: true, resetScroll: false });
+    (patch: DataTableSearch) => {
+      navigate({
+        to: ".",
+        search: ((current: DataTableSearch) => ({ ...current, ...patch })) as never,
+        replace: true,
+        resetScroll: false,
+      });
     },
     [navigate],
   );
 
   const setPage = useCallback(
     (next: Partial<DataTablePageState>) => {
-      pushQuery({ ...search, page: { index: next.index ?? page.index, size: next.size ?? page.size } });
+      pushQuery({ page: { index: next.index ?? page.index, size: next.size ?? page.size } });
     },
-    [search, page.index, page.size, pushQuery],
+    [page.index, page.size, pushQuery],
   );
 
   // A new sort or new filters change which rows come first, so both go back to page 1.
   const setSort = useCallback(
     (sort: string | undefined) => {
-      pushQuery({ ...search, sort, page: { index: 1, size: page.size } });
+      pushQuery({ sort, page: { index: 1, size: page.size } });
     },
-    [search, page.size, pushQuery],
+    [page.size, pushQuery],
   );
 
   const setFilters = useCallback(
     (nextFilters: DataTableFilters) => {
       const hasFilters = Object.keys(nextFilters).length > 0;
-      pushQuery({ ...search, filters: hasFilters ? nextFilters : undefined, page: { index: 1, size: page.size } });
+      pushQuery({ filters: hasFilters ? nextFilters : undefined, page: { index: 1, size: page.size } });
     },
-    [search, page.size, pushQuery],
+    [page.size, pushQuery],
   );
 
   return { page, sort: search.sort, filters, setPage, setSort, setFilters };

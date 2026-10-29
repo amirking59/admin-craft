@@ -1,6 +1,13 @@
 import { m } from "@/paraglide/messages.js";
-import { CreateOrderParams, Order, OrderStatus, OrderTag, PaymentMethod } from "@/features/orders/types";
-import { DataTableQueryParams, parseRange, TableQueryFnResponse } from "@/components/data-table";
+import {
+  CreateOrderParams,
+  Order,
+  OrderStatus,
+  OrderTag,
+  PaymentMethod,
+  UpdateOrderParams,
+} from "@/features/orders/types";
+import { DataTableQueryParams, FilterOption, parseRange, TableQueryFnResponse } from "@/components/data-table";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import dayjs from "dayjs";
@@ -276,6 +283,16 @@ const mockOrders: Order[] = seedOrders.map((order, index) => ({
 export const orderCustomers = [...new Set(seedOrders.map((order) => order.customerName))].toSorted();
 export const orderProducts = [...new Set(seedOrders.map((order) => order.product))].toSorted();
 
+/** The customers whose name contains `search`, as a server would page them, for the customer filter. */
+export const searchCustomers = async (search: string): Promise<FilterOption[]> => {
+  await delay(300);
+  const query = search.toLowerCase();
+  return orderCustomers
+    .filter((name) => name.toLowerCase().includes(query))
+    .slice(0, 20)
+    .map((name) => ({ value: name, label: name }));
+};
+
 // A filter value is a string or, from a multi-pick, a list of them.
 const asList = (value: string | string[] | undefined) => (value === undefined ? [] : [value].flat());
 
@@ -287,7 +304,7 @@ export const getOrders = async ({ page, sort, filters }: DataTableQueryParams): 
   const tags = asList(filters?.tags);
   const paymentMethod = filters?.payment_method;
   const paid = filters?.paid;
-  const createdAtFrom = typeof filters?.created_at_from === "string" ? filters.created_at_from : undefined;
+  const [createdFrom, createdTo] = parseRange(filters?.created_at);
   const [totalFrom, totalTo] = parseRange(filters?.total);
   const product = typeof filters?.product === "string" ? filters.product.trim().toLowerCase() : "";
   const query = typeof filters?.q === "string" ? filters.q.trim().toLowerCase() : "";
@@ -298,7 +315,8 @@ export const getOrders = async ({ page, sort, filters }: DataTableQueryParams): 
     if (tags.length > 0 && !tags.some((tag) => order.tags.includes(tag as OrderTag))) return false;
     if (paymentMethod && order.paymentMethod !== paymentMethod) return false;
     if (paid && String(order.paid) !== paid) return false;
-    if (createdAtFrom && dayjs(order.createdAt).isBefore(dayjs(createdAtFrom))) return false;
+    if (createdFrom && dayjs(order.createdAt).isBefore(createdFrom)) return false;
+    if (createdTo && dayjs(order.createdAt).isAfter(createdTo)) return false;
     if (totalFrom && order.total < Number(totalFrom)) return false;
     if (totalTo && order.total > Number(totalTo)) return false;
     if (product && !order.product.toLowerCase().includes(product)) return false;
@@ -329,6 +347,23 @@ export const useCreateOrder = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success(m.add_success());
+    },
+  });
+};
+
+const updateOrder = async ({ orderId, ...params }: UpdateOrderParams) => {
+  await delay(400);
+  const index = mockOrders.findIndex((order) => order.orderId === orderId);
+  if (index !== -1) mockOrders[index] = { ...mockOrders[index], ...params };
+};
+
+export const useUpdateOrder = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      toast.success(m.update_success());
     },
   });
 };

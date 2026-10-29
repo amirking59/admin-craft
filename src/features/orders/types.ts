@@ -36,3 +36,7 @@ export interface Order {
 }
 
 export type CreateOrderParams = Omit<Order, "orderId">;
+
+export interface UpdateOrderParams extends CreateOrderParams {
+  orderId: number;
+}
