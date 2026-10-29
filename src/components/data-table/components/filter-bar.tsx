@@ -2,7 +2,7 @@ import { m } from "@/paraglide/messages.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
-import { Check, ChevronRight, Plus, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { useTableContext } from "@/components/data-table/table-context";
 import type { FilterDef, FilterOption, FilterValue } from "@/components/data-table/types";
 import dayjs from "dayjs";
@@ -64,7 +64,8 @@ const sameValue = (a: unknown, b: unknown) => JSON.stringify(asStrings(a)) === J
  * - pinned filters sit inline and apply as you type
  * - the rest show once set, each as a button group (the filter, and × to remove it); the filter button opens it
  *   alone in a popover
- * - "+ Filter" lists the unset ones, with a line to type into, so a long list stays easy to use
+ * - "+ Filter" lists the unset ones, with a line to type into, so a long list stays easy to use; a text or number
+ *   filter picked there shows its field in the menu, in place of the list, like Notion
  */
 export function FilterBar() {
   const { table } = useTableContext();
@@ -73,11 +74,13 @@ export function FilterBar() {
   const appliedKey = JSON.stringify(filtersArrayToObject(table.state.columnFilters));
   const applied = useMemo<Record<string, FilterValue>>(() => JSON.parse(appliedKey), [appliedKey]);
 
-  // The filter whose editor is open, and the one whose editor is open *or still animating*: a filter just picked
-  // from "+ Filter" (its chip mounts closed, then opens, so the editor animates in) or one closing (its chip stays
-  // until the close animation ends, even with no value, and its draft is kept until then).
+  // The filter whose chip editor is open, and the one whose editor is open *or still closing* (its chip stays until
+  // the close animation ends, even with no value, and its draft is kept until then).
   const [editing, setEditing] = useState<string | null>(null);
   const [active, setActive] = useState<string | null>(null);
+  // A text or number filter picked in "+ Filter", whose field shows in the menu. Its draft is kept until it closes.
+  const [adding, setAdding] = useState<string | null>(null);
+  const addingFilter = filters.find((filter) => filter.name === adding);
   // A date filter's "Custom…" dialog. The name stays after closing, so the title holds through the close animation.
   const [custom, setCustom] = useState<{ name: string; open: boolean } | null>(null);
   const customFilter = filters.find((filter) => filter.name === custom?.name);
@@ -99,17 +102,17 @@ export function FilterBar() {
   };
 
   // Show what's applied: after the URL changes from outside (back button, a link, "Reset"), and after an editor
-  // has closed without applying, which drops its draft. The active editor keeps its draft.
+  // has closed without applying, which drops its draft. The open editors keep their drafts.
   useEffect(() => {
     for (const filter of filters) {
-      if (filter.name === active) continue;
+      if (filter.name === active || filter.name === adding) continue;
       const value = applied[filter.name] ?? "";
       // A sync, not an edit: no listeners (they would re-apply), no validation, no touched state.
       if (!sameValue(form.getFieldValue(filter.name), value)) {
         form.setFieldValue(filter.name, value, { dontRunListeners: true, dontValidate: true, dontUpdateMeta: true });
       }
     }
-  }, [applied, active, filters, form]);
+  }, [applied, active, adding, filters, form]);
 
   // A value picked outside a chip's editor ("+ Filter", the "Custom…" dialog).
   const setFilter = (name: string, value: FilterValue) => {
@@ -123,14 +126,33 @@ export function FilterBar() {
     apply();
   };
 
+  // A field that applies as you type, after a pause: a pinned filter, or one being added in "+ Filter".
+  const liveField = (filter: FilterDef) => (
+    <form.AppField
+      name={filter.name}
+      listeners={{
+        onChange: () => {
+          filter.onValueChange?.(form);
+          apply();
+        },
+        onChangeDebounceMs: 300,
+      }}
+    >
+      {(field) => fieldInput(filter, field.state.value, field.handleChange)}
+    </form.AppField>
+  );
+
   const pinned = filters.filter((filter) => filter.pinned);
   const chips = filters.filter((filter) => !filter.pinned && (filter.name in applied || filter.name === active));
   // In "+ Filter": a filter with options or a date always (its values can be picked there, like Linear); others
-  // until set.
+  // until set, or while being added there.
   const addable = filters.filter(
     (filter) =>
       !filter.pinned &&
-      ("options" in filter || filter.type === "date" || (!(filter.name in applied) && filter.name !== active)),
+      ("options" in filter ||
+        filter.type === "date" ||
+        filter.name === adding ||
+        (!(filter.name in applied) && filter.name !== active)),
   );
 
   return (
@@ -138,18 +160,7 @@ export function FilterBar() {
       {pinned.map((filter) => (
         // As tall as the bar's small buttons (32px) rather than a form input (36px), so the row lines up.
         <div key={filter.name} className="md:w-64 [&_[data-slot=input-group]]:h-8">
-          <form.AppField
-            name={filter.name}
-            listeners={{
-              onChange: () => {
-                filter.onValueChange?.(form);
-                apply();
-              },
-              onChangeDebounceMs: 300,
-            }}
-          >
-            {(field) => fieldInput(filter, field.state.value, field.handleChange)}
-          </form.AppField>
+          {liveField(filter)}
         </div>
       ))}
 
@@ -170,7 +181,7 @@ export function FilterBar() {
                 onOpenChangeComplete={(open) => {
                   if (!open) setActive((current) => (current === filter.name ? null : current));
                 }}
-                list={"options" in filter}
+                bare={filter.type !== "date"}
                 trigger={<Button variant="outline" size="sm" className="max-w-72 min-w-28 justify-start font-normal" />}
                 triggerContent={
                   <>
@@ -212,7 +223,9 @@ export function FilterBar() {
                         }}
                       />
                     ) : (
-                      fieldInput(filter, field.state.value, field.handleChange)
+                      <FieldEditor label={label}>
+                        {fieldInput(filter, field.state.value, field.handleChange)}
+                      </FieldEditor>
                     )
                   }
                 </form.AppField>
@@ -236,11 +249,8 @@ export function FilterBar() {
         {addable.length > 0 && (
           <AddFilterMenu
             filters={addable}
-            onPick={(name) => {
-              // Mount the chip closed first: an editor that is already open when it mounts doesn't animate in.
-              setActive(name);
-              requestAnimationFrame(() => setEditing(name));
-            }}
+            onPick={setAdding}
+            editor={addingFilter && { label: addingFilter.label(), content: liveField(addingFilter) }}
             onCustom={(name) => setCustom({ name, open: true })}
             values={applied}
             onChange={setFilter}
@@ -285,38 +295,39 @@ interface FilterEditorProps {
   onOpenChange: (open: boolean) => void;
   /** After the open or close animation ends. */
   onOpenChangeComplete: (open: boolean) => void;
-  /** The content is a FilterOptionsList: the popover is just the list, and its search line takes focus. */
-  list: boolean;
+  /**
+   * The content is a FilterOptionsList or a FieldEditor: the popover is just that, and its first field takes focus.
+   * Otherwise it's a calendar.
+   */
+  bare: boolean;
   trigger: React.ReactElement;
   triggerContent: React.ReactNode;
   children: React.ReactNode;
 }
 
-/**
- * One filter's editor: a popover under its chip, on every screen size. A field-based editor focuses the popover
- * itself, so a field waits for a tap or click, and a phone's keyboard stays down until then.
- */
+/** One filter's editor: a popover under its chip, on every screen size. */
 function FilterEditor({
   open,
   onOpenChange,
   onOpenChangeComplete,
-  list,
+  bare,
   trigger,
   triggerContent,
   children,
 }: FilterEditorProps) {
   const popupRef = useRef<HTMLDivElement>(null);
 
-  if (list) {
+  if (bare) {
     return (
       <Popover open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
         <PopoverTrigger render={trigger}>{triggerContent}</PopoverTrigger>
         <PopoverContent
           ref={popupRef}
-          // The search line takes focus, except when opened by touch: on a phone that would pop the keyboard up.
+          // The first field takes focus, except when opened by touch: on a phone that would pop the keyboard up.
           initialFocus={(openType) => (openType === "touch" ? popupRef.current : true)}
           align="start"
-          className="w-64 gap-0 p-0"
+          // A FieldEditor as wide as in "+ Filter", so it's the same popover there and here.
+          className="w-64 gap-0 p-0 has-data-[slot=field-editor]:w-56"
         >
           {children}
         </PopoverContent>
@@ -332,7 +343,7 @@ function FilterEditor({
         initialFocus={popupRef}
         align="start"
         // A calendar is the picker itself: the popover fits it, as DatePicker's does.
-        className="has-data-[slot=calendar]:w-auto has-data-[slot=calendar]:p-0"
+        className="w-auto p-0"
       >
         {children}
       </PopoverContent>
@@ -459,28 +470,54 @@ interface AddFilterMenuProps {
   filters: FilterDef[];
   /** The applied values, so a filter's submenu shows what's already picked. */
   values: Record<string, FilterValue>;
-  /** A filter without options: add its chip and open its editor. */
-  onPick: (name: string) => void;
+  /** A filter without options was picked, so its `editor` shows; null: back to the list, or the menu closed. */
+  onPick: (name: string | null) => void;
+  /** The picked filter's editor, in place of the list. */
+  editor?: { label: string; content: React.ReactNode };
   /** A filter's new value, picked in its submenu. */
   onChange: (name: string, value: FilterValue) => void;
   /** A date filter's "Custom…". */
   onCustom: (name: string) => void;
 }
 
+// Focuses the editor's first field once it mounts. Module-level, so a re-render doesn't pull focus back to it.
+const focusFirstInput = (element: HTMLElement | null) => element?.querySelector("input")?.focus();
+
+/**
+ * A text or number filter's editor, the same in "+ Filter" and under its chip: the filter's name (with a way back to
+ * the list, in "+ Filter"), then its field.
+ */
+function FieldEditor({ label, onBack, children }: { label: string; onBack?: () => void; children: React.ReactNode }) {
+  return (
+    <div data-slot="field-editor">
+      <div className="flex h-9 items-center gap-1 border-b px-3 text-sm font-medium">
+        {onBack && (
+          <Button variant="ghost" size="icon-xs" className="-ms-2" aria-label={m.table_back()} onClick={onBack}>
+            <ChevronLeft className="rtl:rotate-180" />
+          </Button>
+        )}
+        {label}
+      </div>
+      <div className="p-2">{children}</div>
+    </div>
+  );
+}
+
 /**
  * "+ Filter", on Base UI's searchable Menu: type to narrow the filters. A filter with options opens its values in a
  * searchable submenu, like Linear, and Base UI handles the submenu (hover intent and the path to it, → or ← by text
  * direction, focus). A date filter offers "1 day ago" … "1 year ago" the same way, plus "Custom…". Anything else
- * (text, a number) adds a chip and opens its editor.
+ * (text, a number) turns the menu into its editor, like Notion: a back button, then the field, applied as you type.
  */
-function AddFilterMenu({ filters, values, onPick, onChange, onCustom }: AddFilterMenuProps) {
+function AddFilterMenu({ filters, values, onPick, editor, onChange, onCustom }: AddFilterMenuProps) {
   // Closed through Base UI, not a controlled `open`: closing that way from inside the submenu leaves the trigger
   // thinking the menu is still open, so its next press does nothing.
   const actions = useRef<MenuPrimitive.Root.Actions>(null);
 
   return (
     <MenuPrimitive.FilterProvider>
-      <MenuPrimitive.Root actionsRef={actions}>
+      {/* Back to the list once closed, so it opens on the list next time. */}
+      <MenuPrimitive.Root actionsRef={actions} onOpenChangeComplete={(open) => !open && onPick(null)}>
         <MenuPrimitive.Trigger render={<Button variant="outline" size="sm" className="shrink-0 border-dashed" />}>
           <Plus />
           {m.table_filter()}
@@ -495,60 +532,73 @@ function AddFilterMenu({ filters, values, onPick, onChange, onCustom }: AddFilte
             data-base-ui-swipe-ignore=""
           >
             <MenuPrimitive.Popup className={`w-56 ${popupClassName}`}>
-              <MenuPrimitive.Input
-                aria-label={m.table_filter_by()}
-                placeholder={m.table_filter_by()}
-                className={searchClassName}
-              />
-              <MenuPrimitive.Empty className="px-3 py-2 text-sm text-muted-foreground">
-                {m.no_items_found()}
-              </MenuPrimitive.Empty>
-              <MenuPrimitive.List className="max-h-72 overflow-y-auto p-1 outline-none">
-                {filters.map((filter) =>
-                  "options" in filter ? (
-                    <FilterSubmenu key={filter.name} label={filter.label()}>
-                      <OptionItems
-                        filter={filter}
-                        value={values[filter.name]}
-                        onChange={(next, close) => {
-                          onChange(filter.name, next);
-                          if (close) actions.current?.close();
-                        }}
-                      />
-                    </FilterSubmenu>
-                  ) : filter.type === "date" ? (
-                    // A preset applies at once; "Custom…" opens a dialog to pick the date.
-                    <FilterSubmenu key={filter.name} label={filter.label()}>
-                      {datePresets().map((preset) => (
+              {editor ? (
+                // Keys belong to the editor, not the menu (Home, End and the arrows would move through its list);
+                // Escape still closes it.
+                <div ref={focusFirstInput} onKeyDown={(event) => event.key !== "Escape" && event.stopPropagation()}>
+                  <FieldEditor label={editor.label} onBack={() => onPick(null)}>
+                    {editor.content}
+                  </FieldEditor>
+                </div>
+              ) : (
+                <>
+                  <MenuPrimitive.Input
+                    aria-label={m.table_filter_by()}
+                    placeholder={m.table_filter_by()}
+                    className={searchClassName}
+                  />
+                  <MenuPrimitive.Empty className="px-3 py-2 text-sm text-muted-foreground">
+                    {m.no_items_found()}
+                  </MenuPrimitive.Empty>
+                  <MenuPrimitive.List className="max-h-72 overflow-y-auto p-1 outline-none">
+                    {filters.map((filter) =>
+                      "options" in filter ? (
+                        <FilterSubmenu key={filter.name} label={filter.label()}>
+                          <OptionItems
+                            filter={filter}
+                            value={values[filter.name]}
+                            onChange={(next, close) => {
+                              onChange(filter.name, next);
+                              if (close) actions.current?.close();
+                            }}
+                          />
+                        </FilterSubmenu>
+                      ) : filter.type === "date" ? (
+                        // A preset applies at once; "Custom…" opens a dialog to pick the date.
+                        <FilterSubmenu key={filter.name} label={filter.label()}>
+                          {datePresets().map((preset) => (
+                            <MenuPrimitive.Item
+                              key={preset.value}
+                              label={preset.label}
+                              className={menuItemClassName}
+                              onClick={() => onChange(filter.name, preset.value)}
+                            >
+                              {preset.label}
+                            </MenuPrimitive.Item>
+                          ))}
+                          <MenuPrimitive.Item
+                            label={m.table_custom()}
+                            className={menuItemClassName}
+                            onClick={() => onCustom(filter.name)}
+                          >
+                            {m.table_custom()}
+                          </MenuPrimitive.Item>
+                        </FilterSubmenu>
+                      ) : (
                         <MenuPrimitive.Item
-                          key={preset.value}
-                          label={preset.label}
+                          key={filter.name}
+                          label={filter.label()}
+                          closeOnClick={false}
                           className={menuItemClassName}
-                          onClick={() => onChange(filter.name, preset.value)}
+                          onClick={() => onPick(filter.name)}
                         >
-                          {preset.label}
+                          {filter.label()}
                         </MenuPrimitive.Item>
-                      ))}
-                      <MenuPrimitive.Item
-                        label={m.table_custom()}
-                        className={menuItemClassName}
-                        onClick={() => onCustom(filter.name)}
-                      >
-                        {m.table_custom()}
-                      </MenuPrimitive.Item>
-                    </FilterSubmenu>
-                  ) : (
-                    <MenuPrimitive.Item
-                      key={filter.name}
-                      label={filter.label()}
-                      className={menuItemClassName}
-                      onClick={() => onPick(filter.name)}
-                    >
-                      {filter.label()}
-                    </MenuPrimitive.Item>
-                  ),
-                )}
-              </MenuPrimitive.List>
+                      ),
+                    )}
+                  </MenuPrimitive.List>
+                </>
+              )}
             </MenuPrimitive.Popup>
           </MenuPrimitive.Positioner>
         </MenuPrimitive.Portal>
