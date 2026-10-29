@@ -486,9 +486,11 @@ function AddFilterMenu({ filters, values, onPick, onChange, onCustom }: AddFilte
           {m.table_filter()}
         </MenuPrimitive.Trigger>
         <MenuPrimitive.Portal>
+          {/* Stays where it opened: a pick adds or widens a chip in front of the trigger, which would drag it along. */}
           <MenuPrimitive.Positioner
             align="start"
             sideOffset={4}
+            disableAnchorTracking
             className="isolate z-50 outline-none"
             data-base-ui-swipe-ignore=""
           >
