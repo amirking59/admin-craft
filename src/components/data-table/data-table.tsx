@@ -5,6 +5,7 @@ import { useEffect, useMemo } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { DataTableFeatures, dataTableFeatures, DataTableQueryParams, FilterDef } from "@/components/data-table/types";
 import { DataTableActions } from "@/components/data-table/components/data-table-actions";
@@ -137,14 +138,21 @@ export function DataTable<TData extends RowData>({
 
           <DataTableViewOptions />
 
-          <Button
-            onClick={() => refetch({ cancelRefetch: false })}
-            size="icon"
-            variant="outline"
-            aria-label={m.table_refresh()}
-          >
-            <RefreshCcw className={cn(isFetching && "animate-spin")} />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  onClick={() => refetch({ cancelRefetch: false })}
+                  size="icon-sm"
+                  variant="outline"
+                  aria-label={m.table_refresh()}
+                />
+              }
+            >
+              <RefreshCcw className={cn(isFetching && "animate-spin")} />
+            </TooltipTrigger>
+            <TooltipContent>{m.table_refresh()}</TooltipContent>
+          </Tooltip>
         </DataTableActions>
 
         {filters.length > 0 && <FilterBar />}

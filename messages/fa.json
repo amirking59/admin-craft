@@ -99,7 +99,7 @@
   "table_rows_per_page": "تعداد در هر صفحه",
   "table_show_all": "نمایش همه",
   "table_total_rows": "تعداد کل",
-  "table_view": "ستون‌ها",
+  "table_view": "نمایش",
   "this_action_cannot_be_undone": "این کار برگشت‌پذیر نیست.",
   "try_again": "تلاش دوباره",
   "type_x_to_confirm": "برای تأیید، {x} را بنویسید",
@@ -127,5 +127,6 @@
   "discard_changes_description": "اطلاعاتی که وارد کرده‌اید از بین می‌رود.",
   "discard": "نادیده گرفتن",
   "keep_editing": "ادامه ویرایش",
-  "orders_note_description": "فقط تیم شما این را می‌بیند."
+  "orders_note_description": "فقط تیم شما این را می‌بیند.",
+  "table_columns": "ستون‌ها"
 }

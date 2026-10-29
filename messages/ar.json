@@ -127,5 +127,6 @@
   "discard_changes_description": "ستفقد ما أدخلته.",
   "discard": "تجاهل",
   "keep_editing": "متابعة التعديل",
-  "orders_note_description": "يراها فريقك فقط."
+  "orders_note_description": "يراها فريقك فقط.",
+  "table_columns": "الأعمدة"
 }

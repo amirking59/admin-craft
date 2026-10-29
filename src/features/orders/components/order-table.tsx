@@ -154,7 +154,7 @@ export const OrderTable = () => (
     actions={[
       <DialogButton
         key="createOrder"
-        variant="outline"
+        size="sm"
         icon={Plus}
         title={m.add_item({ item: m.orders_order() })}
         dialogClassName="sm:max-w-2xl"

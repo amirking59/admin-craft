@@ -5,7 +5,6 @@ import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDebounceValue } from "usehooks-ts";
 import { Check, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
-import { SavedViews } from "@/components/data-table/components/saved-views";
 import { useTableContext } from "@/components/data-table/table-context";
 import type { FilterDef, FilterOption, FilterValue } from "@/components/data-table/types";
 import dayjs from "dayjs";
@@ -315,8 +314,6 @@ export function FilterBar() {
           </Button>
         )}
       </div>
-
-      {table.options.meta?.id && <SavedViews className="self-start md:ms-auto" />}
 
       {/* A date's "Custom…": its value is picked here; the filter is added once a day (or range) is picked. */}
       <Dialog

@@ -127,5 +127,6 @@
   "discard_changes_description": "What you've entered will be lost.",
   "discard": "Discard",
   "keep_editing": "Keep editing",
-  "orders_note_description": "Only your team sees this."
+  "orders_note_description": "Only your team sees this.",
+  "table_columns": "Columns"
 }

@@ -113,7 +113,7 @@ export const ProductTable = () => {
       actions={[
         <DialogButton
           key="createProduct"
-          variant="outline"
+          size="sm"
           icon={Plus}
           title={m.add_item({ item: m.products_product() })}
           content={(close) => <ProductForm onClose={close} />}
