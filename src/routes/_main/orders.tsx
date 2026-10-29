@@ -5,6 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_main/orders")({
   validateSearch: dataTableSearchSchema,
+  staticData: { title: m.orders_title },
   head: () => ({ meta: [{ title: `${m.orders_title()} · ${m.app_name()}` }] }),
   component: OrderTable,
 });

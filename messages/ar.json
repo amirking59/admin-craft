@@ -128,5 +128,11 @@
   "discard": "تجاهل",
   "keep_editing": "متابعة التعديل",
   "orders_note_description": "يراها فريقك فقط.",
-  "table_columns": "الأعمدة"
+  "table_columns": "الأعمدة",
+  "home": "الرئيسية",
+  "breadcrumbs": "مسار التنقل",
+  "command_title": "الأوامر",
+  "command_placeholder": "انتقل إلى صفحة أو ابحث أو نفّذ أمرًا…",
+  "search_orders_for": "البحث في الطلبات عن «{x}»",
+  "preferences": "التفضيلات"
 }

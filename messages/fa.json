@@ -128,5 +128,11 @@
   "discard": "نادیده گرفتن",
   "keep_editing": "ادامه ویرایش",
   "orders_note_description": "فقط تیم شما این را می‌بیند.",
-  "table_columns": "ستون‌ها"
+  "table_columns": "ستون‌ها",
+  "home": "خانه",
+  "breadcrumbs": "مسیر صفحه",
+  "command_title": "فرمان‌ها",
+  "command_placeholder": "رفتن به صفحه، جستجو یا اجرای فرمان…",
+  "search_orders_for": "جستجوی سفارش‌ها برای «{x}»",
+  "preferences": "تنظیمات"
 }

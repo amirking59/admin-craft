@@ -27,3 +27,10 @@ export function getRouter() {
 
   return router;
 }
+
+declare module "@tanstack/react-router" {
+  interface StaticDataRouteOption {
+    /** The page's name in the header's breadcrumbs: a message function, so it follows the language. */
+    title?: () => string;
+  }
+}

@@ -128,5 +128,11 @@
   "discard": "Discard",
   "keep_editing": "Keep editing",
   "orders_note_description": "Only your team sees this.",
-  "table_columns": "Columns"
+  "table_columns": "Columns",
+  "home": "Home",
+  "breadcrumbs": "Breadcrumbs",
+  "command_title": "Commands",
+  "command_placeholder": "Go to a page, search, or run a command…",
+  "search_orders_for": "Search orders for “{x}”",
+  "preferences": "Preferences"
 }
