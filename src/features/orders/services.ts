@@ -1,7 +1,7 @@
 import { m } from "@/paraglide/messages.js";
 import { CreateOrderParams, Order, UpdateOrderParams } from "@/features/orders/types";
-import { DataTableQueryParams, FilterOption, TableQueryFnResponse } from "@/components/data-table";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { DataTableQueryParams, FilterOption, FilterOptions, TableQueryFnResponse } from "@/components/data-table";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/configs/api";
 
@@ -87,6 +87,18 @@ export const searchCustomers = async (search: string): Promise<FilterOption[]> =
     params: { q: search, limit: 20, select: "firstName,lastName,email" },
   });
   return users.map((user) => ({ value: String(user.id), label: fullName(user) }));
+};
+
+/** The customers matching `search`, as the orders table's customer filter lists them (`FilterDef.useOptions`). */
+export const useCustomerOptions = (search: string): FilterOptions => {
+  const query = useQuery({
+    queryKey: ["customer-options", search],
+    queryFn: () => searchCustomers(search),
+    // Keep the last results while the next search loads, rather than an empty list.
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+  });
+  return { items: query.data ?? [], loading: query.isPending, remote: true };
 };
 
 const toApiProducts = (items: CreateOrderParams["items"]) =>

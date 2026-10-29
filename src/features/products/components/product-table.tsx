@@ -1,7 +1,7 @@
 import { m } from "@/paraglide/messages.js";
 import { DataTable, DataTableFeatures, FilterDef } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
-import { getProducts, searchCategories, useDeleteProduct } from "@/features/products/services";
+import { getProducts, useCategoryOptions, useDeleteProduct } from "@/features/products/services";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import { convertCase, formatNumber } from "@/lib/utils";
@@ -29,7 +29,7 @@ const filters: FilterDef[] = [
     name: "category",
     label: m.products_category,
     type: "select",
-    loadOptions: searchCategories,
+    useOptions: useCategoryOptions,
     formatValue: (value) => categoryName(String(value)),
     onValueChange: (form) => {
       if (form.getFieldValue("category")) form.setFieldValue("q", "", { dontRunListeners: true });

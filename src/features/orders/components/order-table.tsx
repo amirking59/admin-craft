@@ -7,12 +7,12 @@ import { ConfirmDialogButton } from "@/components/confirm-dialog-button";
 import { DialogButton } from "@/components/dialog-button";
 import { formatNumber } from "@/lib/utils";
 import { Order } from "@/features/orders/types";
-import { getOrders, searchCustomers, useDeleteOrder } from "@/features/orders/services";
+import { getOrders, useCustomerOptions, useDeleteOrder } from "@/features/orders/services";
 import { OrderForm } from "@/features/orders/components/order-form";
 
 // DummyJSON filters carts by customer only.
 const filters: FilterDef[] = [
-  { name: "customer", label: m.orders_customer, type: "select", loadOptions: searchCustomers },
+  { name: "customer", label: m.orders_customer, type: "select", useOptions: useCustomerOptions },
 ];
 
 export const OrderTable = () => {

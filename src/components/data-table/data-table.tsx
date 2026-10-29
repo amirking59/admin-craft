@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { DataTableFeatures, dataTableFeatures, DataTableQueryParams, FilterDef } from "@/components/data-table/types";
 import { DataTableActions } from "@/components/data-table/components/data-table-actions";
 import { DataTableViewOptions } from "@/components/data-table/components/data-table-view-options";
-import { FilterBar } from "@/components/data-table/components/filter-bar";
+import { FilterBar, FilterBarProvider, FilterButton } from "@/components/data-table/components/filter-bar";
 import { Pagination } from "@/components/data-table/components/pagination";
 import { TableView } from "@/components/data-table/components/table-view";
 import { TableProvider } from "@/components/data-table/table-context";
@@ -132,61 +132,64 @@ export function DataTable<TData extends RowData>({
 
   return (
     <TableProvider table={table}>
-      <div>
-        <DataTableActions title={title}>
-          {actions}
+      <FilterBarProvider>
+        <div>
+          <DataTableActions title={title}>
+            {actions}
 
-          <DataTableViewOptions />
+            {filters.length > 0 && <FilterButton />}
+            <DataTableViewOptions />
 
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  onClick={() => refetch({ cancelRefetch: false })}
-                  size="icon-sm"
-                  variant="outline"
-                  aria-label={m.table_refresh()}
-                />
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    onClick={() => refetch({ cancelRefetch: false })}
+                    size="icon-sm"
+                    variant="outline"
+                    aria-label={m.table_refresh()}
+                  />
+                }
+              >
+                <RefreshCcw className={cn(isFetching && "animate-spin")} />
+              </TooltipTrigger>
+              <TooltipContent>{m.table_refresh()}</TooltipContent>
+            </Tooltip>
+          </DataTableActions>
+
+          {filters.length > 0 && <FilterBar />}
+
+          {/* Skeletons only on first load; later fetches dim the rows that are already there. */}
+          <div aria-busy={isFetching} className={cn("transition-opacity", isFetching && !isPending && "opacity-60")}>
+            <TableView
+              rowHeight={rowHeight}
+              isLoading={isPending}
+              empty={
+                // A failed load isn't an empty table; no rows under filters isn't either.
+                isError ? (
+                  <>
+                    {m.table_load_error()}
+                    <Button variant="outline" size="sm" onClick={() => refetch()}>
+                      {m.try_again()}
+                    </Button>
+                  </>
+                ) : columnFilters.length > 0 ? (
+                  <>
+                    {m.table_no_matches()}
+                    <Button variant="outline" size="sm" onClick={() => table.resetColumnFilters(true)}>
+                      {m.table_reset_filters()}
+                    </Button>
+                  </>
+                ) : (
+                  m.table_empty()
+                )
               }
-            >
-              <RefreshCcw className={cn(isFetching && "animate-spin")} />
-            </TooltipTrigger>
-            <TooltipContent>{m.table_refresh()}</TooltipContent>
-          </Tooltip>
-        </DataTableActions>
+            />
+          </div>
 
-        {filters.length > 0 && <FilterBar />}
-
-        {/* Skeletons only on first load; later fetches dim the rows that are already there. */}
-        <div aria-busy={isFetching} className={cn("transition-opacity", isFetching && !isPending && "opacity-60")}>
-          <TableView
-            rowHeight={rowHeight}
-            isLoading={isPending}
-            empty={
-              // A failed load isn't an empty table; no rows under filters isn't either.
-              isError ? (
-                <>
-                  {m.table_load_error()}
-                  <Button variant="outline" size="sm" onClick={() => refetch()}>
-                    {m.try_again()}
-                  </Button>
-                </>
-              ) : columnFilters.length > 0 ? (
-                <>
-                  {m.table_no_matches()}
-                  <Button variant="outline" size="sm" onClick={() => table.resetColumnFilters(true)}>
-                    {m.table_reset_filters()}
-                  </Button>
-                </>
-              ) : (
-                m.table_empty()
-              )
-            }
-          />
+          <Pagination />
         </div>
-
-        <Pagination />
-      </div>
+      </FilterBarProvider>
     </TableProvider>
   );
 }

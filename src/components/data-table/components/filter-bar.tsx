@@ -1,12 +1,11 @@
 import { m } from "@/paraglide/messages.js";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDebounceValue } from "usehooks-ts";
-import { Check, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, ListFilter as FilterIcon, X } from "lucide-react";
 import { useTableContext } from "@/components/data-table/table-context";
-import type { FilterDef, FilterOption, FilterValue } from "@/components/data-table/types";
+import type { FilterDef, FilterOption, FilterOptions, FilterValue } from "@/components/data-table/types";
 import dayjs from "dayjs";
 import { NumericFormat } from "react-number-format";
 import {
@@ -27,6 +26,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDate, formatNumber } from "@/lib/utils";
 
 /** A filter picked from a list of options, given up front or loaded from the server. */
@@ -60,29 +60,25 @@ const formatFilterValue = (filter: FilterDef, value: FilterValue, options: Filte
     .join(", ");
 };
 
-/** Where a list filter's options from `loadOptions` are cached, per table, by search. */
-const optionsQueryKey = (tableId: string | undefined, name: string) => ["filter-options", tableId, name];
-
 /**
- * A list filter's options for what's typed in its search line: `options()`, or what `loadOptions` returns for it
- * (after a pause) for a list kept on the server. `remote`: the server matched them to the search already, so the list
- * shows them as they are. Loads only while `enabled` (its list is open).
+ * A list filter's options for what's typed in its search line: `options()`, or what its `useOptions` hook loads for
+ * it (after a pause), for a list kept on the server. `remote`: the server matched them to the search already, so the
+ * list shows them as they are. What's loaded is remembered, so its chip can name a pick by its label.
  */
-function useFilterOptions(filter: ListFilter, search: string, enabled = true) {
-  const { table } = useTableContext();
+function useFilterOptions(filter: ListFilter, search: string) {
+  const { rememberLabels } = useFilterBar();
   const [debounced] = useDebounceValue(search.trim(), 300);
-  const load = "loadOptions" in filter ? filter.loadOptions : null;
-  const query = useQuery({
-    queryKey: [...optionsQueryKey(table.options.meta?.id, filter.name), debounced],
-    queryFn: () => load!(debounced),
-    enabled: enabled && !!load,
-    // Keep the last results while the next search loads, rather than an empty list.
-    placeholderData: keepPreviousData,
-    staleTime: 60_000,
-  });
+  const useOptions =
+    "useOptions" in filter ? filter.useOptions : (): FilterOptions => ({ items: filter.options(), loading: false });
+  // A filter's options are given or loaded for its whole life, so this is the same hook on every render.
+  // oxlint-disable-next-line react/hooks
+  const { items, loading, remote = false } = useOptions(debounced);
 
-  if (!load) return { options: "options" in filter ? filter.options() : [], loading: false, remote: false };
-  return { options: query.data ?? [], loading: query.isPending, remote: true };
+  useEffect(() => {
+    if ("useOptions" in filter) rememberLabels(filter.name, items);
+  }, [filter, items, rememberLabels]);
+
+  return { options: items, loading, remote };
 }
 
 /** The editor of a filter that's a field (text, number or custom), inside its form field. */
@@ -97,15 +93,8 @@ const fieldInput = (filter: FilterDef, value: FilterValue, onChange: (value: str
 const asStrings = (value: unknown) => (Array.isArray(value) ? value.map(String) : String(value ?? ""));
 const sameValue = (a: unknown, b: unknown) => JSON.stringify(asStrings(a)) === JSON.stringify(asStrings(b));
 
-/**
- * The table's filters, read from and written to the URL through the table's column filters:
- * - pinned filters sit inline and apply as you type
- * - the rest show once set, each as a button group (the filter, and × to remove it); the filter button opens it
- *   alone in a popover
- * - "+ Filter" lists the unset ones, with a line to type into, so a long list stays easy to use; a text or number
- *   filter picked there shows its field in the menu, in place of the list, like Notion
- */
-export function FilterBar() {
+/** What the filter bar's parts share: the filters, their draft form, and which one is being edited or added. */
+function useFilterBarState() {
   const { table } = useTableContext();
   const filters = useMemo(() => table.options.meta?.filters ?? [], [table.options.meta?.filters]);
 
@@ -123,14 +112,17 @@ export function FilterBar() {
   const [custom, setCustom] = useState<{ name: string; open: boolean } | null>(null);
   const customFilter = filters.find((filter) => filter.name === custom?.name);
 
-  // A list filter's options, for its chip's labels: its own, or every one loaded from the server so far.
-  const queryClient = useQueryClient();
-  const optionsOf = (filter: FilterDef) => {
+  // A list filter's options, for its chip's labels: its own, or every one its `useOptions` has loaded so far.
+  const loadedLabels = useRef(new Map<string, Map<string, string>>()).current;
+  const rememberLabels = (name: string, options: FilterOption[]) => {
+    const labels = loadedLabels.get(name) ?? new Map<string, string>();
+    for (const option of options) labels.set(option.value, option.label);
+    loadedLabels.set(name, labels);
+  };
+  const optionsOf = (filter: FilterDef): FilterOption[] => {
     if (!isListFilter(filter)) return [];
     if ("options" in filter) return filter.options();
-    return queryClient
-      .getQueriesData<FilterOption[]>({ queryKey: optionsQueryKey(table.options.meta?.id, filter.name) })
-      .flatMap(([, options]) => options ?? []);
+    return [...(loadedLabels.get(filter.name) ?? [])].map(([value, label]) => ({ value, label }));
   };
 
   // One draft form for all filters, so a filter's onValueChange can reach the others.
@@ -203,119 +195,200 @@ export function FilterBar() {
         (!(filter.name in applied) && filter.name !== active)),
   );
 
+  return {
+    table,
+    filters,
+    applied,
+    editing,
+    setEditing,
+    setActive,
+    adding,
+    setAdding,
+    addingFilter,
+    custom,
+    setCustom,
+    customFilter,
+    optionsOf,
+    rememberLabels,
+    form,
+    apply,
+    setFilter,
+    remove,
+    liveField,
+    pinned,
+    chips,
+    addable,
+  };
+}
+
+const FilterBarContext = createContext<ReturnType<typeof useFilterBarState> | null>(null);
+
+function useFilterBar() {
+  const state = useContext(FilterBarContext);
+  if (!state) throw new Error("The filter bar's parts go inside FilterBarProvider.");
+  return state;
+}
+
+/**
+ * The table's filters, read from and written to the URL through the table's column filters, for its two parts:
+ * - FilterButton, in the table's header: "+ Filter" lists the unset ones, with a line to type into, so a long list
+ *   stays easy to use; a text or number filter picked there shows its field in the menu, in place of the list, like
+ *   Notion
+ * - FilterBar, below it: pinned filters sit inline and apply as you type; the rest show once set, each as a button
+ *   group (the filter, and × to remove it), the filter opening it alone in a popover
+ */
+export function FilterBarProvider({ children }: { children: React.ReactNode }) {
+  return <FilterBarContext.Provider value={useFilterBarState()}>{children}</FilterBarContext.Provider>;
+}
+
+/** "+ Filter" in the table's header: an icon, with how many filters are set (pinned ones show where they are). */
+export function FilterButton() {
+  const { filters, applied, addable, addingFilter, setAdding, setCustom, setFilter, liveField } = useFilterBar();
+  if (addable.length === 0) return null;
+
   return (
-    <div className="mb-3 flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
-      {pinned.map((filter) => (
-        // As tall as the bar's small buttons (32px) rather than a form input (36px), so the row lines up.
-        <div key={filter.name} className="md:w-64 [&_[data-slot=input-group]]:h-8">
-          {liveField(filter)}
+    <AddFilterMenu
+      filters={addable}
+      count={filters.filter((filter) => !filter.pinned && filter.name in applied).length}
+      onPick={setAdding}
+      editor={addingFilter && { label: addingFilter.label(), content: liveField(addingFilter) }}
+      onCustom={(name) => setCustom({ name, open: true })}
+      values={applied}
+      onChange={setFilter}
+    />
+  );
+}
+
+/** The table's set filters, as chips (and the pinned ones, inline), with a "Custom…" date's dialog. */
+export function FilterBar() {
+  const {
+    table,
+    applied,
+    editing,
+    setEditing,
+    setActive,
+    custom,
+    setCustom,
+    customFilter,
+    optionsOf,
+    form,
+    apply,
+    setFilter,
+    remove,
+    liveField,
+    pinned,
+    chips,
+  } = useFilterBar();
+
+  return (
+    <>
+      {(pinned.length > 0 || chips.length > 0) && (
+        <div className="mb-3 flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
+          {pinned.map((filter) => (
+            // As tall as the bar's small buttons (32px) rather than a form input (36px), so the row lines up.
+            <div key={filter.name} className="md:w-64 [&_[data-slot=input-group]]:h-8">
+              {liveField(filter)}
+            </div>
+          ))}
+
+          {/* On a phone the chips scroll sideways instead of wrapping. */}
+          <div className="flex [scrollbar-width:none] items-center gap-2 overflow-x-auto md:flex-wrap md:overflow-visible [&::-webkit-scrollbar]:hidden">
+            {chips.map((filter) => {
+              const value = applied[filter.name];
+              const label = filter.label();
+
+              return (
+                <ButtonGroup key={filter.name} className="shrink-0">
+                  <FilterEditor
+                    open={editing === filter.name}
+                    onOpenChange={(open) => {
+                      setEditing(open ? filter.name : null);
+                      if (open) setActive(filter.name);
+                    }}
+                    onOpenChangeComplete={(open) => {
+                      if (!open) setActive((current) => (current === filter.name ? null : current));
+                    }}
+                    bare={!isCalendarFilter(filter)}
+                    trigger={
+                      <Button variant="outline" size="sm" className="max-w-72 min-w-28 justify-start font-normal" />
+                    }
+                    triggerContent={
+                      <>
+                        <span className="text-muted-foreground">{value ? `${label}:` : label}</span>
+                        {value && (
+                          <span className="truncate font-medium">
+                            {formatFilterValue(filter, value, optionsOf(filter))}
+                          </span>
+                        )}
+                      </>
+                    }
+                  >
+                    {/* Every change applies at once, like Linear: picking an option right away, typing after a pause. */}
+                    <form.AppField
+                      name={filter.name}
+                      listeners={{
+                        onChange: () => {
+                          filter.onValueChange?.(form);
+                          apply();
+                        },
+                        onChangeDebounceMs: isListFilter(filter) || isCalendarFilter(filter) ? 0 : 300,
+                      }}
+                    >
+                      {(field) =>
+                        isListFilter(filter) ? (
+                          <FilterOptionsList
+                            open={editing === filter.name}
+                            filter={filter}
+                            value={field.state.value}
+                            onChange={(next, close) => {
+                              field.handleChange(next);
+                              if (close) setEditing(null);
+                            }}
+                          />
+                        ) : isCalendarFilter(filter) ? (
+                          <FilterCalendar
+                            range={filter.type === "dateRange"}
+                            value={field.state.value}
+                            onChange={(next) => {
+                              field.handleChange(next);
+                              setEditing(null);
+                            }}
+                          />
+                        ) : (
+                          <FieldEditor label={label}>
+                            {fieldInput(filter, field.state.value, field.handleChange)}
+                          </FieldEditor>
+                        )
+                      }
+                    </form.AppField>
+                  </FilterEditor>
+
+                  {value && (
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      aria-label={m.remove_x({ x: label })}
+                      className="text-muted-foreground"
+                      onClick={() => remove(filter.name)}
+                    >
+                      <X />
+                    </Button>
+                  )}
+                </ButtonGroup>
+              );
+            })}
+
+            {Object.keys(applied).length > 0 && (
+              <Button variant="ghost" size="sm" className="shrink-0" onClick={() => table.resetColumnFilters(true)}>
+                {m.table_reset_filters()}
+              </Button>
+            )}
+          </div>
         </div>
-      ))}
+      )}
 
-      {/* On a phone the chips scroll sideways instead of wrapping. */}
-      <div className="flex [scrollbar-width:none] items-center gap-2 overflow-x-auto md:flex-wrap md:overflow-visible [&::-webkit-scrollbar]:hidden">
-        {chips.map((filter) => {
-          const value = applied[filter.name];
-          const label = filter.label();
-
-          return (
-            <ButtonGroup key={filter.name} className="shrink-0">
-              <FilterEditor
-                open={editing === filter.name}
-                onOpenChange={(open) => {
-                  setEditing(open ? filter.name : null);
-                  if (open) setActive(filter.name);
-                }}
-                onOpenChangeComplete={(open) => {
-                  if (!open) setActive((current) => (current === filter.name ? null : current));
-                }}
-                bare={!isCalendarFilter(filter)}
-                trigger={<Button variant="outline" size="sm" className="max-w-72 min-w-28 justify-start font-normal" />}
-                triggerContent={
-                  <>
-                    <span className="text-muted-foreground">{value ? `${label}:` : label}</span>
-                    {value && (
-                      <span className="truncate font-medium">
-                        {formatFilterValue(filter, value, optionsOf(filter))}
-                      </span>
-                    )}
-                  </>
-                }
-              >
-                {/* Every change applies at once, like Linear: picking an option right away, typing after a pause. */}
-                <form.AppField
-                  name={filter.name}
-                  listeners={{
-                    onChange: () => {
-                      filter.onValueChange?.(form);
-                      apply();
-                    },
-                    onChangeDebounceMs: isListFilter(filter) || isCalendarFilter(filter) ? 0 : 300,
-                  }}
-                >
-                  {(field) =>
-                    isListFilter(filter) ? (
-                      <FilterOptionsList
-                        open={editing === filter.name}
-                        filter={filter}
-                        value={field.state.value}
-                        onChange={(next, close) => {
-                          field.handleChange(next);
-                          if (close) setEditing(null);
-                        }}
-                      />
-                    ) : isCalendarFilter(filter) ? (
-                      <FilterCalendar
-                        range={filter.type === "dateRange"}
-                        value={field.state.value}
-                        onChange={(next) => {
-                          field.handleChange(next);
-                          setEditing(null);
-                        }}
-                      />
-                    ) : (
-                      <FieldEditor label={label}>
-                        {fieldInput(filter, field.state.value, field.handleChange)}
-                      </FieldEditor>
-                    )
-                  }
-                </form.AppField>
-              </FilterEditor>
-
-              {value && (
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  aria-label={m.remove_x({ x: label })}
-                  className="text-muted-foreground"
-                  onClick={() => remove(filter.name)}
-                >
-                  <X />
-                </Button>
-              )}
-            </ButtonGroup>
-          );
-        })}
-
-        {addable.length > 0 && (
-          <AddFilterMenu
-            filters={addable}
-            onPick={setAdding}
-            editor={addingFilter && { label: addingFilter.label(), content: liveField(addingFilter) }}
-            onCustom={(name) => setCustom({ name, open: true })}
-            values={applied}
-            onChange={setFilter}
-          />
-        )}
-
-        {Object.keys(applied).length > 0 && (
-          <Button variant="ghost" size="sm" className="shrink-0" onClick={() => table.resetColumnFilters(true)}>
-            {m.table_reset_filters()}
-          </Button>
-        )}
-      </div>
-
-      {/* A date's "Custom…": its value is picked here; the filter is added once a day (or range) is picked. */}
+      {/* A date's "Custom…" (from the header's "+ Filter"): its value is picked here; the filter is added once a day
+          (or range) is picked. */}
       <Dialog
         open={!!custom?.open}
         onOpenChange={(open) => !open && setCustom((current) => current && { ...current, open: false })}
@@ -338,7 +411,7 @@ export function FilterBar() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
 
@@ -560,6 +633,8 @@ const menuItemClassName =
 
 interface AddFilterMenuProps {
   filters: FilterDef[];
+  /** How many filters are set, shown on the button. */
+  count: number;
   /** The applied values, so a filter's submenu shows what's already picked. */
   values: Record<string, FilterValue>;
   /** A filter without options was picked, so its `editor` shows; null: back to the list, or the menu closed. */
@@ -602,7 +677,7 @@ function FieldEditor({ label, onBack, children }: { label: string; onBack?: () =
  * "Last 7 days" …). Anything else
  * (text, a number) turns the menu into its editor, like Notion: a back button, then the field, applied as you type.
  */
-function AddFilterMenu({ filters, values, onPick, editor, onChange, onCustom }: AddFilterMenuProps) {
+function AddFilterMenu({ filters, count, values, onPick, editor, onChange, onCustom }: AddFilterMenuProps) {
   // Closed through Base UI, not a controlled `open`: closing that way from inside the submenu leaves the trigger
   // thinking the menu is still open, so its next press does nothing.
   const actions = useRef<MenuPrimitive.Root.Actions>(null);
@@ -611,14 +686,35 @@ function AddFilterMenu({ filters, values, onPick, editor, onChange, onCustom }: 
     <MenuPrimitive.FilterProvider>
       {/* Back to the list once closed, so it opens on the list next time. */}
       <MenuPrimitive.Root actionsRef={actions} onOpenChangeComplete={(open) => !open && onPick(null)}>
-        <MenuPrimitive.Trigger render={<Button variant="outline" size="sm" className="shrink-0 border-dashed" />}>
-          <Plus />
-          {m.table_filter()}
-        </MenuPrimitive.Trigger>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <MenuPrimitive.Trigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    aria-label={count ? m.table_filter_active({ count }) : m.table_filter()}
+                    className="relative"
+                  />
+                }
+              />
+            }
+          >
+            <FilterIcon />
+            {count > 0 && (
+              <span className="absolute -end-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                {count}
+              </span>
+            )}
+          </TooltipTrigger>
+          <TooltipContent>{m.table_filter()}</TooltipContent>
+        </Tooltip>
         <MenuPrimitive.Portal>
-          {/* Stays where it opened: a pick adds or widens a chip in front of the trigger, which would drag it along. */}
+          {/* Stays where it opened: picking a filter can change the header's buttons (e.g. the View button showing a
+              saved view's name), which would drag it along. */}
           <MenuPrimitive.Positioner
-            align="start"
+            align="end"
             sideOffset={4}
             disableAnchorTracking
             className="isolate z-50 outline-none"
@@ -759,19 +855,13 @@ interface OptionItemsProps {
   onChange: (value: FilterValue, close: boolean) => void;
 }
 
-/** A list filter's submenu in "+ Filter". Options from the server load while it's open, for what's typed. */
+/** A list filter's submenu in "+ Filter". Options from the server load for what's typed. */
 function OptionsSubmenu({ filter, value, onChange }: OptionItemsProps) {
-  const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const { options, loading, remote } = useFilterOptions(filter, search, open);
+  const { options, loading, remote } = useFilterOptions(filter, search);
 
   return (
-    <FilterSubmenu
-      label={filter.label()}
-      onOpenChange={setOpen}
-      onSearchChange={remote ? setSearch : undefined}
-      loading={loading}
-    >
+    <FilterSubmenu label={filter.label()} onSearchChange={remote ? setSearch : undefined} loading={loading}>
       <OptionItems filter={filter} options={options} value={value} onChange={onChange} />
     </FilterSubmenu>
   );

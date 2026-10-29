@@ -32,9 +32,12 @@ export type FilterValue = string | string[];
 
 export type FilterOption = { value: string; label: string; icon?: React.ReactNode };
 
+/** The options a `useOptions` hook loaded. `remote`: the server matched them to the search already. */
+export type FilterOptions = { items: FilterOption[]; loading: boolean; remote?: boolean };
+
 /**
  * One filter of a DataTable. `type` says what it is, and the filter bar draws its editor:
- * - `select` / `multiselect`: one or several of `options` (or of `loadOptions`, for a list kept on the server), as a
+ * - `select` / `multiselect`: one or several of `options` (or of what `useOptions` loads, for a list kept on the server), as a
  *   list with a search line, like Linear's.
  * - `date`: "+ Filter" offers "1 day ago" … "1 year ago" and "Custom…" (a dialog); the editor is a calendar. The
  *   value is the day's start as an ISO string, as from DateField.
@@ -68,12 +71,12 @@ export type FilterDef = {
   | {
       type: "select" | "multiselect";
       /**
-       * For a long list kept on the server, instead of `options`: the options matching what's typed in the search
-       * line ("" before anything is), called again after a pause as that changes. Results are cached for a minute.
-       * The chip names a picked value by the label it was loaded with; on a link opened fresh, nothing is loaded
-       * yet, so it shows the value itself unless `formatValue` says otherwise.
+       * For a list kept on the server, instead of `options`: a hook (e.g. `useCustomerOptions` from the feature's
+       * services) giving the options for what's typed in the search line ("" before anything is), called again after a
+       * pause as that changes. The chip names a picked value by the label it was loaded with; on a link opened fresh,
+       * nothing is loaded yet, so it shows the value itself unless `formatValue` says otherwise.
        */
-      loadOptions: (search: string) => Promise<FilterOption[]>;
+      useOptions: (search: string) => FilterOptions;
     }
   | { type: "date" | "dateRange" | "text" | "number" }
   | {

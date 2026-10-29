@@ -1,6 +1,6 @@
 import { m } from "@/paraglide/messages.js";
 import { Category, CreateProductParams, Product, UpdateProductParams } from "@/features/products/types";
-import { DataTableQueryParams, FilterOption, TableQueryFnResponse } from "@/components/data-table";
+import { DataTableQueryParams, FilterOptions, TableQueryFnResponse } from "@/components/data-table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/configs/api";
@@ -58,12 +58,13 @@ const getCategories = () => api<Category[]>("/products/categories");
 export const useCategories = () =>
   useQuery({ queryKey: ["product-categories"], queryFn: getCategories, staleTime: Infinity });
 
-/** The category filter's options: the API has no search for them, so the short list is matched here. */
-export const searchCategories = async (search: string): Promise<FilterOption[]> => {
-  const query = search.toLowerCase();
-  return (await getCategories())
-    .filter((category) => category.name.toLowerCase().includes(query))
-    .map((category) => ({ value: category.slug, label: category.name }));
+/**
+ * The categories as the products table's category filter lists them (`FilterDef.useOptions`). The API has no search
+ * for them, so the whole short list loads once and the filter matches it as you type.
+ */
+export const useCategoryOptions = (): FilterOptions => {
+  const { data, isPending } = useCategories();
+  return { items: data?.map((category) => ({ value: category.slug, label: category.name })) ?? [], loading: isPending };
 };
 
 // DummyJSON answers these as if it saved them, but keeps nothing: the list reloads unchanged.

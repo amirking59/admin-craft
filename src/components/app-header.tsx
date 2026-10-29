@@ -51,9 +51,10 @@ function Breadcrumbs() {
 /** The bar above every page: the sidebar toggle, the breadcrumbs, and the command menu's search box. */
 export function AppHeader() {
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
       <SidebarTrigger className="-ms-1" />
-      <Separator orientation="vertical" className="me-2 data-[orientation=vertical]:h-4" />
+      {/* `self-auto`: centred like the rest of the bar, not stretched (from the top) to its 16px. */}
+      <Separator orientation="vertical" className="me-2 data-vertical:h-4 data-vertical:self-auto" />
       <Breadcrumbs />
       <div className="flex-1" />
       <CommandMenu />
