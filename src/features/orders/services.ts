@@ -1,344 +1,106 @@
 import { m } from "@/paraglide/messages.js";
-import {
-  CreateOrderParams,
-  Order,
-  OrderStatus,
-  OrderTag,
-  PaymentMethod,
-  UpdateOrderParams,
-} from "@/features/orders/types";
-import { DataTableQueryParams, FilterOption, parseRange, TableQueryFnResponse } from "@/components/data-table";
+import { CreateOrderParams, Order, UpdateOrderParams } from "@/features/orders/types";
+import { DataTableQueryParams, FilterOption, TableQueryFnResponse } from "@/components/data-table";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import dayjs from "dayjs";
-import { delay, sortRows } from "@/lib/mock";
+import { api } from "@/configs/api";
 
-type SeedOrder = Omit<Order, "paymentMethod" | "paid" | "tags" | "deliveryWindow" | "note">;
+/** DummyJSON's cart, the fields the app uses. */
+interface ApiCart {
+  id: number;
+  userId: number;
+  products: { id: number; title: string; thumbnail: string; price: number; quantity: number }[];
+  totalQuantity: number;
+  total: number;
+  discountedTotal: number;
+}
 
-const seedOrders: SeedOrder[] = [
-  {
-    orderId: 1001,
-    customerName: "Alice Johnson",
-    customerEmail: "alice@example.com",
-    product: 'MacBook Pro 14"',
-    quantity: 1,
-    total: 1999,
-    status: OrderStatus.Delivered,
-    createdAt: "2026-03-15T10:24:00Z",
-  },
-  {
-    orderId: 1002,
-    customerName: "Bob Smith",
-    customerEmail: "bob@example.com",
-    product: "AirPods Pro (2nd gen)",
-    quantity: 2,
-    total: 498,
-    status: OrderStatus.Shipped,
-    createdAt: "2026-03-18T14:05:00Z",
-  },
-  {
-    orderId: 1003,
-    customerName: "Carol White",
-    customerEmail: "carol@example.com",
-    product: "Atomic Habits",
-    quantity: 3,
-    total: 72,
-    status: OrderStatus.Delivered,
-    createdAt: "2026-03-20T09:10:00Z",
-  },
-  {
-    orderId: 1004,
-    customerName: "David Brown",
-    customerEmail: "david@example.com",
-    product: "Nike Air Max 270",
-    quantity: 1,
-    total: 129,
-    status: OrderStatus.Processing,
-    createdAt: "2026-03-25T16:45:00Z",
-  },
-  {
-    orderId: 1005,
-    customerName: "Eva Martinez",
-    customerEmail: "eva@example.com",
-    product: "iPhone 15 Pro",
-    quantity: 1,
-    total: 999,
-    status: OrderStatus.Delivered,
-    createdAt: "2026-03-10T11:30:00Z",
-  },
-  {
-    orderId: 1006,
-    customerName: "Frank Lee",
-    customerEmail: "frank@example.com",
-    product: "Levi's 501 Jeans",
-    quantity: 2,
-    total: 158,
-    status: OrderStatus.Cancelled,
-    createdAt: "2026-03-22T08:15:00Z",
-  },
-  {
-    orderId: 1007,
-    customerName: "Grace Kim",
-    customerEmail: "grace@example.com",
-    product: "Apple Watch Series 9",
-    quantity: 1,
-    total: 499,
-    status: OrderStatus.Shipped,
-    createdAt: "2026-03-28T13:00:00Z",
-  },
-  {
-    orderId: 1008,
-    customerName: "Henry Wilson",
-    customerEmail: "henry@example.com",
-    product: "Clean Code",
-    quantity: 5,
-    total: 195,
-    status: OrderStatus.Delivered,
-    createdAt: "2026-03-05T15:20:00Z",
-  },
-  {
-    orderId: 1009,
-    customerName: "Iris Chen",
-    customerEmail: "iris@example.com",
-    product: "Sony WH-1000XM5",
-    quantity: 1,
-    total: 349,
-    status: OrderStatus.Processing,
-    createdAt: "2026-04-01T10:00:00Z",
-  },
-  {
-    orderId: 1010,
-    customerName: "James Park",
-    customerEmail: "james@example.com",
-    product: "Matcha Green Tea Powder",
-    quantity: 4,
-    total: 128,
-    status: OrderStatus.Pending,
-    createdAt: "2026-04-05T09:30:00Z",
-  },
-  {
-    orderId: 1011,
-    customerName: "Karen Taylor",
-    customerEmail: "karen@example.com",
-    product: "Samsung 4K Monitor",
-    quantity: 1,
-    total: 499,
-    status: OrderStatus.Shipped,
-    createdAt: "2026-04-02T14:10:00Z",
-  },
-  {
-    orderId: 1012,
-    customerName: "Leo Garcia",
-    customerEmail: "leo@example.com",
-    product: "Protein Bars (12 pack)",
-    quantity: 3,
-    total: 87,
-    status: OrderStatus.Delivered,
-    createdAt: "2026-03-30T16:00:00Z",
-  },
-  {
-    orderId: 1013,
-    customerName: "Mia Anderson",
-    customerEmail: "mia@example.com",
-    product: "Keychron Q1 Keyboard",
-    quantity: 1,
-    total: 169,
-    status: OrderStatus.Pending,
-    createdAt: "2026-04-08T11:45:00Z",
-  },
-  {
-    orderId: 1014,
-    customerName: "Noah Thompson",
-    customerEmail: "noah@example.com",
-    product: "North Face Puffer Jacket",
-    quantity: 1,
-    total: 299,
-    status: OrderStatus.Cancelled,
-    createdAt: "2026-03-14T07:50:00Z",
-  },
-  {
-    orderId: 1015,
-    customerName: "Olivia Davis",
-    customerEmail: "olivia@example.com",
-    product: "Ergonomic Laptop Stand",
-    quantity: 2,
-    total: 98,
-    status: OrderStatus.Delivered,
-    createdAt: "2026-03-27T12:30:00Z",
-  },
-  {
-    orderId: 1016,
-    customerName: "Peter Harris",
-    customerEmail: "peter@example.com",
-    product: "Mixed Nuts (1kg)",
-    quantity: 6,
-    total: 132,
-    status: OrderStatus.Processing,
-    createdAt: "2026-04-06T15:20:00Z",
-  },
-  {
-    orderId: 1017,
-    customerName: "Quinn Robinson",
-    customerEmail: "quinn@example.com",
-    product: "Design Patterns",
-    quantity: 2,
-    total: 110,
-    status: OrderStatus.Shipped,
-    createdAt: "2026-04-03T10:15:00Z",
-  },
-  {
-    orderId: 1018,
-    customerName: "Rachel Lewis",
-    customerEmail: "rachel@example.com",
-    product: "Anker USB-C Hub 10-in-1",
-    quantity: 2,
-    total: 138,
-    status: OrderStatus.Pending,
-    createdAt: "2026-04-09T08:00:00Z",
-  },
-  {
-    orderId: 1019,
-    customerName: "Sam Walker",
-    customerEmail: "sam@example.com",
-    product: "Adidas Ultraboost 23",
-    quantity: 1,
-    total: 189,
-    status: OrderStatus.Processing,
-    createdAt: "2026-04-07T14:35:00Z",
-  },
-  {
-    orderId: 1020,
-    customerName: "Tina Hall",
-    customerEmail: "tina@example.com",
-    product: "iPad Air M2",
-    quantity: 1,
-    total: 749,
-    status: OrderStatus.Delivered,
-    createdAt: "2026-03-12T09:45:00Z",
-  },
-  {
-    orderId: 1021,
-    customerName: "Uma Patel",
-    customerEmail: "uma@example.com",
-    product: "Organic Ethiopian Coffee",
-    quantity: 4,
-    total: 96,
-    status: OrderStatus.Delivered,
-    createdAt: "2026-03-08T11:00:00Z",
-  },
-  {
-    orderId: 1022,
-    customerName: "Victor Nguyen",
-    customerEmail: "victor@example.com",
-    product: "AirPods Pro (2nd gen)",
-    quantity: 1,
-    total: 249,
-    status: OrderStatus.Cancelled,
-    createdAt: "2026-04-04T16:50:00Z",
-  },
-  {
-    orderId: 1023,
-    customerName: "Wendy Clark",
-    customerEmail: "wendy@example.com",
-    product: "Uniqlo Merino Sweater",
-    quantity: 3,
-    total: 177,
-    status: OrderStatus.Shipped,
-    createdAt: "2026-04-06T09:20:00Z",
-  },
-  {
-    orderId: 1024,
-    customerName: "Xavier Scott",
-    customerEmail: "xavier@example.com",
-    product: "The Pragmatic Programmer",
-    quantity: 2,
-    total: 98,
-    status: OrderStatus.Delivered,
-    createdAt: "2026-03-17T14:00:00Z",
-  },
-  {
-    orderId: 1025,
-    customerName: "Yara Adams",
-    customerEmail: "yara@example.com",
-    product: "Samsung 4K Monitor",
-    quantity: 1,
-    total: 499,
-    status: OrderStatus.Processing,
-    createdAt: "2026-04-09T13:30:00Z",
-  },
-];
+interface ApiUser {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
-// The fields the seed rows leave out, spread over them so every filter has something to find.
-const paymentMethods = Object.values(PaymentMethod);
-const mockOrders: Order[] = seedOrders.map((order, index) => ({
-  ...order,
-  paymentMethod: paymentMethods[index % paymentMethods.length],
-  paid: order.status !== OrderStatus.Pending && order.status !== OrderStatus.Cancelled,
-  tags: index % 4 === 0 ? [OrderTag.Gift] : index % 5 === 0 ? [OrderTag.Express, OrderTag.Fragile] : [],
-  deliveryWindow: null,
-  note: "",
-}));
+const fullName = (user: ApiUser) => `${user.firstName} ${user.lastName}`;
 
-/** The customers and products in the mock orders, for the customer filter and the order form's product list. */
-export const orderCustomers = [...new Set(seedOrders.map((order) => order.customerName))].toSorted();
-export const orderProducts = [...new Set(seedOrders.map((order) => order.product))].toSorted();
+// Every customer, loaded once, as a cart has only its customer's id (a real API would send the name with the order).
+let customers: Promise<Map<number, ApiUser>> | null = null;
+const getCustomers = () =>
+  (customers ??= api<{ users: ApiUser[] }>("/users", { params: { limit: 0, select: "firstName,lastName,email" } })
+    .then(({ users }) => new Map(users.map((user) => [user.id, user])))
+    .catch((error) => {
+      customers = null;
+      throw error;
+    }));
 
-/** The customers whose name contains `search`, as a server would page them, for the customer filter. */
-export const searchCustomers = async (search: string): Promise<FilterOption[]> => {
-  await delay(300);
-  const query = search.toLowerCase();
-  return orderCustomers
-    .filter((name) => name.toLowerCase().includes(query))
-    .slice(0, 20)
-    .map((name) => ({ value: name, label: name }));
-};
-
-// A filter value is a string or, from a multi-pick, a list of them.
-const asList = (value: string | string[] | undefined) => (value === undefined ? [] : [value].flat());
-
-export const getOrders = async ({ page, sort, filters }: DataTableQueryParams): TableQueryFnResponse<Order> => {
-  await delay(200);
-
-  const statuses = asList(filters?.status);
-  const customers = asList(filters?.customer);
-  const tags = asList(filters?.tags);
-  const paymentMethod = filters?.payment_method;
-  const paid = filters?.paid;
-  const [createdFrom, createdTo] = parseRange(filters?.created_at);
-  const [totalFrom, totalTo] = parseRange(filters?.total);
-  const product = typeof filters?.product === "string" ? filters.product.trim().toLowerCase() : "";
-  const query = typeof filters?.q === "string" ? filters.q.trim().toLowerCase() : "";
-
-  const filtered = mockOrders.filter((order) => {
-    if (statuses.length > 0 && !statuses.includes(order.status)) return false;
-    if (customers.length > 0 && !customers.includes(order.customerName)) return false;
-    if (tags.length > 0 && !tags.some((tag) => order.tags.includes(tag as OrderTag))) return false;
-    if (paymentMethod && order.paymentMethod !== paymentMethod) return false;
-    if (paid && String(order.paid) !== paid) return false;
-    if (createdFrom && dayjs(order.createdAt).isBefore(createdFrom)) return false;
-    if (createdTo && dayjs(order.createdAt).isAfter(createdTo)) return false;
-    if (totalFrom && order.total < Number(totalFrom)) return false;
-    if (totalTo && order.total > Number(totalTo)) return false;
-    if (product && !order.product.toLowerCase().includes(product)) return false;
-    if (query && ![order.customerName, order.customerEmail, order.product].some((s) => s.toLowerCase().includes(query)))
-      return false;
-    return true;
-  });
-
-  const skip = (page.index - 1) * page.size;
-
+const fromApi = (cart: ApiCart, users: Map<number, ApiUser>): Order => {
+  const customer = users.get(cart.userId);
   return {
-    items: sortRows(filtered, sort).slice(skip, skip + page.size),
-    total: filtered.length,
+    orderId: cart.id,
+    customerId: cart.userId,
+    customerName: customer ? fullName(customer) : `#${cart.userId}`,
+    customerEmail: customer?.email ?? "",
+    items: cart.products.map(({ id, title, thumbnail, price, quantity }) => ({
+      productId: id,
+      title,
+      thumbnail,
+      price,
+      quantity,
+    })),
+    totalQuantity: cart.totalQuantity,
+    total: cart.total,
+    discountedTotal: cart.discountedTotal,
   };
 };
 
-const createOrder = async (params: CreateOrderParams) => {
-  await delay(400);
-  const order = { ...params, orderId: Math.max(...mockOrders.map((o) => o.orderId)) + 1 };
-  mockOrders.push(order);
-  return order;
+// The table's sortable columns, as the API names them.
+const sortFields: Record<string, string> = {
+  orderId: "id",
+  items: "totalProducts",
+  totalQuantity: "totalQuantity",
+  discountedTotal: "discountedTotal",
 };
+
+export const getOrders = async ({ page, sort, filters }: DataTableQueryParams): TableQueryFnResponse<Order> => {
+  const customer = typeof filters?.customer === "string" ? filters.customer : "";
+  const field = sort?.replace(/^-/, "");
+
+  const [{ carts, total }, users] = await Promise.all([
+    api<{ carts: ApiCart[]; total: number }>(customer ? `/carts/user/${encodeURIComponent(customer)}` : "/carts", {
+      params: {
+        limit: page.size,
+        skip: (page.index - 1) * page.size,
+        sortBy: field && sortFields[field],
+        order: sort && (sort.startsWith("-") ? "desc" : "asc"),
+      },
+    }),
+    getCustomers(),
+  ]);
+
+  return { items: carts.map((cart) => fromApi(cart, users)), total };
+};
+
+/** The customers whose name matches `search`, from the server: the customer filter's options and the form's. */
+export const searchCustomers = async (search: string): Promise<FilterOption[]> => {
+  const { users } = await api<{ users: ApiUser[] }>("/users/search", {
+    params: { q: search, limit: 20, select: "firstName,lastName,email" },
+  });
+  return users.map((user) => ({ value: String(user.id), label: fullName(user) }));
+};
+
+const toApiProducts = (items: CreateOrderParams["items"]) =>
+  items.map(({ productId, quantity }) => ({ id: productId, quantity }));
+
+// DummyJSON answers these as if it saved them, but keeps nothing: the list reloads unchanged.
+const createOrder = ({ customerId, items }: CreateOrderParams) =>
+  api("/carts/add", { method: "POST", body: { userId: customerId, products: toApiProducts(items) } });
+
+// A cart's customer can't change, only its products.
+const updateOrder = ({ orderId, items }: UpdateOrderParams) =>
+  api(`/carts/${orderId}`, { method: "PUT", body: { merge: false, products: toApiProducts(items) } });
+
+const deleteOrder = (orderId: number) => api(`/carts/${orderId}`, { method: "DELETE" });
 
 export const useCreateOrder = () => {
   const queryClient = useQueryClient();
@@ -351,12 +113,6 @@ export const useCreateOrder = () => {
   });
 };
 
-const updateOrder = async ({ orderId, ...params }: UpdateOrderParams) => {
-  await delay(400);
-  const index = mockOrders.findIndex((order) => order.orderId === orderId);
-  if (index !== -1) mockOrders[index] = { ...mockOrders[index], ...params };
-};
-
 export const useUpdateOrder = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -364,6 +120,17 @@ export const useUpdateOrder = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success(m.update_success());
+    },
+  });
+};
+
+export const useDeleteOrder = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      toast.success(m.delete_success());
     },
   });
 };

@@ -5,7 +5,7 @@ import { useLogin } from "@/features/auth/services";
 import { useAppForm } from "@/components/form/use-app-form";
 
 const formSchema = z.object({
-  email: z.string().min(1),
+  username: z.string().min(1),
   password: z.string().min(1),
 });
 
@@ -14,7 +14,7 @@ export function LoginForm() {
 
   const form = useAppForm({
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
     validationLogic: revalidateLogic(),
@@ -31,7 +31,9 @@ export function LoginForm() {
           <p className="text-sm text-balance text-muted-foreground">{m.auth_login_description()}</p>
         </div>
         <div className="grid gap-6">
-          <form.AppField name="email">{(field) => <field.TextField label={m.auth_email()} />}</form.AppField>
+          <form.AppField name="username">
+            {(field) => <field.TextField label={m.auth_username()} autoComplete="username" dir="ltr" />}
+          </form.AppField>
 
           <form.AppField name="password">
             {(field) => <field.TextField type="password" label={m.auth_password()} />}

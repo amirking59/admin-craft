@@ -16,7 +16,7 @@ import { ThemeSwitcher } from "@/components/app-sidebar/nav-user/theme-switcher"
 import { LocaleSelect } from "@/components/app-sidebar/nav-user/locale-select";
 import { logout, useProfile } from "@/features/auth/services";
 import { User } from "@/features/auth/types";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function UserSummary({ user }: { user?: User }) {
@@ -35,6 +35,7 @@ function UserSummary({ user }: { user?: User }) {
   return (
     <>
       <Avatar className="size-8 rounded-lg">
+        <AvatarImage src={user.image} alt="" className="rounded-lg" />
         <AvatarFallback className="rounded-lg">
           {user.firstName[0]}
           {user.lastName[0]}

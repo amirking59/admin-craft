@@ -9,13 +9,17 @@ yarn install
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The demo login accepts any email and password.
+Open [http://localhost:3000](http://localhost:3000).
 
-Set the API base URL in `.env` (see `.env.example`):
+Set the API base URL in `.env` (copy `.env.example`). It points at [DummyJSON](https://dummyjson.com/docs), a public test API:
 
 ```bash
-VITE_API_URL=https://api.example.com
+VITE_API_URL=https://dummyjson.com
 ```
+
+With DummyJSON, log in as `emilys` / `emilyspass` (any of its [users](https://dummyjson.com/users) works). Login, the
+profile, products and orders (its carts, with their customers from its users) all come from it. It answers adds, edits and
+deletes as if it saved them, but keeps nothing.
 
 ## Scripts
 

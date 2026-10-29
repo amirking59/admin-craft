@@ -1,57 +1,22 @@
 export interface LoginParams {
-  email: string;
+  username: string;
   password: string;
 }
 
+/** POST /auth/login's answer: the session's tokens (and who logged in, unused: the profile has it). */
 export interface LoginResponse {
-  access_token: string;
-  expires_in: number;
-  token_type: string;
-  refresh_token: string;
-  scope: string;
-  resellerId: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
-export interface ProfileResponse {
-  data: {
-    firstName: string;
-    lastName: string;
-    phone: string;
-    dialingCode: string;
-    email: string;
-    id: number;
-    pictureFileName: string | null;
-    nationalCode: string | null;
-    shebaNumber: string;
-    cardNumber: string | null;
-    accountNumber: string | null;
-    resellerId: number;
-    permissions: string[];
-    roles: string[];
-    createDate: string;
-    hasPassword: boolean;
-    dialingCountryIso: string;
-    secretKey: string;
-  };
-}
-
+/** GET /auth/me: the logged-in user, the fields the app uses. */
 export interface User {
+  id: number;
+  username: string;
   firstName: string;
   lastName: string;
-  phone: string;
-  dialingCode: string;
   email: string;
-  id: number;
-  pictureFileName: string | null;
-  nationalCode: string | null;
-  shebaNumber: string;
-  cardNumber: string | null;
-  accountNumber: string | null;
-  resellerId: number;
-  permissions: string[];
-  roles: string[];
-  createDate: string;
-  hasPassword: boolean;
-  dialingCountryIso: string;
-  secretKey: string;
+  /** The picture's URL. */
+  image: string;
+  role: string;
 }

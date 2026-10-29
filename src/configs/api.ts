@@ -1,11 +1,12 @@
 import { toast } from "sonner";
 import qs from "qs";
 import { m } from "@/paraglide/messages.js";
-import { getAccessToken, logout } from "@/features/auth/services";
+import { getAccessToken, getRefreshToken, logout, setTokens } from "@/features/auth/session";
 
-/** The error body this client understands: a message, and per-field messages for forms. */
+/** The error body this client understands: a message (`error`, or DummyJSON's `message`), and per-field messages. */
 interface ApiErrorBody {
   error?: string;
+  message?: string;
   errors?: Record<string, string | string[]>;
 }
 
@@ -34,11 +35,38 @@ interface ApiOptions extends Omit<RequestInit, "body"> {
   silent?: boolean;
 }
 
-/** fetch wrapper: base URL, 30s timeout, Bearer token, JSON in/out, 401 → logout, error toast. */
-export async function api<T = unknown>(
-  path: string,
-  { params, body, headers, signal, silent, ...init }: ApiOptions = {},
-) {
+const baseUrl = import.meta.env.VITE_API_URL ?? "";
+
+// One refresh at a time: requests that fail together wait for the same one. True once there are new tokens.
+let refreshing: Promise<boolean> | null = null;
+const refreshTokens = () => {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return Promise.resolve(false);
+
+  // The API's refresh endpoint: the refresh token in, new tokens out (DummyJSON's shape).
+  refreshing ??= fetch(`${baseUrl}/auth/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refreshToken }),
+  })
+    .then(async (response) => {
+      if (!response.ok) return false;
+      setTokens(await response.json());
+      return true;
+    })
+    .catch(() => false)
+    .finally(() => {
+      refreshing = null;
+    });
+  return refreshing;
+};
+
+/**
+ * fetch wrapper: base URL, 30s timeout, Bearer token, JSON in/out, error toast. A 401 gets new tokens with the
+ * refresh token and sends the request again, once (`retried`); if that fails, it logs out.
+ */
+export async function api<T = unknown>(path: string, options: ApiOptions = {}, retried = false): Promise<T> {
+  const { params, body, headers, signal, silent, ...init } = options;
   const query = qs.stringify(params, { arrayFormat: "brackets", encodeValuesOnly: true, skipNulls: true });
   const isJson = body !== undefined && !(body instanceof FormData);
 
@@ -49,7 +77,7 @@ export async function api<T = unknown>(
 
   let response: Response;
   try {
-    response = await fetch(`${import.meta.env.VITE_API_URL ?? ""}${path}${query ? `?${query}` : ""}`, {
+    response = await fetch(`${baseUrl}${path}${query ? `?${query}` : ""}`, {
       ...init,
       headers: requestHeaders,
       body: isJson ? JSON.stringify(body) : (body as BodyInit | undefined),
@@ -67,10 +95,12 @@ export async function api<T = unknown>(
     const error = new ApiError(response.status, data);
 
     if (response.status === 401) {
+      if (!retried && (await refreshTokens())) return api<T>(path, options, true);
       logout();
     } else if (!silent && !error.fieldErrors) {
       // Field errors show on the form's fields instead.
-      toast.error((data as ApiErrorBody | undefined)?.error || m.something_went_wrong());
+      const errorBody = data as ApiErrorBody | undefined;
+      toast.error(errorBody?.error || errorBody?.message || m.something_went_wrong());
     }
 
     throw error;

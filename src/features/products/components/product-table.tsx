@@ -1,24 +1,41 @@
 import { m } from "@/paraglide/messages.js";
-import { DataTable, DataTableFeatures } from "@/components/data-table";
+import { DataTable, DataTableFeatures, FilterDef } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
-import { getProducts, useDeleteProduct } from "@/features/products/services";
+import { getProducts, searchCategories, useDeleteProduct } from "@/features/products/services";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit, Plus, Trash2 } from "lucide-react";
-import { formatNumber } from "@/lib/utils";
-import { Product, ProductCategory } from "@/features/products/types";
+import { convertCase, formatNumber } from "@/lib/utils";
+import { Product } from "@/features/products/types";
 import { DialogButton } from "@/components/dialog-button";
 import { ProductForm } from "@/features/products/components/product-form";
 import { ConfirmDialogButton } from "@/components/confirm-dialog-button";
-import { categoryLabel } from "@/features/products/labels";
 import { useMemo } from "react";
 
-const categoryVariant: Record<ProductCategory, "default" | "secondary" | "outline" | "destructive"> = {
-  [ProductCategory.Electronics]: "default",
-  [ProductCategory.Clothing]: "secondary",
-  [ProductCategory.Books]: "outline",
-  [ProductCategory.Accessories]: "secondary",
-  [ProductCategory.Food]: "outline",
-};
+// A category's name from its slug ("home-decoration" → "Home Decoration"), as DummyJSON names them.
+const categoryName = (slug: string) => convertCase(slug, "title");
+
+// DummyJSON searches or lists one category, not both, so picking one clears the other.
+const filters: FilterDef[] = [
+  {
+    name: "q",
+    label: m.products_search,
+    type: "text",
+    pinned: true,
+    onValueChange: (form) => {
+      if (form.getFieldValue("q")) form.setFieldValue("category", "", { dontRunListeners: true });
+    },
+  },
+  {
+    name: "category",
+    label: m.products_category,
+    type: "select",
+    loadOptions: searchCategories,
+    formatValue: (value) => categoryName(String(value)),
+    onValueChange: (form) => {
+      if (form.getFieldValue("category")) form.setFieldValue("q", "", { dontRunListeners: true });
+    },
+  },
+];
 
 export const ProductTable = () => {
   const { mutateAsync: deleteProduct } = useDeleteProduct();
@@ -36,7 +53,19 @@ export const ProductTable = () => {
       {
         accessorKey: "name",
         header: m.products_name(),
-        size: 200,
+        enableSorting: true,
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            <img
+              src={row.original.thumbnail}
+              alt=""
+              loading="lazy"
+              className="size-9 rounded-md bg-muted object-cover"
+            />
+            <span className="truncate">{row.original.name}</span>
+          </div>
+        ),
+        size: 260,
         meta: {
           tooltip: (context) => context.row.original.description,
         },
@@ -44,10 +73,8 @@ export const ProductTable = () => {
       {
         accessorKey: "category",
         header: m.products_category(),
-        cell: ({ row }) => (
-          <Badge variant={categoryVariant[row.original.category]}>{categoryLabel[row.original.category]()}</Badge>
-        ),
-        size: 130,
+        cell: ({ row }) => <Badge variant="secondary">{categoryName(row.original.category)}</Badge>,
+        size: 150,
       },
       {
         accessorKey: "price",
@@ -59,22 +86,13 @@ export const ProductTable = () => {
       {
         accessorKey: "stock",
         header: m.products_stock(),
+        enableSorting: true,
         cell: ({ row }) => (
           <span className={row.original.stock === 0 ? "font-medium text-destructive" : undefined}>
             {formatNumber(row.original.stock, 0)}
           </span>
         ),
         size: 90,
-      },
-      {
-        accessorKey: "isActive",
-        header: m.products_status(),
-        cell: ({ row }) => (
-          <Badge variant={row.original.isActive ? "default" : "secondary"}>
-            {row.original.isActive ? m.active() : m.inactive()}
-          </Badge>
-        ),
-        size: 100,
       },
       {
         id: "actions",
@@ -108,7 +126,7 @@ export const ProductTable = () => {
       queryKey="products"
       queryFn={getProducts}
       columns={columns}
-      filters={[]}
+      filters={filters}
       title={m.products_title()}
       actions={[
         <DialogButton
@@ -119,7 +137,7 @@ export const ProductTable = () => {
           content={(close) => <ProductForm onClose={close} />}
         />,
       ]}
-      initialSort={{ desc: true, id: "productId" }}
+      initialSort={{ desc: false, id: "productId" }}
       rowHeight={61}
     />
   );

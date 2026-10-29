@@ -29,7 +29,7 @@ const pages = navItems.flatMap((item) => [
 
 /**
  * The search box in the header, and the command palette it opens (also with Ctrl+K, or ⌘K on a Mac): go to a page,
- * search the orders for what's typed, switch the theme or language, log out.
+ * search the products for what's typed, switch the theme or language, log out.
  */
 export function CommandMenu() {
   const [open, setOpen] = useState(false);
@@ -77,14 +77,14 @@ export function CommandMenu() {
             <CommandEmpty>{m.no_items_found()}</CommandEmpty>
 
             {query && (
-              <CommandGroup heading={m.orders_title()}>
+              <CommandGroup heading={m.products_title()}>
                 {/* Its value holds what's typed, so it always matches. */}
                 <CommandItem
-                  value={`search-orders ${query}`}
-                  onSelect={() => run(() => navigate({ to: "/orders", search: { filters: { q: query } } }))}
+                  value={`search-products ${query}`}
+                  onSelect={() => run(() => navigate({ to: "/products", search: { filters: { q: query } } }))}
                 >
                   <Search />
-                  {m.search_orders_for({ x: query })}
+                  {m.search_products_for({ x: query })}
                 </CommandItem>
               </CommandGroup>
             )}

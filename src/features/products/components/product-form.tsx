@@ -2,21 +2,19 @@ import { m } from "@/paraglide/messages.js";
 import { Button } from "@/components/ui/button";
 import { revalidateLogic } from "@tanstack/react-form";
 import { z } from "zod";
-import { Product, ProductCategory } from "@/features/products/types";
-import { useCreateProduct, useUpdateProduct } from "@/features/products/services";
+import { Product } from "@/features/products/types";
+import { useCategories, useCreateProduct, useUpdateProduct } from "@/features/products/services";
 import { Edit, Plus } from "lucide-react";
 import { DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAppForm } from "@/components/form/use-app-form";
 import { applyApiFieldErrors } from "@/components/form/api-errors";
-import { categoryLabel } from "@/features/products/labels";
 
 const formSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
-  category: z.enum(ProductCategory),
+  category: z.string().min(1),
   price: z.number().positive(),
   stock: z.number().int().min(0),
-  isActive: z.boolean(),
 });
 
 interface ProductFormProps {
@@ -28,14 +26,14 @@ interface ProductFormProps {
 export const ProductForm = ({ prevData, onClose }: ProductFormProps) => {
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
+  const categories = useCategories();
 
   const defaultValues: z.infer<typeof formSchema> = {
     name: prevData?.name ?? "",
     description: prevData?.description ?? "",
-    category: prevData?.category ?? ProductCategory.Electronics,
+    category: prevData?.category ?? "",
     price: prevData?.price ?? 0,
     stock: prevData?.stock ?? 0,
-    isActive: prevData?.isActive ?? true,
   };
 
   const form = useAppForm({
@@ -77,28 +75,24 @@ export const ProductForm = ({ prevData, onClose }: ProductFormProps) => {
               {(field) => <field.TextareaField label={m.products_description()} required />}
             </form.AppField>
           </div>
-          <form.AppField name="category">
-            {(field) => (
-              <field.EnumField
-                label={m.products_category()}
-                required
-                enumObject={ProductCategory}
-                getItemLabel={(v) => categoryLabel[v as ProductCategory]()}
-              />
-            )}
-          </form.AppField>
+          <div className="col-span-2">
+            <form.AppField name="category">
+              {(field) => (
+                <field.SelectField
+                  label={m.products_category()}
+                  required
+                  loading={categories.isPending}
+                  items={(categories.data ?? []).map((category) => ({ value: category.slug, label: category.name }))}
+                />
+              )}
+            </form.AppField>
+          </div>
           <form.AppField name="price">
             {(field) => <field.NumberField thousandSeparator label={m.products_price()} required step={0.01} />}
           </form.AppField>
-
           <form.AppField name="stock">
             {(field) => <field.NumberField label={m.products_stock()} required step={1} />}
           </form.AppField>
-          <div className="flex items-end pb-2">
-            <form.AppField name="isActive">
-              {(field) => <field.CheckboxField label={m.products_is_active()} />}
-            </form.AppField>
-          </div>
         </div>
 
         <DialogFooter>

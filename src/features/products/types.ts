@@ -1,30 +1,23 @@
-export enum ProductCategory {
-  Electronics = "Electronics",
-  Clothing = "Clothing",
-  Books = "Books",
-  Accessories = "Accessories",
-  Food = "Food",
-}
-
+/** A product, as the app names DummyJSON's fields. */
 export interface Product {
   productId: number;
   name: string;
   description: string;
-  category: ProductCategory;
+  /** The category's slug, e.g. "home-decoration". */
+  category: string;
   price: number;
   stock: number;
-  isActive: boolean;
+  /** A picture's URL. */
+  thumbnail: string;
 }
 
-export interface CreateProductParams {
-  name: string;
-  description: string;
-  category: ProductCategory;
-  price: number;
-  stock: number;
-  isActive: boolean;
-}
+export type CreateProductParams = Omit<Product, "productId" | "thumbnail">;
 
 export interface UpdateProductParams extends CreateProductParams {
   productId: number;
+}
+
+export interface Category {
+  slug: string;
+  name: string;
 }

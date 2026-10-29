@@ -1,33 +1,98 @@
 import { m } from "@/paraglide/messages.js";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { revalidateLogic } from "@tanstack/react-form";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useDebounceValue } from "usehooks-ts";
 import { z } from "zod";
-import { Edit, Plus } from "lucide-react";
+import { Edit, Plus, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import { DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FieldFrame } from "@/components/form/field-frame";
 import { useAppForm } from "@/components/form/use-app-form";
 import { applyApiFieldErrors } from "@/components/form/api-errors";
-import { Order, OrderStatus, OrderTag, PaymentMethod } from "@/features/orders/types";
-import { orderProducts, useCreateOrder, useUpdateOrder } from "@/features/orders/services";
-import { paymentMethodLabel, statusLabel, tagLabel } from "@/features/orders/labels";
+import { formatNumber } from "@/lib/utils";
+import { Order, OrderItem } from "@/features/orders/types";
+import { searchCustomers, useCreateOrder, useUpdateOrder } from "@/features/orders/services";
+import { searchProducts } from "@/features/products/services";
 
 const formSchema = z.object({
-  customerName: z.string().min(1),
-  customerEmail: z.email(),
-  product: z.string().min(1),
-  quantity: z.number().int().min(1),
-  total: z.number().positive(),
-  status: z.enum(OrderStatus),
-  paymentMethod: z.enum(PaymentMethod),
-  tags: z.array(z.enum(OrderTag)),
-  createdAt: z.string().min(1),
-  deliveryWindow: z.object({ from: z.string().nullable(), to: z.string().nullable() }).nullable(),
-  note: z.string(),
-  paid: z.boolean(),
+  customerId: z.string().min(1),
+  items: z
+    .array(
+      z.object({
+        productId: z.number(),
+        title: z.string(),
+        thumbnail: z.string(),
+        price: z.number(),
+        quantity: z.number().int().min(1),
+      }),
+    )
+    .min(1),
 });
 
-// What the form holds: the schema's values, with no total until one is typed (there's no sensible default).
-type OrderFormValues = Omit<z.infer<typeof formSchema>, "total"> & { total?: number };
+/** What's typed in a search box, after a pause, and what the server has for it. */
+function useSearch<T>(key: string, search: (query: string) => Promise<T[]>) {
+  const [query, setQuery] = useState("");
+  const [debounced] = useDebounceValue(query.trim(), 300);
+  const results = useQuery({
+    queryKey: [key, debounced],
+    queryFn: () => search(debounced),
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+  });
+  return { setQuery, results: results.data ?? [], loading: results.isPending };
+}
+
+/** A search box for products; picking one hands it over and clears the box, ready for the next. */
+function ProductPicker({ onPick }: { onPick: (item: Omit<OrderItem, "quantity">) => void }) {
+  const [inputValue, setInputValue] = useState("");
+  const { setQuery, results, loading } = useSearch("product-options", searchProducts);
+  const byId = new Map(results.map((product) => [product.id, product]));
+
+  return (
+    <Combobox<number>
+      items={results.map((product) => product.id)}
+      value={null}
+      inputValue={inputValue}
+      onInputValueChange={(value) => {
+        setInputValue(value);
+        setQuery(value);
+      }}
+      onValueChange={(id) => {
+        const product = id === null ? undefined : byId.get(id);
+        if (product)
+          onPick({ productId: product.id, title: product.title, thumbnail: product.thumbnail, price: product.price });
+        setInputValue("");
+      }}
+      itemToStringLabel={(id) => byId.get(id)?.title ?? ""}
+      // The server matched them to the search already.
+      filter={null}
+      autoHighlight
+    >
+      <ComboboxInput placeholder={m.orders_add_product()} aria-label={m.orders_add_product()} className="w-full" />
+      <ComboboxContent>
+        <ComboboxEmpty>{loading ? null : m.no_items_found()}</ComboboxEmpty>
+        <ComboboxList>
+          {(id: number) => (
+            <ComboboxItem key={id} value={id}>
+              <img src={byId.get(id)?.thumbnail} alt="" className="size-6 rounded bg-muted object-cover" />
+              <span className="flex-1 truncate">{byId.get(id)?.title}</span>
+              <span className="text-muted-foreground">${formatNumber(byId.get(id)?.price ?? 0, 2)}</span>
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  );
+}
 
 interface OrderFormProps {
   /** The order to edit; without it, a new one. */
@@ -35,25 +100,15 @@ interface OrderFormProps {
   onClose?: () => void;
 }
 
-/** A new order, or an edit. It also shows every form field in use: text, select (one and several), enum, number, dates, etc. */
+/** A new order, or an edit: its customer, then its products with how many of each. */
 export const OrderForm = ({ prevData, onClose }: OrderFormProps) => {
   const createMutation = useCreateOrder();
   const updateMutation = useUpdateOrder();
-  const [now] = useState(() => new Date().toISOString());
+  const customers = useSearch("customer-options", searchCustomers);
 
-  const defaultValues: OrderFormValues = {
-    customerName: prevData?.customerName ?? "",
-    customerEmail: prevData?.customerEmail ?? "",
-    product: prevData?.product ?? "",
-    quantity: prevData?.quantity ?? 1,
-    total: prevData?.total,
-    status: prevData?.status ?? OrderStatus.Pending,
-    paymentMethod: prevData?.paymentMethod ?? PaymentMethod.Card,
-    tags: prevData?.tags ?? [],
-    createdAt: prevData?.createdAt ?? now,
-    deliveryWindow: prevData?.deliveryWindow ?? null,
-    note: prevData?.note ?? "",
-    paid: prevData?.paid ?? false,
+  const defaultValues: z.infer<typeof formSchema> = {
+    customerId: prevData ? String(prevData.customerId) : "",
+    items: prevData?.items ?? [],
   };
 
   const form = useAppForm({
@@ -61,8 +116,7 @@ export const OrderForm = ({ prevData, onClose }: OrderFormProps) => {
     validationLogic: revalidateLogic(),
     validators: { onDynamic: formSchema },
     onSubmit: async ({ value, formApi }) => {
-      // Valid by now; parsing gives the schema's types (a total is there).
-      const order = formSchema.parse(value);
+      const order = { customerId: Number(value.customerId), items: value.items };
       try {
         if (prevData) {
           await updateMutation.mutateAsync({ orderId: prevData.orderId, ...order });
@@ -76,6 +130,12 @@ export const OrderForm = ({ prevData, onClose }: OrderFormProps) => {
     },
   });
 
+  // The order's customer stays among the options, so its name shows before (or without) a search.
+  const customerItems = [
+    ...(prevData ? [{ value: String(prevData.customerId), label: prevData.customerName }] : []),
+    ...customers.results.filter((option) => option.value !== String(prevData?.customerId)),
+  ];
+
   return (
     <form.AppForm>
       <form.Form className="space-y-4">
@@ -85,76 +145,64 @@ export const OrderForm = ({ prevData, onClose }: OrderFormProps) => {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <form.AppField name="customerName">
-            {(field) => <field.TextField label={m.orders_customer_name()} required />}
-          </form.AppField>
-          <form.AppField name="customerEmail">
-            {(field) => <field.TextField type="email" dir="ltr" label={m.orders_customer_email()} required />}
-          </form.AppField>
-          <div className="sm:col-span-2">
-            <form.AppField name="product">
-              {(field) => (
-                <field.SelectField
-                  label={m.orders_product()}
-                  required
-                  items={orderProducts.map((product) => ({ value: product, label: product }))}
-                  clearable
-                />
-              )}
-            </form.AppField>
-          </div>
-          <form.AppField name="quantity">
-            {(field) => <field.NumberField label={m.orders_quantity()} required step={1} />}
-          </form.AppField>
-          <form.AppField name="total">
-            {(field) => <field.NumberField thousandSeparator label={m.orders_total()} required step={0.01} />}
-          </form.AppField>
-          <form.AppField name="status">
-            {(field) => (
-              <field.EnumField
-                label={m.orders_status()}
-                required
-                enumObject={OrderStatus}
-                getItemLabel={(v) => statusLabel[v as OrderStatus]()}
+        <form.AppField name="customerId">
+          {(field) => (
+            <field.SelectField
+              label={m.orders_customer()}
+              required
+              items={customerItems}
+              loading={customers.loading}
+              serverSearch
+              onSearchChange={customers.setQuery}
+              // DummyJSON can't move a cart to another customer.
+              disabled={!!prevData}
+            />
+          )}
+        </form.AppField>
+
+        <form.AppField name="items" mode="array">
+          {(field) => (
+            <FieldFrame label={m.orders_products()} required>
+              <ProductPicker
+                onPick={(product) => {
+                  // Picking one that's there already adds one more of it.
+                  const index = field.state.value.findIndex((item) => item.productId === product.productId);
+                  if (index === -1) field.pushValue({ ...product, quantity: 1 });
+                  else
+                    field.replaceValue(index, {
+                      ...field.state.value[index],
+                      quantity: field.state.value[index].quantity + 1,
+                    });
+                }}
               />
-            )}
-          </form.AppField>
-          <form.AppField name="paymentMethod">
-            {(field) => (
-              <field.EnumField
-                label={m.orders_payment()}
-                required
-                enumObject={PaymentMethod}
-                getItemLabel={(v) => paymentMethodLabel[v as PaymentMethod]()}
-              />
-            )}
-          </form.AppField>
-          <div className="sm:col-span-2">
-            <form.AppField name="tags">
-              {(field) => (
-                <field.SelectField
-                  label={m.orders_tags()}
-                  items={Object.values(OrderTag).map((tag) => ({ value: tag, label: tagLabel[tag]() }))}
-                  multiple
-                  clearable
-                />
-              )}
-            </form.AppField>
-          </div>
-          <form.AppField name="createdAt">
-            {(field) => <field.DateTimeField label={m.orders_created_at()} required />}
-          </form.AppField>
-          <form.AppField name="deliveryWindow">
-            {(field) => <field.DateField mode="range" clearable label={m.orders_delivery_window()} />}
-          </form.AppField>
-          <div className="sm:col-span-2">
-            <form.AppField name="note">
-              {(field) => <field.TextareaField label={m.orders_note()} description={m.orders_note_description()} />}
-            </form.AppField>
-          </div>
-          <form.AppField name="paid">{(field) => <field.CheckboxField label={m.orders_paid()} />}</form.AppField>
-        </div>
+
+              <ul className="divide-y rounded-md border empty:hidden">
+                {field.state.value.map((item, index) => (
+                  <li key={item.productId} className="flex items-center gap-3 p-2">
+                    <img src={item.thumbnail} alt="" className="size-9 rounded bg-muted object-cover" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm">{item.title}</div>
+                      <div className="text-xs text-muted-foreground">${formatNumber(item.price, 2)}</div>
+                    </div>
+                    <div className="w-20">
+                      <form.AppField name={`items[${index}].quantity`}>
+                        {(quantity) => <quantity.NumberField aria-label={m.orders_quantity()} step={1} />}
+                      </form.AppField>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={m.remove_x({ x: item.title })}
+                      onClick={() => field.removeValue(index)}
+                    >
+                      <X />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </FieldFrame>
+          )}
+        </form.AppField>
 
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>{m.cancel()}</DialogClose>
