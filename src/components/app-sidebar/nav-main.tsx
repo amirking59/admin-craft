@@ -45,10 +45,6 @@ export const navItems: NavItem[] = [
   },
 ];
 
-// 40px rows, muted until hover; the active route gets a soft primary tint. Icon mode keeps the sidebar's 32px squares.
-const navButtonClassName =
-  "h-10 gap-3 px-3 text-muted-foreground hover:text-foreground [&>svg]:size-[18px] data-active:bg-primary/10 data-active:font-medium data-active:text-primary data-active:hover:bg-primary/15";
-
 export function NavMain() {
   const pathname = useLocation({ select: (location) => location.pathname });
   const { setOpenMobile } = useSidebar();
@@ -58,7 +54,7 @@ export function NavMain() {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{m.navigation()}</SidebarGroupLabel>
-      <SidebarMenu className="gap-1">
+      <SidebarMenu>
         {navItems.map((item) => {
           const label = item.label();
 
@@ -70,7 +66,7 @@ export function NavMain() {
                 defaultOpen={item.subItems.some((subItem) => pathname.startsWith(subItem.route))}
                 className="group/collapsible"
               >
-                <CollapsibleTrigger render={<SidebarMenuButton tooltip={label} className={navButtonClassName} />}>
+                <CollapsibleTrigger render={<SidebarMenuButton tooltip={label} />}>
                   <item.icon />
                   <span>{label}</span>
                   <ChevronRight className="ms-auto transition-transform duration-200 group-data-[open]/collapsible:rotate-90 rtl:rotate-180 rtl:group-data-[open]/collapsible:rotate-90" />
@@ -100,7 +96,6 @@ export function NavMain() {
               <SidebarMenuButton
                 isActive={pathname.startsWith(item.route)}
                 tooltip={label}
-                className={navButtonClassName}
                 render={<Link onClick={closeMobile} to={item.route} />}
               >
                 <item.icon />

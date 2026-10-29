@@ -45,7 +45,7 @@ function UserSummary({ user }: { user?: User }) {
         <span className="truncate font-medium">
           {user.firstName} {user.lastName}
         </span>
-        <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+        <span className="truncate text-xs">{user.email}</span>
       </div>
     </>
   );
@@ -59,12 +59,19 @@ export function NavUser() {
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger render={<SidebarMenuButton size="lg" className="data-popup-open:bg-sidebar-accent" />}>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                className="data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground"
+              />
+            }
+          >
             <UserSummary user={user} />
             <ChevronsUpDown className="ms-auto size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--anchor-width) min-w-56"
+            className="w-(--anchor-width) min-w-56 rounded-lg"
             side={isMobile ? "bottom" : "inline-end"}
             align="end"
             sideOffset={4}

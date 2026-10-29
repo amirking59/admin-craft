@@ -29,8 +29,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <LayoutDashboard className="size-4" />
               </div>
               <div className="grid flex-1 text-start text-sm leading-tight">
-                <span className="truncate font-semibold">{m.app_name()}</span>
-                <span className="truncate text-xs text-muted-foreground">{m.admin_panel()}</span>
+                <span className="truncate font-medium">{m.app_name()}</span>
+                <span className="truncate text-xs">{m.admin_panel()}</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
