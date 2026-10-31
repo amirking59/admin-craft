@@ -39,8 +39,13 @@ function CommandDialog({
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
+      {/* No open/close animation: it's opened from the keyboard (Ctrl+K), over and over, and should feel instant. */}
       <DialogContent
-        className={cn("top-1/3 translate-y-0 overflow-hidden rounded-xl! p-0", className)}
+        className={cn(
+          "top-1/3 translate-y-0 overflow-hidden rounded-xl! p-0 data-open:animate-none data-closed:animate-none",
+          className,
+        )}
+        overlayClassName="data-closed:animate-none data-open:animate-none"
         showCloseButton={showCloseButton}
       >
         {children}

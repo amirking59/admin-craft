@@ -179,3 +179,25 @@
     @apply font-sans;
   }
 }
+
+/* Reduced motion: keep the fades, drop the movement. Outside any layer, so it wins over the utilities. */
+@media (prefers-reduced-motion: reduce) {
+  /* The zoom and slide of pop-ups and dialogs (tw-animate-css). */
+  * {
+    --tw-enter-scale: 1;
+    --tw-enter-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-exit-scale: 1;
+    --tw-exit-translate-x: 0;
+    --tw-exit-translate-y: 0;
+  }
+  /* The mobile sidebar's slide. */
+  [data-slot="sheet-content"] {
+    translate: none;
+  }
+  /* The desktop sidebar's collapse. */
+  [data-slot="sidebar-gap"],
+  [data-slot="sidebar-container"] {
+    transition-duration: 0s;
+  }
+}
