@@ -39,13 +39,11 @@ function CommandDialog({
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
-      {/* No open/close animation: it's opened from the keyboard (Ctrl+K), over and over, and should feel instant. */}
+      {/* No open/close animation: it's opened from the keyboard (Ctrl+K), over and over, and should feel instant.
+          `duration-0` replaces the dialog's `duration-100`; an `animate-none` would lose to `animate-out` in the CSS. */}
       <DialogContent
-        className={cn(
-          "top-1/3 translate-y-0 overflow-hidden rounded-xl! p-0 data-open:animate-none data-closed:animate-none",
-          className,
-        )}
-        overlayClassName="data-closed:animate-none data-open:animate-none"
+        className={cn("top-1/3 translate-y-0 overflow-hidden rounded-xl! p-0 duration-0", className)}
+        overlayClassName="duration-0"
         showCloseButton={showCloseButton}
       >
         {children}
