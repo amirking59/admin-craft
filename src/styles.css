@@ -146,6 +146,8 @@
   --radius-4xl: calc(var(--radius) * 2.6);
   --font-heading: var(--font-sans);
   --font-sans: "Noto Sans Arabic Variable", sans-serif;
+  /* Replaces Tailwind's default `ease-out`: a stronger curve, so short UI motion settles quickly. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @layer base {
